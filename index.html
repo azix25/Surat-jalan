@@ -1,0 +1,124 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Surat Jalan</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <div class="toolbar no-print">
+    <button onclick="tambahBaris()">+ Tambah Baris</button>
+    <button onclick="simpanSurat()">Simpan</button>
+    <button onclick="suratBaru()">Surat Baru</button>
+    <button onclick="window.print()">Cetak / PDF</button>
+    <button onclick="lihatRiwayat()">Riwayat</button>
+  </div>
+
+  <div class="surat" id="areaSurat">
+
+    <h2>SURAT JALAN</h2>
+
+    <div class="info">
+
+      <div class="info-kiri">
+        <div class="field">
+          <label>No. Surat Jalan</label>
+          <input type="text" id="nomor" readonly>
+        </div>
+
+        <div class="field">
+          <label>Tanggal</label>
+          <input type="date" id="tanggal">
+        </div>
+      </div>
+
+      <div class="info-kanan">
+        <div class="field">
+          <label>Nama Penerima</label>
+          <input type="text" id="penerima">
+        </div>
+
+        <div class="field">
+          <label>Alamat</label>
+          <input type="text" id="alamatPenerima">
+        </div>
+
+        <div class="field">
+          <label>No. Telepon</label>
+          <input type="text" id="teleponPenerima">
+        </div>
+      </div>
+
+    </div>
+
+    <table id="tabelBahan">
+
+      <colgroup>
+        <col class="kolom-no">
+        <col class="kolom-nama">
+        <col class="kolom-ukuran">
+        <col class="kolom-total">
+        <col class="kolom-aksi no-print">
+      </colgroup>
+
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Nama Bahan</th>
+          <th>Ukuran</th>
+          <th>Total</th>
+          <th class="no-print">Aksi</th>
+        </tr>
+      </thead>
+
+      <tbody id="isiTabel"></tbody>
+
+      <tfoot>
+        <tr>
+          <td colspan="3" class="label-jumlah">JUMLAH</td>
+          <td id="jumlahTotal" class="nilai-jumlah">0</td>
+          <td class="no-print"></td>
+        </tr>
+      </tfoot>
+
+    </table>
+
+    <div class="catatan">
+      <strong>Catatan:</strong>
+      <textarea id="catatan" placeholder="Tulis catatan jika diperlukan..."></textarea>
+    </div>
+
+    <div class="ttd">
+
+      <div>
+        <p>Pengirim,</p>
+        <div class="garis-ttd"></div>
+        <p>(............................)</p>
+      </div>
+
+      <div>
+        <p>Penerima,</p>
+        <div class="garis-ttd"></div>
+        <p>(............................)</p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div id="panelRiwayat" class="no-print riwayat" hidden>
+    <h3>Riwayat Surat Jalan</h3>
+    <div id="daftarRiwayat"></div>
+    <button onclick="tutupRiwayat()">Tutup Riwayat</button>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
