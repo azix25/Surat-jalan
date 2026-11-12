@@ -369,3 +369,7 @@ td input[type="number"]::-webkit-outer-spin-button {
 .item-riwayat .hapus-riwayat:hover {
   background: #b71c1c;
 }
+
+.tombol-dokumen{display:inline-block;background:#1769aa;color:#fff;padding:9px 14px;border-radius:4px;text-decoration:none;font-size:13px}
+.tombol-dokumen:hover{background:#125487}
+@media print{.tombol-dokumen{display:none!important}}
