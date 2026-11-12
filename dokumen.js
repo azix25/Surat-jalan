@@ -73,7 +73,25 @@ async function importCompanyLogo(file){
  }catch(error){alert("Gagal mengunggah logo: "+error.message);}
  $("fileLogoPerusahaan").value="";
 }
-function history(){const list=JSON.parse(localStorage.getItem("dokumenBisnis")||"[]");$("riwayat").innerHTML="";if(!list.length){$("riwayat").textContent="Belum ada dokumen tersimpan.";return}list.slice().reverse().forEach(d=>{const row=document.createElement("div");row.className="history-row";const info=document.createElement("span");info.textContent=(labels[d.jenis]?.title||d.jenis)+" · "+(d.nomorDokumen||"Tanpa nomor")+" · "+(d.pihak||"-");const btn=document.createElement("button");btn.textContent="Buka";btn.onclick=()=>setData(d);row.append(info,btn);$("riwayat").append(row)})}
+function history(){
+ const list=JSON.parse(localStorage.getItem("dokumenBisnis")||"[]");
+ $("riwayat").innerHTML="";
+ if(!list.length){$("riwayat").textContent="Belum ada dokumen tersimpan.";return}
+ list.map((d,index)=>({d,index})).reverse().forEach(({d,index})=>{
+  const row=document.createElement("div");row.className="history-row";
+  const info=document.createElement("span");info.textContent=(labels[d.jenis]?.title||d.jenis)+" · "+(d.nomorDokumen||"Tanpa nomor")+" · "+(d.pihak||"-");
+  const actions=document.createElement("div");actions.className="history-actions";
+  const btn=document.createElement("button");btn.type="button";btn.textContent="Buka";btn.onclick=()=>setData(d);
+  const del=document.createElement("button");del.type="button";del.textContent="Hapus";del.className="history-delete";
+  del.setAttribute("aria-label","Hapus "+(d.nomorDokumen||"dokumen"));
+  del.onclick=()=>{
+   if(!confirm("Hapus dokumen "+(d.nomorDokumen||"ini")+" dari riwayat?"))return;
+   const current=JSON.parse(localStorage.getItem("dokumenBisnis")||"[]");
+   current.splice(index,1);localStorage.setItem("dokumenBisnis",JSON.stringify(current));history();
+  };
+  actions.append(btn,del);row.append(info,actions);$("riwayat").append(row);
+ });
+}
 function save(){const d=readData();if(!d.nomorDokumen.trim()){alert("Isi nomor dokumen terlebih dahulu.");$("nomorDokumen").focus();return}const list=JSON.parse(localStorage.getItem("dokumenBisnis")||"[]");const i=list.findIndex(x=>x.jenis===d.jenis&&x.nomorDokumen===d.nomorDokumen);if(i>=0)list[i]=d;else list.push(d);localStorage.setItem("dokumenBisnis",JSON.stringify(list));history();alert("Dokumen berhasil disimpan di perangkat ini.")}
 function companyInitials(name){
  const words=(name||"").trim().toUpperCase().replace(/[^A-Z0-9\s]/g," ").split(/\s+/).filter(Boolean).filter(w=>!["PT","CV","UD","TBK","PERSERO"].includes(w));
@@ -124,7 +142,7 @@ if(companyLogo)$("statusLogoPerusahaan").textContent="Logo tersimpan di perangka
 const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
 let voiceRecognition=null,voiceFinalText="",voiceShouldSubmit=false;
 function voiceStatus(message){$("voiceStatus").textContent=message;}
-let voiceRecorder=null,voiceStream=null,voiceChunks=[];
+let voiceRecorder=null,voiceStream=null,voiceChunks=[],voiceAudioContext=null,voiceSilenceTimer=null,voiceSpeechDetected=false,voiceLastSoundAt=0;
 async function startRecordedVoiceCommand(){
  if(!window.isSecureContext){voiceStatus("Mikrofon hanya dapat digunakan melalui HTTPS atau localhost.");return;}
  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){voiceStatus("Perekam suara tidak didukung browser ini. Coba Chrome Android terbaru melalui HTTPS.");return;}
@@ -134,12 +152,36 @@ async function startRecordedVoiceCommand(){
   const mimeTypes=["audio/webm;codecs=opus","audio/webm","audio/mp4"];
   const mimeType=mimeTypes.find(t=>MediaRecorder.isTypeSupported(t))||"";
   voiceRecorder=new MediaRecorder(voiceStream,mimeType?{mimeType}:undefined);voiceChunks=[];
+  // Pantau tingkat suara: berhenti otomatis setelah 3 detik hening sesudah pengguna mulai bicara.
+  voiceSpeechDetected=false;voiceLastSoundAt=0;
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;
+  if(AudioCtx){
+   voiceAudioContext=new AudioCtx();
+   const source=voiceAudioContext.createMediaStreamSource(voiceStream),analyser=voiceAudioContext.createAnalyser();
+   analyser.fftSize=1024;source.connect(analyser);
+   const samples=new Uint8Array(analyser.fftSize);
+   voiceSilenceTimer=setInterval(()=>{
+    if(!voiceRecorder||voiceRecorder.state!=="recording")return;
+    analyser.getByteTimeDomainData(samples);
+    let sum=0;for(let i=0;i<samples.length;i++){const v=(samples[i]-128)/128;sum+=v*v;}
+    const level=Math.sqrt(sum/samples.length);
+    if(level>0.025){voiceSpeechDetected=true;voiceLastSoundAt=Date.now();}
+    if(voiceSpeechDetected&&Date.now()-voiceLastSoundAt>=3000){
+     voiceStatus("Tidak ada suara selama 3 detik. Menghentikan rekaman dan memproses perintah...");
+     voiceRecorder.stop();
+    }
+   },120);
+  }
   voiceRecorder.ondataavailable=e=>{if(e.data&&e.data.size)voiceChunks.push(e.data);};
   voiceRecorder.onerror=()=>voiceStatus("Perekaman gagal. Periksa izin dan mikrofon perangkat.");
-  voiceRecorder.onstart=()=>{$("voiceStart").disabled=true;$("voiceStop").disabled=false;voiceStatus("Sedang merekam... Ucapkan perintah dalam Bahasa Indonesia, lalu tekan Hentikan.");};
+  voiceRecorder.onstart=()=>{$("voiceStart").disabled=true;$("voiceStop").disabled=false;voiceStatus("Mikrofon aktif. Silakan berbicara; rekaman berhenti otomatis setelah 3 detik tanpa suara.");};
   voiceRecorder.onstop=async()=>{
    $("voiceStart").disabled=false;$("voiceStop").disabled=true;
-   voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
+   if(voiceSilenceTimer){clearInterval(voiceSilenceTimer);voiceSilenceTimer=null;}
+   if(voiceAudioContext){voiceAudioContext.close().catch(()=>{});voiceAudioContext=null;}
+   if(voiceSilenceTimer){clearInterval(voiceSilenceTimer);voiceSilenceTimer=null;}
+  if(voiceAudioContext){voiceAudioContext.close().catch(()=>{});voiceAudioContext=null;}
+  voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
    const blob=new Blob(voiceChunks,{type:voiceRecorder?.mimeType||"audio/webm"});
    if(!blob.size){voiceStatus("Suara tidak terekam. Coba ulangi.");return;}
    if(blob.size>4*1024*1024){voiceStatus("Rekaman terlalu panjang. Maksimal sekitar 45 detik; coba lebih singkat.");return;}
@@ -221,5 +263,5 @@ async function awaitVoiceAI(){
  try{await generateWithAI();voiceStatus("Perintah suara selesai diproses AI. Periksa hasil pada pratinjau dokumen.");}
  catch(error){voiceStatus("AI belum dapat memproses perintah: "+error.message);}
 }
-$("voiceStart").addEventListener("click",startVoiceCommand);
+$("voiceStart").addEventListener("click",startRecordedVoiceCommand);
 $("voiceStop").addEventListener("click",()=>{if(voiceRecorder&&voiceRecorder.state!=="inactive"){voiceRecorder.stop();return;}voiceShouldSubmit=true;if(voiceRecognition)voiceRecognition.stop();});
