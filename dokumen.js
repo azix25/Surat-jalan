@@ -177,5 +177,6 @@ function startVoiceCommand(){
 async function awaitVoiceAI(){
  try{await generateWithAI();voiceStatus("Perintah suara selesai diproses AI. Periksa hasil pada pratinjau dokumen.");}
  catch(error){voiceStatus("AI belum dapat memproses perintah: "+error.message);}
-}\n$("voiceStart").addEventListener("click",startVoiceCommand);
+}
+$("voiceStart").addEventListener("click",startVoiceCommand);
 $("voiceStop").addEventListener("click",()=>{voiceShouldSubmit=true;if(voiceRecognition)voiceRecognition.stop();});
