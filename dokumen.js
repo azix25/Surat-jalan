@@ -124,10 +124,50 @@ if(companyLogo)$("statusLogoPerusahaan").textContent="Logo tersimpan di perangka
 const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
 let voiceRecognition=null,voiceFinalText="",voiceShouldSubmit=false;
 function voiceStatus(message){$("voiceStatus").textContent=message;}
+let voiceRecorder=null,voiceStream=null,voiceChunks=[];
+async function startRecordedVoiceCommand(){
+ if(!window.isSecureContext){voiceStatus("Mikrofon hanya dapat digunakan melalui HTTPS atau localhost.");return;}
+ if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){voiceStatus("Perekam suara tidak didukung browser ini. Coba Chrome Android terbaru melalui HTTPS.");return;}
+ if(!$("aiAccessCode").value.trim()){voiceStatus("Masukkan kode akses AI terlebih dahulu.");$("aiAccessCode").focus();return;}
+ try{
+  voiceStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  const mimeTypes=["audio/webm;codecs=opus","audio/webm","audio/mp4"];
+  const mimeType=mimeTypes.find(t=>MediaRecorder.isTypeSupported(t))||"";
+  voiceRecorder=new MediaRecorder(voiceStream,mimeType?{mimeType}:undefined);voiceChunks=[];
+  voiceRecorder.ondataavailable=e=>{if(e.data&&e.data.size)voiceChunks.push(e.data);};
+  voiceRecorder.onerror=()=>voiceStatus("Perekaman gagal. Periksa izin dan mikrofon perangkat.");
+  voiceRecorder.onstart=()=>{$("voiceStart").disabled=true;$("voiceStop").disabled=false;voiceStatus("Sedang merekam... Ucapkan perintah dalam Bahasa Indonesia, lalu tekan Hentikan.");};
+  voiceRecorder.onstop=async()=>{
+   $("voiceStart").disabled=false;$("voiceStop").disabled=true;
+   voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
+   const blob=new Blob(voiceChunks,{type:voiceRecorder?.mimeType||"audio/webm"});
+   if(!blob.size){voiceStatus("Suara tidak terekam. Coba ulangi.");return;}
+   if(blob.size>4*1024*1024){voiceStatus("Rekaman terlalu panjang. Maksimal sekitar 45 detik; coba lebih singkat.");return;}
+   voiceStatus("Mengubah suara menjadi teks...");
+   try{
+    const bytes=new Uint8Array(await blob.arrayBuffer());let binary="";
+    for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);
+    const response=await fetch("https://nqwqlhcwiwprsbcdadhy.supabase.co/functions/v1/dokumen-ai",{
+     method:"POST",headers:{"Content-Type":"application/json","x-ai-access-code":$("aiAccessCode").value.trim()},
+     body:JSON.stringify({audioBase64:btoa(binary),mimeType:blob.type||"audio/webm"})
+    });
+    const result=await response.json();if(!response.ok)throw new Error(result.error||"Suara gagal diproses.");
+    const transcript=String(result.transcript||"").trim();if(!transcript)throw new Error("Tidak ada ucapan yang terdeteksi.");
+    $("aiPrompt").value=transcript;voiceStatus("Perintah tertangkap: "+transcript+" — AI sedang membuat dokumen...");
+    await generateWithAI();voiceStatus("Perintah suara selesai diproses. Periksa hasil dokumen.");
+   }catch(error){voiceStatus("Gagal memproses suara: "+error.message);}
+  };
+  voiceRecorder.start();
+ }catch(error){
+  voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
+  const msg=error.name==="NotAllowedError"?"Izin mikrofon ditolak. Izinkan Mikrofon pada pengaturan situs/browser.":error.name==="NotFoundError"?"Mikrofon tidak ditemukan pada perangkat.":"Tidak bisa membuka mikrofon: "+error.message;
+  voiceStatus(msg);
+ }
+}
 async function startVoiceCommand(){
  if(!window.isSecureContext){voiceStatus("Mikrofon membutuhkan halaman HTTPS atau localhost. Buka situs GitHub Pages melalui alamat https://, bukan file lokal atau HTTP.");return}
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){voiceStatus("Browser ini tidak menyediakan akses mikrofon. Coba Chrome terbaru dan buka halaman melalui HTTPS.");return}
- if(!SpeechRecognition){voiceStatus("Browser ini belum mendukung pengenalan suara. Gunakan Chrome Android terbaru; WebView tertentu tidak mendukung fitur ini.");return;}
+ if(!SpeechRecognition){startRecordedVoiceCommand();return;}
  if(!$("aiAccessCode").value.trim()){voiceStatus("Masukkan kode akses AI terlebih dahulu.");$("aiAccessCode").focus();return;}
  voiceFinalText="";voiceShouldSubmit=true;
  try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});stream.getTracks().forEach(track=>track.stop());}catch(error){voiceShouldSubmit=false;const reason=error.name==="NotAllowedError"?"Izin mikrofon ditolak. Buka pengaturan situs lalu izinkan Mikrofon.":error.name==="NotFoundError"?"Mikrofon tidak ditemukan pada perangkat.":"Tidak bisa mengakses mikrofon: "+error.message;voiceStatus(reason);return;}
@@ -182,4 +222,4 @@ async function awaitVoiceAI(){
  catch(error){voiceStatus("AI belum dapat memproses perintah: "+error.message);}
 }
 $("voiceStart").addEventListener("click",startVoiceCommand);
-$("voiceStop").addEventListener("click",()=>{voiceShouldSubmit=true;if(voiceRecognition)voiceRecognition.stop();});
+$("voiceStop").addEventListener("click",()=>{if(voiceRecorder&&voiceRecorder.state!=="inactive"){voiceRecorder.stop();return;}voiceShouldSubmit=true;if(voiceRecognition)voiceRecognition.stop();});
