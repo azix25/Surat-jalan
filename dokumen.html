@@ -3,49 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pusat Dokumen Bisnis</title>
-<link rel="stylesheet" href="dokumen.css?v=docs-templates-20261112-3">
+<title>SB Office — Administrasi dan Dokumen Perusahaan</title>
+<link rel="stylesheet" href="dokumen.css?v=sb-office-labels-20261112-4">
 </head>
 <body>
 <header class="topbar">
-  <a class="back" href="index.html">← Kembali ke Surat Jalan</a>
-  <div><strong>Dokumen Bisnis</strong><small>Invoice · Surat Jalan · Penawaran · Penagihan · Kuitansi · PO · Berita Acara · Kontrak · Surat Resmi</small></div>
+  <a class="back" href="index.html">← Kembali ke Beranda</a>
+  <div><strong>SB Office</strong><small>Administrasi · Dokumen Perusahaan · Arsip · Pengelolaan Bisnis</small></div>
 </header>
 <main class="layout">
   <aside class="panel no-print">
-    <h2>Buat Dokumen</h2>
-    <label>Jenis dokumen<select id="jenis">
-      <option value="invoice">Invoice / Faktur</option>
-      <option value="suratjalan">Surat Jalan</option>
-      <option value="penawaran">Surat Penawaran</option>
-      <option value="penagihan">Surat Penagihan</option>
-      <option value="kuitansi">Kuitansi / Bukti Pembayaran</option>
-      <option value="purchaseorder">Purchase Order (PO)</option>
-      <option value="beritaacara">Berita Acara</option>
-      <option value="kontrak">Kontrak / Perjanjian Kerja</option>
+    <h2>Buat Dokumen Baru</h2>
+    <label>Kategori dokumen<select id="jenis">
+      <option value="invoice">Faktur / Invoice</option>
+      <option value="suratjalan">Surat Jalan Pengiriman</option>
+      <option value="penawaran">Surat Penawaran Harga</option>
+      <option value="penagihan">Surat Tagihan</option>
+      <option value="kuitansi">Bukti Pembayaran / Kuitansi</option>
+      <option value="purchaseorder">Pesanan Pembelian (PO)</option>
+      <option value="beritaacara">Berita Acara Pekerjaan</option>
+      <option value="kontrak">Surat Perjanjian Kerja</option>
       <option value="surattugas">Surat Tugas</option>
       <option value="permohonan">Surat Permohonan</option>
       <option value="resmi">Surat Resmi</option>
-      <option value="tandaterima">Tanda Terima Barang</option>
-      <option value="deliveryorder">Delivery Order (DO)</option>
+      <option value="tandaterima">Bukti Tanda Terima Barang</option>
+      <option value="deliveryorder">Perintah Pengiriman (DO)</option>
       <option value="spk">Surat Perintah Kerja (SPK)</option>
       <option value="rab">Rencana Anggaran Biaya (RAB)</option>
       <option value="bast">Berita Acara Serah Terima (BAST)</option>
-      <option value="laporanprogress">Laporan Progres Pekerjaan</option>
-      <option value="laporanhari">Laporan Harian Proyek</option>
-      <option value="permintaanpembelian">Permintaan Pembelian (PR)</option>
+      <option value="laporanprogress">Laporan Kemajuan Pekerjaan</option>
+      <option value="laporanhari">Laporan Harian Pekerjaan</option>
+      <option value="permintaanpembelian">Formulir Permintaan Pembelian (PR)</option>
       <option value="notadebit">Nota Debit</option>
       <option value="notakredit">Nota Kredit</option>
-      <option value="suratperingatan">Surat Peringatan</option>
+      <option value="suratperingatan">Surat Teguran / Peringatan</option>
       <option value="suratundangan">Surat Undangan</option>
       <option value="suratkuasa">Surat Kuasa</option>
       <option value="suratketerangan">Surat Keterangan</option>
       <option value="memointernal">Memo Internal</option>
       <option value="suratpengantar">Surat Pengantar</option>
-      <option value="laporanbiaya">Laporan Biaya Proyek</option>
-      <option value="checklistqc">Checklist Quality Control</option>
-      <option value="invoicetermin">Invoice Termin</option>
-      <option value="rekapitulasi">Rekapitulasi Pembayaran</option>
+      <option value="laporanbiaya">Laporan Rincian Biaya Proyek</option>
+      <option value="checklistqc">Daftar Pemeriksaan Mutu (QC)</option>
+      <option value="invoicetermin">Tagihan Termin</option>
+      <option value="rekapitulasi">Laporan Rekapitulasi Pembayaran</option>
     </select></label>
     <div id="templateBuiltInWrap"><label>Template bawaan<select id="template">
             <option value="standar">Standar Umum</option>
@@ -72,40 +72,40 @@
       <option value="sky">Sky Blue</option>
     </select></label></div>
     <div id="canvaActiveNotice" class="canva-active-notice" hidden><strong>Template Canva sedang digunakan</strong><span>Desain Canva menjadi latar dokumen. Data tetap dapat diedit manual atau dengan AI. Gunakan desain Canva dengan area teks kosong agar tidak ada tulisan ganda.</span></div>
-    <h3>Template dari Canva</h3>
+    <h3>Galeri Template Canva</h3>
     <a class="canva-link" href="https://www.canva.com/templates/" target="_blank" rel="noopener">Cari template di Canva ↗</a>
     <p class="help-text">Unggah desain Canva sebagai PNG, JPG, atau PDF. Halaman pertama PDF digunakan sebagai latar. Sisakan area kosong untuk teks seperti nama perusahaan, judul, tabel, dan tanda tangan.</p>
     <label>File desain Canva<input id="fileTemplateCanva" type="file" accept="image/png,image/jpeg,image/webp,application/pdf"></label>
     <div class="template-actions"><button type="button" class="secondary" id="hapusTemplateCanva">Hapus desain Canva</button><span id="statusTemplateCanva">Belum ada desain khusus</span></div>
-    <h3>AI Asisten Dokumen</h3>
+    <h3>Asisten AI Dokumen</h3>
     <p class="help-text">Ceritakan dokumen yang ingin dibuat. AI akan mengisi draf dan Anda tetap bisa memeriksanya sebelum dicetak.</p>
-    <label>Kode akses AI<input id="aiAccessCode" type="password" autocomplete="off" placeholder="Kode akses dari pengelola"></label>
-    <label>Perintah untuk AI<textarea id="aiPrompt" rows="4" placeholder="Contoh: Buat surat penawaran jasa pengecoran untuk PT Maju Jaya, volume 120 m³. Harga belum ditentukan."></textarea></label>
-    <div class="voice-actions"><button type="button" id="voiceStart" class="voice-button">🎙️ Mulai Perintah Suara</button><button type="button" id="voiceStop" class="secondary" disabled>Hentikan</button></div>
+    <label>Kode akses Asisten AI<input id="aiAccessCode" type="password" autocomplete="off" placeholder="Kode akses dari pengelola"></label>
+    <label>Instruksi untuk Asisten AI<textarea id="aiPrompt" rows="4" placeholder="Contoh: Buat surat penawaran jasa pengecoran untuk PT Maju Jaya, volume 120 m³. Harga belum ditentukan."></textarea></label>
+    <div class="voice-actions"><button type="button" id="voiceStart" class="voice-button">🎙️ Aktifkan Perintah Suara</button><button type="button" id="voiceStop" class="secondary" disabled>Hentikan</button></div>
     <p id="voiceStatus" class="voice-status" aria-live="polite">Tekan mikrofon, izinkan akses mikrofon, lalu ucapkan perintah dalam Bahasa Indonesia.</p>
-    <button type="button" id="aiGenerate" class="ai-button">✨ Buat dengan AI</button>
+    <button type="button" id="aiGenerate" class="ai-button">✨ Buat Dokumen dengan AI</button>
     <p id="aiStatus" class="ai-status" aria-live="polite">AI siap digunakan setelah konfigurasi server selesai.</p>
-    <h3>Identitas Perusahaan</h3>
-    <label>Nama PT / CV<input id="perusahaan" value="NAMA PERUSAHAAN"></label>
+    <h3>Profil Perusahaan</h3>
+    <label>Nama Perusahaan (PT / CV)<input id="perusahaan" value="NAMA PERUSAHAAN"></label>
     <label>Alamat perusahaan<textarea id="alamatPerusahaan" rows="2" placeholder="Alamat lengkap perusahaan"></textarea></label>
     <div class="two">
       <label>Telepon<input id="teleponPerusahaan" placeholder="08xxxxxxxxxx"></label>
       <label>Email<input id="emailPerusahaan" placeholder="email@perusahaan.com"></label>
     </div>
-    <label>Nama penanggung jawab<input id="penanggungJawab" placeholder="Nama direktur / pemilik"></label>
+    <label>Nama penanggung jawab perusahaan<input id="penanggungJawab" placeholder="Nama direktur / pemilik"></label>
     <label>Jabatan<input id="jabatan" value="Direktur"></label>
     <label>Logo PT / CV<input id="fileLogoPerusahaan" type="file" accept="image/png,image/jpeg,image/webp"></label><div class="logo-upload-actions"><button type="button" class="secondary" id="hapusLogoPerusahaan">Hapus logo</button><span id="statusLogoPerusahaan" class="help-text">Belum ada logo diunggah</span></div>
-    <h3>Informasi Dokumen</h3>
-    <label id="labelPihak">Nama pelanggan / penerima<input id="pihak" placeholder="Nama pelanggan atau penerima"></label>
-    <label>Alamat tujuan<textarea id="alamatPihak" rows="2" placeholder="Alamat pelanggan / tujuan"></textarea></label>
+    <h3>Data Dokumen</h3>
+    <label id="labelPihak">Nama pelanggan / penerima dokumen<input id="pihak" placeholder="Nama pelanggan atau penerima"></label>
+    <label>Alamat pelanggan / tujuan<textarea id="alamatPihak" rows="2" placeholder="Alamat pelanggan / tujuan"></textarea></label>
     <div class="two">
       <label>Nomor dokumen<input id="nomorDokumen"></label>
       <label>Tanggal<input id="tanggalDokumen" type="date"></label>
     </div>
     <label id="labelJatuhTempo">Jatuh tempo<input id="jatuhTempo" type="date"></label>
-    <label>Perihal / keterangan<textarea id="keterangan" rows="2" placeholder="Keterangan dokumen"></textarea></label>
-    <h3>Rincian</h3>
-    <div class="table-scroll"><table class="input-table"><thead><tr><th>Nama barang / jasa</th><th>Qty</th><th id="judulKolomHarga">Harga satuan</th><th></th></tr></thead><tbody id="barisItem"></tbody></table></div>
+    <label>Uraian / perihal dokumen<textarea id="keterangan" rows="2" placeholder="Keterangan dokumen"></textarea></label>
+    <h3>Rincian Barang, Jasa, atau Pekerjaan</h3>
+    <div class="table-scroll"><table class="input-table"><thead><tr><th>Deskripsi barang / jasa</th><th>Qty</th><th id="judulKolomHarga">Harga satuan</th><th></th></tr></thead><tbody id="barisItem"></tbody></table></div>
     <button type="button" class="secondary" id="tambahItem">+ Tambah item</button>
     <div class="two">
       <label>Pajak (%)<input id="pajak" type="number" min="0" value="0"></label>
@@ -113,15 +113,15 @@
     </div>
     <label>Catatan / syarat pembayaran<textarea id="catatan" rows="3" placeholder="Catatan tambahan, rekening, syarat pembayaran, dll."></textarea></label>
     <div class="actions">
-      <button id="simpan" type="button">Simpan</button>
-      <button id="cetak" type="button">Cetak / PDF</button>
-      <button id="baru" type="button" class="secondary">Dokumen Baru</button>
+      <button id="simpan" type="button">Simpan Dokumen</button>
+      <button id="cetak" type="button">Cetak / Unduh PDF</button>
+      <button id="baru" type="button" class="secondary">Buat Dokumen Baru</button>
     </div>
-    <h3>Riwayat Dokumen</h3>
+    <h3>Arsip dan Riwayat Dokumen</h3>
     <div id="riwayat" class="history"></div>
   </aside>
   <section class="preview-wrap">
-    <div class="preview-heading no-print"><span>Pratinjau dokumen</span><span>Ukuran A4</span></div>
+    <div class="preview-heading no-print"><span>Pratinjau Dokumen</span><span>Ukuran A4</span></div>
     <article id="lembar" class="paper template-standar">
       <div class="doc-head"><div class="brand"><div class="logo" id="pLogo">NP</div><div><h1 id="pPerusahaan">NAMA PERUSAHAAN</h1><p id="pAlamat"></p><p id="pKontak"></p></div></div><div class="doc-meta"><h2 id="pJudul">INVOICE</h2><p id="pNomor"></p><p id="pTanggal"></p></div></div>
       <div class="rule"></div>
@@ -136,6 +136,6 @@
   </section>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="dokumen.js?v=docs-templates-20261112-3"></script>
+<script src="dokumen.js?v=sb-office-labels-20261112-4"></script>
 </body>
 </html>
