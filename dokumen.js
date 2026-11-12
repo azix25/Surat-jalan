@@ -76,7 +76,7 @@ async function importCompanyLogo(file){
 function history(){const list=JSON.parse(localStorage.getItem("dokumenBisnis")||"[]");$("riwayat").innerHTML="";if(!list.length){$("riwayat").textContent="Belum ada dokumen tersimpan.";return}list.slice().reverse().forEach(d=>{const row=document.createElement("div");row.className="history-row";const info=document.createElement("span");info.textContent=(labels[d.jenis]?.title||d.jenis)+" · "+(d.nomorDokumen||"Tanpa nomor")+" · "+(d.pihak||"-");const btn=document.createElement("button");btn.textContent="Buka";btn.onclick=()=>setData(d);row.append(info,btn);$("riwayat").append(row)})}
 function save(){const d=readData();if(!d.nomorDokumen.trim()){alert("Isi nomor dokumen terlebih dahulu.");$("nomorDokumen").focus();return}const list=JSON.parse(localStorage.getItem("dokumenBisnis")||"[]");const i=list.findIndex(x=>x.jenis===d.jenis&&x.nomorDokumen===d.nomorDokumen);if(i>=0)list[i]=d;else list.push(d);localStorage.setItem("dokumenBisnis",JSON.stringify(list));history();alert("Dokumen berhasil disimpan di perangkat ini.")}
 function companyInitials(name){
- const words=(name||"").trim().toUpperCase().replace(/[^A-Z0-9\\s]/g," ").split(/\\s+/).filter(Boolean).filter(w=>!["PT","CV","UD","TBK","PERSERO"].includes(w));
+ const words=(name||"").trim().toUpperCase().replace(/[^A-Z0-9\s]/g," ").split(/\s+/).filter(Boolean).filter(w=>!["PT","CV","UD","TBK","PERSERO"].includes(w));
  return (words.length?words.map(w=>w[0]).join(""):"XX").slice(0,5);
 }
 function numberParts(){
