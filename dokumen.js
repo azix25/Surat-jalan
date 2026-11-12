@@ -118,3 +118,47 @@ async function generateWithAI(){
 $("aiGenerate").onclick=generateWithAI;
 applyCustomTemplate();
 if(companyLogo)$("statusLogoPerusahaan").textContent="Logo tersimpan di perangkat";
+
+
+// Perintah suara Bahasa Indonesia (Web Speech API).
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+let voiceRecognition=null,voiceFinalText="",voiceShouldSubmit=false;
+function voiceStatus(message){$("voiceStatus").textContent=message;}
+function startVoiceCommand(){
+ if(!SpeechRecognition){voiceStatus("Pengenalan suara belum didukung browser ini. Coba buka halaman melalui Chrome terbaru di Android.");return;}
+ if(!$("aiAccessCode").value.trim()){voiceStatus("Masukkan kode akses AI terlebih dahulu.");$("aiAccessCode").focus();return;}
+ voiceFinalText="";voiceShouldSubmit=true;
+ voiceRecognition=new SpeechRecognition();
+ voiceRecognition.lang="id-ID";voiceRecognition.continuous=false;voiceRecognition.interimResults=true;voiceRecognition.maxAlternatives=1;
+ voiceRecognition.onstart=()=>{$("voiceStart").disabled=true;$("voiceStop").disabled=false;voiceStatus("Mendengarkan... Silakan ucapkan perintah Anda.");};
+ voiceRecognition.onresult=event=>{
+  let interim="";
+  for(let i=event.resultIndex;i<event.results.length;i++){
+   const transcript=event.results[i][0].transcript;
+   if(event.results[i].isFinal)voiceFinalText+=transcript+" ";
+   else interim+=transcript;
+  }
+  $("aiPrompt").value=(voiceFinalText+interim).trim();
+  voiceStatus(interim?"Mendengar: "+(voiceFinalText+interim).trim():"Perintah tertangkap: "+voiceFinalText.trim());
+ };
+ voiceRecognition.onerror=event=>{
+  voiceShouldSubmit=false;
+  const messages={ "not-allowed":"Izin mikrofon ditolak. Aktifkan izin mikrofon untuk situs ini.","no-speech":"Suara belum terdeteksi. Tekan mikrofon dan coba bicara lebih dekat.","network":"Pengenalan suara membutuhkan koneksi internet pada browser ini.","audio-capture":"Mikrofon tidak ditemukan atau sedang digunakan aplikasi lain."};
+  voiceStatus(messages[event.error]||("Pengenalan suara gagal: "+event.error));
+ };
+ voiceRecognition.onend=()=>{
+  $("voiceStart").disabled=false;$("voiceStop").disabled=true;
+  const command=voiceFinalText.trim();
+  if(voiceShouldSubmit&&command){
+   voiceStatus("Perintah diterima. AI sedang memproses: "+command);
+   const normalized=command.toLowerCase();
+   if(/^(simpan|tolong simpan)( dokumen)?[.! ]*$/.test(normalized)){save();voiceStatus("Perintah suara selesai: dokumen disimpan.");}
+   else if(/^(cetak|print|unduh pdf|download pdf)( dokumen)?[.! ]*$/.test(normalized)){ $("cetak").click();voiceStatus("Perintah cetak/PDF dijalankan.");}
+   else {generateWithAI();}
+  }else if(!command){voiceStatus("Belum ada perintah yang tertangkap. Tekan mikrofon untuk mencoba lagi.");}
+  voiceShouldSubmit=false;
+ };
+ try{voiceRecognition.start();}catch(error){voiceShouldSubmit=false;$("voiceStart").disabled=false;$("voiceStop").disabled=true;voiceStatus("Mikrofon belum siap. Coba tekan kembali.");}
+}
+$("voiceStart").addEventListener("click",startVoiceCommand);
+$("voiceStop").addEventListener("click",()=>{voiceShouldSubmit=true;if(voiceRecognition)voiceRecognition.stop();});
