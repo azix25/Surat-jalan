@@ -6,3 +6,7 @@
 @media print{.paper.has-custom-template{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 
 .canva-link{display:inline-block;margin:0 0 8px;color:#1769aa;font-size:12px;font-weight:700;text-decoration:none}.canva-link:hover{text-decoration:underline}
+
+.ai-button{width:100%;border:0;border-radius:7px;padding:12px;background:#6941c6;color:#fff;font-weight:700;cursor:pointer}
+.ai-button:disabled{opacity:.6;cursor:wait}
+.ai-status{font-size:11px;line-height:1.5;color:#657286;white-space:pre-wrap}
