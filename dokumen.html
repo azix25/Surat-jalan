@@ -35,6 +35,8 @@
     <p class="help-text">Ceritakan dokumen yang ingin dibuat. AI akan mengisi draf dan Anda tetap bisa memeriksanya sebelum dicetak.</p>
     <label>Kode akses AI<input id="aiAccessCode" type="password" autocomplete="off" placeholder="Kode akses dari pengelola"></label>
     <label>Perintah untuk AI<textarea id="aiPrompt" rows="4" placeholder="Contoh: Buat surat penawaran jasa pengecoran untuk PT Maju Jaya, volume 120 m³. Harga belum ditentukan."></textarea></label>
+    <div class="voice-actions"><button type="button" id="voiceStart" class="voice-button">🎙️ Mulai Perintah Suara</button><button type="button" id="voiceStop" class="secondary" disabled>Hentikan</button></div>
+    <p id="voiceStatus" class="voice-status" aria-live="polite">Tekan mikrofon, izinkan akses mikrofon, lalu ucapkan perintah dalam Bahasa Indonesia.</p>
     <button type="button" id="aiGenerate" class="ai-button">✨ Buat dengan AI</button>
     <p id="aiStatus" class="ai-status" aria-live="polite">AI siap digunakan setelah konfigurasi server selesai.</p>
     <h3>Identitas Perusahaan</h3>
