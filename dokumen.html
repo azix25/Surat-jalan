@@ -20,11 +20,12 @@
       <option value="penawaran">Surat Penawaran</option>
       <option value="penagihan">Surat Penagihan</option>
     </select></label>
-    <label>Template<select id="template">
+    <div id="templateBuiltInWrap"><label>Template bawaan<select id="template">
       <option value="standar">Standar Umum</option>
       <option value="formal">Formal / Resmi</option>
       <option value="modern">Modern Minimalis</option>
-    </select></label>
+    </select></label></div>
+    <div id="canvaActiveNotice" class="canva-active-notice" hidden><strong>Template Canva sedang digunakan</strong><span>Template bawaan disembunyikan. Isi dokumen tetap bisa diedit melalui kolom manual atau AI.</span></div>
     <h3>Template dari Canva</h3>
     <a class="canva-link" href="https://www.canva.com/templates/" target="_blank" rel="noopener">Cari template di Canva ↗</a>
     <p class="help-text">Unggah desain Canva yang sudah diunduh sebagai PNG, JPG, atau PDF. Halaman pertama PDF digunakan sebagai latar desain.</p>
