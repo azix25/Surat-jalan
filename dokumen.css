@@ -52,3 +52,63 @@
 .voice-button:disabled{opacity:.55;cursor:wait}
 .voice-actions button:disabled{opacity:.55;cursor:not-allowed}
 .voice-status{font-size:11px;line-height:1.5;color:#087e75;background:#effaf8;border-radius:6px;padding:8px;margin:6px 0 10px;min-height:34px}
+
+
+/* Pilihan template bawaan tambahan */
+.template-elegant{font-family:Georgia,"Times New Roman",serif;color:#34303a}
+.template-elegant .doc-head{padding-bottom:14px;border-bottom:1px solid #b69a75}
+.template-elegant .doc-meta h2{font-family:Georgia,serif;color:#806443;letter-spacing:2px}
+.template-elegant .logo{border-radius:50%;border-color:#b69a75;color:#806443}
+.template-elegant .rule{height:1px;background:#b69a75}
+.template-elegant .doc-table th{background:#f5f0e8;color:#5c4b37}
+.template-elegant .total-line.grand{border-color:#b69a75}
+.template-corporate .doc-head{border-left:6px solid #1769aa;padding:12px 0 12px 15px}
+.template-corporate .doc-meta h2{color:#1769aa}
+.template-corporate .logo{background:#eaf3fb;border-color:#1769aa;color:#1769aa}
+.template-corporate .rule{background:#1769aa}
+.template-corporate .doc-table th{background:#1769aa;color:#fff}
+.template-corporate .total-line.grand{border-color:#1769aa}
+.template-minimal{color:#30343b}
+.template-minimal .doc-head{padding-bottom:18px}
+.template-minimal .logo{border:1px solid #d5d9df;color:#596273;background:#fff}
+.template-minimal .doc-meta h2{font-size:17px;color:#343a40;letter-spacing:0}
+.template-minimal .rule{height:1px;background:#dfe3e8}
+.template-minimal .doc-table th{background:#f7f8fa;color:#454d59;border-bottom:1px solid #dfe3e8}
+.template-minimal .doc-table td{border-bottom:1px solid #edf0f3}
+.template-minimal .total-line.grand{border-color:#aeb6c1}
+.template-classic{font-family:Georgia,"Times New Roman",serif}
+.template-classic .doc-head{border-top:3px double #444;border-bottom:3px double #444;padding:14px 0}
+.template-classic .doc-meta h2{color:#222;text-decoration:underline}
+.template-classic .logo{border-radius:0;border:1px solid #444;color:#333}
+.template-classic .rule{display:none}
+.template-classic .doc-table th{background:#eee;color:#222;border:1px solid #999}
+.template-classic .doc-table td{border:1px solid #bbb}
+.template-classic .total-line.grand{border-color:#444}
+.template-navy .doc-meta h2{color:#102d50}
+.template-navy .logo{background:#102d50;color:#fff;border-color:#102d50}
+.template-navy .rule{height:5px;background:#102d50}
+.template-navy .doc-table th{background:#102d50;color:#fff}
+.template-navy .total-line.grand{border-color:#102d50}
+.template-emerald .doc-meta h2{color:#087e65}
+.template-emerald .logo{background:#e7f5ef;color:#087e65;border-color:#087e65;border-radius:50%}
+.template-emerald .rule{height:4px;background:#087e65}
+.template-emerald .doc-table th{background:#e7f5ef;color:#075c4b;border-bottom:2px solid #087e65}
+.template-emerald .total-line.grand{border-color:#087e65}
+.template-maroon .doc-meta h2{color:#842b42}
+.template-maroon .logo{background:#842b42;color:#fff;border-color:#842b42;border-radius:2px}
+.template-maroon .rule{height:4px;background:#842b42}
+.template-maroon .doc-table th{background:#842b42;color:#fff}
+.template-maroon .total-line.grand{border-color:#842b42}
+.template-construction .doc-head{border-bottom:4px solid #e59b22;padding-bottom:12px}
+.template-construction .doc-meta h2{color:#263746}
+.template-construction .logo{background:#263746;color:#f7b733;border:0;border-radius:3px}
+.template-construction .rule{height:3px;background:repeating-linear-gradient(135deg,#e59b22 0 12px,#263746 12px 24px)}
+.template-construction .doc-table th{background:#263746;color:#fff}
+.template-construction .total-line.grand{border-color:#e59b22}
+.template-premium{color:#34302a}
+.template-premium .doc-head{border-top:5px solid #b58a3a;border-bottom:1px solid #d8c49a;padding:13px 0}
+.template-premium .doc-meta h2{color:#98702b;letter-spacing:2px}
+.template-premium .logo{background:#98702b;color:#fff;border-color:#98702b;border-radius:50%}
+.template-premium .rule{height:2px;background:#b58a3a}
+.template-premium .doc-table th{background:#f4eddf;color:#654b22;border-bottom:2px solid #b58a3a}
+.template-premium .total-line.grand{border-color:#b58a3a}
