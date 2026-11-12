@@ -4,3 +4,5 @@
 .template-actions span{font-size:10px;color:#657286}
 .paper.has-custom-template{background-size:100% 100%;background-position:center;background-repeat:no-repeat}
 @media print{.paper.has-custom-template{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+.canva-link{display:inline-block;margin:0 0 8px;color:#1769aa;font-size:12px;font-weight:700;text-decoration:none}.canva-link:hover{text-decoration:underline}
