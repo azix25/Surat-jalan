@@ -185,3 +185,41 @@
 .template-sky .doc-table th{background:#2477b8;color:#fff}
 .template-sky .total-line.grand{border-color:#2477b8}
 .template-sky .party small{color:#2477b8}
+
+
+/* Standar tipografi dokumen: penebalan mengikuti fungsi bagian, bukan seluruh isi. */
+.paper .brand h1,
+.paper .doc-meta h2,
+.paper .party strong,
+.paper .doc-table th,
+.paper .notes strong,
+.paper .signatures b,
+.paper .total-line.grand,
+.paper .total-line.grand b{font-weight:700}
+.paper .brand p,
+.paper .doc-meta p,
+.paper .description,
+.paper .party span,
+.paper .doc-table td,
+.paper .notes p,
+.paper .signatures span{font-weight:400}
+.paper .doc-meta h2{text-transform:uppercase}
+.paper .doc-table th{vertical-align:middle}
+.paper .doc-table td{vertical-align:top;line-height:1.5}
+.paper.doc-kind-letter .doc-meta{text-align:center;flex:1}
+.paper.doc-kind-letter .doc-meta h2{letter-spacing:.6px;text-decoration:underline;text-underline-offset:4px}
+.paper.doc-kind-letter .party{margin-top:20px;margin-bottom:18px}
+.paper.doc-kind-letter .description{line-height:1.75;text-align:justify}
+.paper.doc-kind-letter .doc-table{margin-top:8px}
+.paper.doc-kind-letter .totals{margin-top:16px}
+.paper.doc-kind-report .doc-meta h2{font-size:17px;letter-spacing:.45px}
+.paper.doc-kind-report .description,.paper.doc-kind-report .notes p{line-height:1.65}
+.paper.doc-kind-transaction .doc-meta h2{letter-spacing:1px}
+.paper.doc-kind-transaction .doc-table th{font-weight:700}
+.paper.doc-kind-transaction .total-line.grand{font-size:14px}
+.paper .party small{font-weight:700}
+.paper .total-line:not(.grand) span{font-weight:400}
+@media print{
+ .paper .doc-table th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .paper .signatures,.paper .party,.paper .totals,.paper .notes{break-inside:avoid}
+}
