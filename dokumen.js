@@ -150,15 +150,29 @@ function startVoiceCommand(){
   $("voiceStart").disabled=false;$("voiceStop").disabled=true;
   const command=voiceFinalText.trim();
   if(voiceShouldSubmit&&command){
-   voiceStatus("Perintah diterima. AI sedang memproses: "+command);
-   const normalized=command.toLowerCase();
-   if(/^(simpan|tolong simpan)( dokumen)?[.! ]*$/.test(normalized)){save();voiceStatus("Perintah suara selesai: dokumen disimpan.");}
-   else if(/^(cetak|print|unduh pdf|download pdf)( dokumen)?[.! ]*$/.test(normalized)){ $("cetak").click();voiceStatus("Perintah cetak/PDF dijalankan.");}
-   else {generateWithAI();}
+   voiceStatus("Perintah diterima: "+command);
+   const normalized=command.toLowerCase().replace(/[.,!?]/g,"").replace(/\\s+/g," ").trim();
+   if(/^(tolong )?(simpan|simpan dokumen|save)( sekarang)?$/.test(normalized)){
+    save();
+    voiceStatus("Perintah suara selesai. Silakan periksa notifikasi penyimpanan.");
+   }else if(/^(tolong )?(cetak|print|cetak pdf|unduh pdf|download pdf)( dokumen)?( sekarang)?$/.test(normalized)){
+    if(window.confirm("AI meminta mencetak atau menyimpan dokumen sebagai PDF. Lanjutkan?")){
+     $("cetak").click();
+     voiceStatus("Perintah cetak/PDF dijalankan.");
+    }else voiceStatus("Perintah cetak dibatalkan.");
+   }else if(/^(buat|mulai|buka) (dokumen )?baru$/.test(normalized)){
+    newDoc();
+    voiceStatus("Perintah dokumen baru diproses.");
+   }else if(/^(batal|batalkan|jangan jadi)$/.test(normalized)){
+    voiceStatus("Baik, perintah dibatalkan.");
+   }else{
+    $("aiPrompt").value=command;
+    awaitVoiceAI();
+   }
   }else if(!command){voiceStatus("Belum ada perintah yang tertangkap. Tekan mikrofon untuk mencoba lagi.");}
   voiceShouldSubmit=false;
  };
  try{voiceRecognition.start();}catch(error){voiceShouldSubmit=false;$("voiceStart").disabled=false;$("voiceStop").disabled=true;voiceStatus("Mikrofon belum siap. Coba tekan kembali.");}
 }
-$("voiceStart").addEventListener("click",startVoiceCommand);
+async function awaitVoiceAI(){\n try{await generateWithAI();voiceStatus("Perintah suara selesai diproses AI. Periksa hasil pada pratinjau dokumen.");}\n catch(error){voiceStatus("AI belum dapat memproses perintah: "+error.message);}\n}\n$("voiceStart").addEventListener("click",startVoiceCommand);
 $("voiceStop").addEventListener("click",()=>{voiceShouldSubmit=true;if(voiceRecognition)voiceRecognition.stop();});
