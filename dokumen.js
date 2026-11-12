@@ -75,9 +75,27 @@ async function importCompanyLogo(file){
 }
 function history(){const list=JSON.parse(localStorage.getItem("dokumenBisnis")||"[]");$("riwayat").innerHTML="";if(!list.length){$("riwayat").textContent="Belum ada dokumen tersimpan.";return}list.slice().reverse().forEach(d=>{const row=document.createElement("div");row.className="history-row";const info=document.createElement("span");info.textContent=(labels[d.jenis]?.title||d.jenis)+" · "+(d.nomorDokumen||"Tanpa nomor")+" · "+(d.pihak||"-");const btn=document.createElement("button");btn.textContent="Buka";btn.onclick=()=>setData(d);row.append(info,btn);$("riwayat").append(row)})}
 function save(){const d=readData();if(!d.nomorDokumen.trim()){alert("Isi nomor dokumen terlebih dahulu.");$("nomorDokumen").focus();return}const list=JSON.parse(localStorage.getItem("dokumenBisnis")||"[]");const i=list.findIndex(x=>x.jenis===d.jenis&&x.nomorDokumen===d.nomorDokumen);if(i>=0)list[i]=d;else list.push(d);localStorage.setItem("dokumenBisnis",JSON.stringify(list));history();alert("Dokumen berhasil disimpan di perangkat ini.")}
-function makeNumber(type){const code={invoice:"INV",suratjalan:"SJ",penawaran:"SP",penagihan:"TAG"}[type];const day=today().replaceAll("-","");const key="docseq_"+code+"_"+day;const n=(Number(localStorage.getItem(key))||0)+1;localStorage.setItem(key,n);return code+"-"+day+"-"+String(n).padStart(3,"0")}
-function newDoc(){if(!confirm("Buat dokumen baru? Perubahan yang belum disimpan akan hilang."))return;fieldIds.forEach(id=>$(id).value="");$("perusahaan").value="NAMA PERUSAHAAN";$("jabatan").value="Direktur";$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber($("jenis").value);$("barisItem").innerHTML="";addItem();render()}
-$("fileTemplateCanva").addEventListener("change",e=>importCanvaTemplate(e.target.files[0]));$("fileLogoPerusahaan").addEventListener("change",e=>importCompanyLogo(e.target.files[0]));$("hapusLogoPerusahaan").onclick=()=>{companyLogo="";localStorage.removeItem("logoPerusahaanBisnis");$("statusLogoPerusahaan").textContent="Belum ada logo diunggah";render();};$("hapusTemplateCanva").onclick=()=>{customTemplate="";localStorage.removeItem("templateCanvaBisnis");applyCustomTemplate();render()};$("tambahItem").onclick=()=>addItem();$("simpan").onclick=save;$("cetak").onclick=()=>window.print();$("baru").onclick=newDoc;$("jenis").onchange=()=>{$("nomorDokumen").value=makeNumber($("jenis").value);render()};$("template").onchange=render;fieldIds.forEach(id=>$(id).addEventListener("input",render));$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber("invoice");addItem();history();
+function companyInitials(name){
+ const words=(name||"").trim().toUpperCase().replace(/[^A-Z0-9\\s]/g," ").split(/\\s+/).filter(Boolean).filter(w=>!["PT","CV","UD","TBK","PERSERO"].includes(w));
+ return (words.length?words.map(w=>w[0]).join(""):"XX").slice(0,5);
+}
+function numberParts(){
+ const company=companyInitials($("perusahaan").value);
+ const dateValue=$("tanggalDokumen").value||today();
+ const parts=dateValue.split("-");
+ const year=parts[0]||String(new Date().getFullYear());
+ const day=String(Number(parts[2]||new Date().getDate()));
+ const key="docseq_"+company+"_"+year+"_"+day;
+ return {company,year,day,key};
+}
+function nextDocumentNumber(sequence){
+ const p=numberParts();
+ const n=sequence??((Number(localStorage.getItem(p.key))||0)+1);
+ return p.company+"/"+p.year+"/"+p.day+"/"+n;
+}
+function makeNumber(){return nextDocumentNumber()}
+function newDoc(){if(!confirm("Buat dokumen baru? Perubahan yang belum disimpan akan hilang."))return;fieldIds.forEach(id=>$(id).value="");$("perusahaan").value="NAMA PERUSAHAAN";$("jabatan").value="Direktur";$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber();$("barisItem").innerHTML="";addItem();render()}
+$("fileTemplateCanva").addEventListener("change",e=>importCanvaTemplate(e.target.files[0]));$("fileLogoPerusahaan").addEventListener("change",e=>importCompanyLogo(e.target.files[0]));$("hapusLogoPerusahaan").onclick=()=>{companyLogo="";localStorage.removeItem("logoPerusahaanBisnis");$("statusLogoPerusahaan").textContent="Belum ada logo diunggah";render();};$("hapusTemplateCanva").onclick=()=>{customTemplate="";localStorage.removeItem("templateCanvaBisnis");applyCustomTemplate();render()};$("tambahItem").onclick=()=>addItem();$("simpan").onclick=save;$("cetak").onclick=()=>{const p=numberParts(),n=(Number(localStorage.getItem(p.key))||0)+1;$("nomorDokumen").value=nextDocumentNumber(n);render();localStorage.setItem(p.key,String(n));window.print();$("nomorDokumen").value=nextDocumentNumber(n+1);render();};$("baru").onclick=newDoc;$("jenis").onchange=()=>{if(!$("nomorDokumen").value||$("nomorDokumen").value.includes("/"))$("nomorDokumen").value=makeNumber();render()};$("template").onchange=render;fieldIds.forEach(id=>$(id).addEventListener("input",render));$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber();$("perusahaan").addEventListener("input",()=>{$("nomorDokumen").value=makeNumber();render();});$("tanggalDokumen").addEventListener("change",()=>{$("nomorDokumen").value=makeNumber();render();});addItem();history();
 async function generateWithAI(){
  const prompt=$("aiPrompt").value.trim(),accessCode=$("aiAccessCode").value.trim(),btn=$("aiGenerate"),status=$("aiStatus");
  if(!prompt){alert("Tulis perintah untuk AI terlebih dahulu.");$("aiPrompt").focus();return}
