@@ -115,3 +115,73 @@
 .template-premium .rule{height:2px;background:#b58a3a}
 .template-premium .doc-table th{background:#f4eddf;color:#654b22;border-bottom:2px solid #b58a3a}
 .template-premium .total-line.grand{border-color:#b58a3a}
+
+.template-slate .doc-meta h2{color:#334155}
+.template-slate .logo{background:#334155;color:#fff;border-color:#334155}
+.template-slate .rule{height:4px;background:#334155}
+.template-slate .doc-table th{background:#334155;color:#fff}
+.template-slate .total-line.grand{border-color:#334155}
+.template-slate .party small{color:#334155}
+
+.template-charcoal .doc-meta h2{color:#252a34}
+.template-charcoal .logo{background:#252a34;color:#fff;border-color:#252a34}
+.template-charcoal .rule{height:4px;background:#252a34}
+.template-charcoal .doc-table th{background:#252a34;color:#fff}
+.template-charcoal .total-line.grand{border-color:#252a34}
+.template-charcoal .party small{color:#252a34}
+
+.template-teal .doc-meta h2{color:#087e8b}
+.template-teal .logo{background:#087e8b;color:#fff;border-color:#087e8b}
+.template-teal .rule{height:4px;background:#087e8b}
+.template-teal .doc-table th{background:#087e8b;color:#fff}
+.template-teal .total-line.grand{border-color:#087e8b}
+.template-teal .party small{color:#087e8b}
+
+.template-indigo .doc-meta h2{color:#4338a8}
+.template-indigo .logo{background:#4338a8;color:#fff;border-color:#4338a8}
+.template-indigo .rule{height:4px;background:#4338a8}
+.template-indigo .doc-table th{background:#4338a8;color:#fff}
+.template-indigo .total-line.grand{border-color:#4338a8}
+.template-indigo .party small{color:#4338a8}
+
+.template-sand .doc-meta h2{color:#8a6b45}
+.template-sand .logo{background:#8a6b45;color:#fff;border-color:#8a6b45}
+.template-sand .rule{height:4px;background:#8a6b45}
+.template-sand .doc-table th{background:#8a6b45;color:#fff}
+.template-sand .total-line.grand{border-color:#8a6b45}
+.template-sand .party small{color:#8a6b45}
+
+.template-olive .doc-meta h2{color:#5b6b36}
+.template-olive .logo{background:#5b6b36;color:#fff;border-color:#5b6b36}
+.template-olive .rule{height:4px;background:#5b6b36}
+.template-olive .doc-table th{background:#5b6b36;color:#fff}
+.template-olive .total-line.grand{border-color:#5b6b36}
+.template-olive .party small{color:#5b6b36}
+
+.template-orange .doc-meta h2{color:#d66b20}
+.template-orange .logo{background:#d66b20;color:#fff;border-color:#d66b20}
+.template-orange .rule{height:4px;background:#d66b20}
+.template-orange .doc-table th{background:#d66b20;color:#fff}
+.template-orange .total-line.grand{border-color:#d66b20}
+.template-orange .party small{color:#d66b20}
+
+.template-monochrome .doc-meta h2{color:#222222}
+.template-monochrome .logo{background:#222222;color:#fff;border-color:#222222}
+.template-monochrome .rule{height:4px;background:#222222}
+.template-monochrome .doc-table th{background:#222222;color:#fff}
+.template-monochrome .total-line.grand{border-color:#222222}
+.template-monochrome .party small{color:#222222}
+
+.template-burgundy .doc-meta h2{color:#762b43}
+.template-burgundy .logo{background:#762b43;color:#fff;border-color:#762b43}
+.template-burgundy .rule{height:4px;background:#762b43}
+.template-burgundy .doc-table th{background:#762b43;color:#fff}
+.template-burgundy .total-line.grand{border-color:#762b43}
+.template-burgundy .party small{color:#762b43}
+
+.template-sky .doc-meta h2{color:#2477b8}
+.template-sky .logo{background:#2477b8;color:#fff;border-color:#2477b8}
+.template-sky .rule{height:4px;background:#2477b8}
+.template-sky .doc-table th{background:#2477b8;color:#fff}
+.template-sky .total-line.grand{border-color:#2477b8}
+.template-sky .party small{color:#2477b8}
