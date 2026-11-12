@@ -151,7 +151,7 @@ function startVoiceCommand(){
   const command=voiceFinalText.trim();
   if(voiceShouldSubmit&&command){
    voiceStatus("Perintah diterima: "+command);
-   const normalized=command.toLowerCase().replace(/[.,!?]/g,"").replace(/\\s+/g," ").trim();
+   const normalized=command.toLowerCase().replace(/[.,!?]/g,"").replace(/\s+/g," ").trim();
    if(/^(tolong )?(simpan|simpan dokumen|save)( sekarang)?$/.test(normalized)){
     save();
     voiceStatus("Perintah suara selesai. Silakan periksa notifikasi penyimpanan.");
@@ -174,5 +174,8 @@ function startVoiceCommand(){
  };
  try{voiceRecognition.start();}catch(error){voiceShouldSubmit=false;$("voiceStart").disabled=false;$("voiceStop").disabled=true;voiceStatus("Mikrofon belum siap. Coba tekan kembali.");}
 }
-async function awaitVoiceAI(){\n try{await generateWithAI();voiceStatus("Perintah suara selesai diproses AI. Periksa hasil pada pratinjau dokumen.");}\n catch(error){voiceStatus("AI belum dapat memproses perintah: "+error.message);}\n}\n$("voiceStart").addEventListener("click",startVoiceCommand);
+async function awaitVoiceAI(){
+ try{await generateWithAI();voiceStatus("Perintah suara selesai diproses AI. Periksa hasil pada pratinjau dokumen.");}
+ catch(error){voiceStatus("AI belum dapat memproses perintah: "+error.message);}
+}\n$("voiceStart").addEventListener("click",startVoiceCommand);
 $("voiceStop").addEventListener("click",()=>{voiceShouldSubmit=true;if(voiceRecognition)voiceRecognition.stop();});
