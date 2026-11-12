@@ -30,6 +30,12 @@
     <p class="help-text">Unggah desain Canva yang sudah diunduh sebagai PNG, JPG, atau PDF. Halaman pertama PDF digunakan sebagai latar desain.</p>
     <label>File desain Canva<input id="fileTemplateCanva" type="file" accept="image/png,image/jpeg,image/webp,application/pdf"></label>
     <div class="template-actions"><button type="button" class="secondary" id="hapusTemplateCanva">Hapus desain Canva</button><span id="statusTemplateCanva">Belum ada desain khusus</span></div>
+    <h3>AI Asisten Dokumen</h3>
+    <p class="help-text">Ceritakan dokumen yang ingin dibuat. AI akan mengisi draf dan Anda tetap bisa memeriksanya sebelum dicetak.</p>
+    <label>Kode akses AI<input id="aiAccessCode" type="password" autocomplete="off" placeholder="Kode akses dari pengelola"></label>
+    <label>Perintah untuk AI<textarea id="aiPrompt" rows="4" placeholder="Contoh: Buat surat penawaran jasa pengecoran untuk PT Maju Jaya, volume 120 m³. Harga belum ditentukan."></textarea></label>
+    <button type="button" id="aiGenerate" class="ai-button">✨ Buat dengan AI</button>
+    <p id="aiStatus" class="ai-status" aria-live="polite">AI siap digunakan setelah konfigurasi server selesai.</p>
     <h3>Identitas Perusahaan</h3>
     <label>Nama PT / CV<input id="perusahaan" value="NAMA PERUSAHAAN"></label>
     <label>Alamat perusahaan<textarea id="alamatPerusahaan" rows="2" placeholder="Alamat lengkap perusahaan"></textarea></label>
