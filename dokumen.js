@@ -179,9 +179,7 @@ async function startRecordedVoiceCommand(){
    $("voiceStart").disabled=false;$("voiceStop").disabled=true;
    if(voiceSilenceTimer){clearInterval(voiceSilenceTimer);voiceSilenceTimer=null;}
    if(voiceAudioContext){voiceAudioContext.close().catch(()=>{});voiceAudioContext=null;}
-   if(voiceSilenceTimer){clearInterval(voiceSilenceTimer);voiceSilenceTimer=null;}
-  if(voiceAudioContext){voiceAudioContext.close().catch(()=>{});voiceAudioContext=null;}
-  voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
+   voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
    const blob=new Blob(voiceChunks,{type:voiceRecorder?.mimeType||"audio/webm"});
    if(!blob.size){voiceStatus("Suara tidak terekam. Coba ulangi.");return;}
    if(blob.size>4*1024*1024){voiceStatus("Rekaman terlalu panjang. Maksimal sekitar 45 detik; coba lebih singkat.");return;}
