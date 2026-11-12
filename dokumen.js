@@ -20,9 +20,12 @@ $("pItems").innerHTML="";items.forEach((x,i)=>{const tr=document.createElement("
 $("pTotals").style.display=type==="suratjalan"?"none":"block";$("pTotals").innerHTML='<div class="total-line"><span>Subtotal</span><b>'+money(total)+'</b></div><div class="total-line"><span>Pajak ('+(Number(d.pajak)||0)+'%)</span><b>'+money(tax)+'</b></div><div class="total-line"><span>Diskon</span><b>- '+money(disc)+'</b></div><div class="total-line grand"><span>Total</span><b>'+money(grand)+'</b></div>';
 $("labelPihak").firstChild.textContent=type==="suratjalan"?"Nama penerima":type==="penawaran"?"Nama pelanggan": "Nama pelanggan / penerima";$("judulKolomHarga").textContent=type==="suratjalan"?"Ukuran / keterangan":"Harga satuan";$("labelJatuhTempo").style.display=(type==="invoice"||type==="penagihan")?"block":"none"}
 function applyCustomTemplate(){
-  const paper=$("lembar");
-  if(customTemplate){paper.style.backgroundImage='url("'+customTemplate+'")';$("statusTemplateCanva").textContent="Desain Canva aktif";}
-  else{paper.style.backgroundImage="";$("statusTemplateCanva").textContent="Belum ada desain khusus";}
+  const paper=$("lembar"),active=Boolean(customTemplate);
+  paper.style.backgroundImage=active?'url("'+customTemplate+'")':"";
+  $("templateBuiltInWrap").hidden=active;
+  $("canvaActiveNotice").hidden=!active;
+  $("statusTemplateCanva").textContent=active?"Desain Canva aktif — template bawaan disembunyikan":"Belum ada desain khusus";
+  paper.classList.toggle("has-custom-template",active);
 }
 function canvasToTemplate(canvas){
   const maxW=1400,maxH=1980,scale=Math.min(1,maxW/canvas.width,maxH/canvas.height);
@@ -83,7 +86,7 @@ async function generateWithAI(){
  try{
   const response=await fetch("https://nqwqlhcwiwprsbcdadhy.supabase.co/functions/v1/dokumen-ai",{
    method:"POST",headers:{"Content-Type":"application/json","x-ai-access-code":accessCode},
-   body:JSON.stringify({instruction:prompt,currentDocument:readData()})
+   body:JSON.stringify({instruction:prompt,currentDocument:{...readData(),templateSource:customTemplate?"Canva (desain latar dipertahankan; isi dokumen dapat diedit)":"Template bawaan"}})
   });
   const result=await response.json();
   if(!response.ok)throw new Error(result.error||"Permintaan AI gagal.");
