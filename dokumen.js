@@ -1,5 +1,5 @@
 const $=id=>document.getElementById(id);
-let customTemplate="";
+let customTemplate=localStorage.getItem("templateCanvaBisnis")||"";
 if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";}
 const fieldIds=["perusahaan","alamatPerusahaan","teleponPerusahaan","emailPerusahaan","penanggungJawab","jabatan","logoTeks","pihak","alamatPihak","nomorDokumen","tanggalDokumen","jatuhTempo","keterangan","pajak","diskon","catatan"];
 const labels={invoice:{title:"INVOICE",party:"DITAGIHKAN KEPADA",right:"JATUH TEMPO",leftSign:"Hormat kami,",rightSign:"Penerima,",notes:"Catatan / Ketentuan"},suratjalan:{title:"SURAT JALAN",party:"DIKIRIM KEPADA",right:"TANGGAL PENGIRIMAN",leftSign:"Pengirim,",rightSign:"Penerima,",notes:"Catatan Pengiriman"},penawaran:{title:"SURAT PENAWARAN",party:"KEPADA YTH.",right:"TANGGAL PENAWARAN",leftSign:"Hormat kami,",rightSign:"Menyetujui,",notes:"Syarat dan Ketentuan"},penagihan:{title:"SURAT PENAGIHAN",party:"DITAGIHKAN KEPADA",right:"BATAS PEMBAYARAN",leftSign:"Hormat kami,",rightSign:"Penerima,",notes:"Informasi Pembayaran"}};
@@ -7,8 +7,8 @@ function today(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+
 function money(n){return (Number(n)||0).toLocaleString("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0})}
 function addItem(item={}){const tr=document.createElement("tr");tr.innerHTML='<td><input class="item-name" placeholder="Nama barang / jasa"></td><td><input class="item-qty" type="number" min="0" step="any" value="1"></td><td><input class="item-price" type="number" min="0" value="0"></td><td><button type="button" aria-label="Hapus item">×</button></td>';tr.querySelector(".item-name").value=item.nama||"";tr.querySelector(".item-qty").value=item.qty??1;tr.querySelector(".item-price").value=item.harga??0;tr.querySelectorAll("input").forEach(el=>el.addEventListener("input",render));tr.querySelector("button").onclick=()=>{tr.remove();render()};$("barisItem").append(tr);render()}
 function getItems(){return [...$("barisItem").rows].map(r=>({nama:r.querySelector(".item-name").value,qty:r.querySelector(".item-qty").value,harga:r.querySelector(".item-price").value}))}
-function readData(){const d={jenis:$("jenis").value,template:$("template").value,customTemplate};fieldIds.forEach(id=>d[id]=$(id).value);d.items=getItems();return d}
-function setData(d){$("jenis").value=d.jenis||"invoice";$("template").value=d.template||"standar";customTemplate=d.customTemplate||"";applyCustomTemplate();fieldIds.forEach(id=>$(id).value=d[id]??"");$("barisItem").innerHTML="";(d.items||[]).forEach(addItem);if(!d.items?.length)addItem();render()}
+function readData(){const d={jenis:$("jenis").value,template:$("template").value};fieldIds.forEach(id=>d[id]=$(id).value);d.items=getItems();return d}
+function setData(d){$("jenis").value=d.jenis||"invoice";$("template").value=d.template||"standar";applyCustomTemplate();fieldIds.forEach(id=>$(id).value=d[id]??"");$("barisItem").innerHTML="";(d.items||[]).forEach(addItem);if(!d.items?.length)addItem();render()}
 function fmtDate(v){if(!v)return "-";const d=new Date(v+"T00:00:00");return d.toLocaleDateString("id-ID",{day:"2-digit",month:"long",year:"numeric"})}
 function render(){const d=readData(),type=d.jenis,L=labels[type],items=d.items;const total=items.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.harga)||0),0);const tax=total*(Number(d.pajak)||0)/100,disc=Number(d.diskon)||0,grand=Math.max(0,total+tax-disc);
 $("lembar").className="paper template-"+d.template+(customTemplate?" has-custom-template":"");
@@ -47,6 +47,7 @@ async function importCanvaTemplate(file){
       canvas.getContext("2d").drawImage(image,0,0);URL.revokeObjectURL(url);
       customTemplate=canvasToTemplate(canvas);
     }else{throw new Error("Format file tidak didukung.");}
+    try{localStorage.setItem("templateCanvaBisnis",customTemplate);}catch(storageError){throw new Error("Desain terlalu besar untuk disimpan. Coba file yang lebih kecil.");}
     applyCustomTemplate();render();
   }catch(error){alert("Gagal mengimpor desain: "+error.message);}
   $("fileTemplateCanva").value="";
@@ -55,4 +56,25 @@ function history(){const list=JSON.parse(localStorage.getItem("dokumenBisnis")||
 function save(){const d=readData();if(!d.nomorDokumen.trim()){alert("Isi nomor dokumen terlebih dahulu.");$("nomorDokumen").focus();return}const list=JSON.parse(localStorage.getItem("dokumenBisnis")||"[]");const i=list.findIndex(x=>x.jenis===d.jenis&&x.nomorDokumen===d.nomorDokumen);if(i>=0)list[i]=d;else list.push(d);localStorage.setItem("dokumenBisnis",JSON.stringify(list));history();alert("Dokumen berhasil disimpan di perangkat ini.")}
 function makeNumber(type){const code={invoice:"INV",suratjalan:"SJ",penawaran:"SP",penagihan:"TAG"}[type];const day=today().replaceAll("-","");const key="docseq_"+code+"_"+day;const n=(Number(localStorage.getItem(key))||0)+1;localStorage.setItem(key,n);return code+"-"+day+"-"+String(n).padStart(3,"0")}
 function newDoc(){if(!confirm("Buat dokumen baru? Perubahan yang belum disimpan akan hilang."))return;fieldIds.forEach(id=>$(id).value="");$("perusahaan").value="NAMA PERUSAHAAN";$("jabatan").value="Direktur";$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber($("jenis").value);$("barisItem").innerHTML="";addItem();render()}
-$("fileTemplateCanva").addEventListener("change",e=>importCanvaTemplate(e.target.files[0]));$("hapusTemplateCanva").onclick=()=>{customTemplate="";applyCustomTemplate();render()};$("tambahItem").onclick=()=>addItem();$("simpan").onclick=save;$("cetak").onclick=()=>window.print();$("baru").onclick=newDoc;$("jenis").onchange=()=>{$("nomorDokumen").value=makeNumber($("jenis").value);render()};$("template").onchange=render;fieldIds.forEach(id=>$(id).addEventListener("input",render));$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber("invoice");addItem();history();
+$("fileTemplateCanva").addEventListener("change",e=>importCanvaTemplate(e.target.files[0]));$("hapusTemplateCanva").onclick=()=>{customTemplate="";localStorage.removeItem("templateCanvaBisnis");applyCustomTemplate();render()};$("tambahItem").onclick=()=>addItem();$("simpan").onclick=save;$("cetak").onclick=()=>window.print();$("baru").onclick=newDoc;$("jenis").onchange=()=>{$("nomorDokumen").value=makeNumber($("jenis").value);render()};$("template").onchange=render;fieldIds.forEach(id=>$(id).addEventListener("input",render));$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber("invoice");addItem();history();
+async function generateWithAI(){
+ const prompt=$("aiPrompt").value.trim(),accessCode=$("aiAccessCode").value.trim(),btn=$("aiGenerate"),status=$("aiStatus");
+ if(!prompt){alert("Tulis perintah untuk AI terlebih dahulu.");$("aiPrompt").focus();return}
+ if(!accessCode){alert("Masukkan kode akses AI.");$("aiAccessCode").focus();return}
+ btn.disabled=true;status.textContent="AI sedang menyusun dokumen...";
+ try{
+  const response=await fetch("https://nqwqlhcwiwprsbcdadhy.supabase.co/functions/v1/dokumen-ai",{
+   method:"POST",headers:{"Content-Type":"application/json","x-ai-access-code":accessCode},
+   body:JSON.stringify({instruction:prompt,currentDocument:readData()})
+  });
+  const result=await response.json();
+  if(!response.ok)throw new Error(result.error||"Permintaan AI gagal.");
+  const d=result.document||{};
+  const merged={...readData(),...d,items:Array.isArray(d.items)?d.items:readData().items};
+  setData(merged);
+  status.textContent=result.message||"Draf AI sudah dimasukkan. Periksa kembali data dan nominal sebelum digunakan.";
+ }catch(error){status.textContent="Belum berhasil: "+error.message}
+ finally{btn.disabled=false}
+}
+$("aiGenerate").onclick=generateWithAI;
+applyCustomTemplate();
