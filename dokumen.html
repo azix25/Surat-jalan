@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pusat Dokumen Bisnis</title>
+<link rel="stylesheet" href="dokumen.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="back" href="index.html">← Kembali ke Surat Jalan</a>
+  <div><strong>Dokumen Bisnis</strong><small>Invoice · Surat Jalan · Penawaran · Penagihan</small></div>
+</header>
+<main class="layout">
+  <aside class="panel no-print">
+    <h2>Buat Dokumen</h2>
+    <label>Jenis dokumen<select id="jenis">
+      <option value="invoice">Invoice / Faktur</option>
+      <option value="suratjalan">Surat Jalan</option>
+      <option value="penawaran">Surat Penawaran</option>
+      <option value="penagihan">Surat Penagihan</option>
+    </select></label>
+    <label>Template<select id="template">
+      <option value="standar">Standar Umum</option>
+      <option value="formal">Formal / Resmi</option>
+      <option value="modern">Modern Minimalis</option>
+    </select></label>
+    <h3>Identitas Perusahaan</h3>
+    <label>Nama PT / CV<input id="perusahaan" value="NAMA PERUSAHAAN"></label>
+    <label>Alamat perusahaan<textarea id="alamatPerusahaan" rows="2" placeholder="Alamat lengkap perusahaan"></textarea></label>
+    <div class="two">
+      <label>Telepon<input id="teleponPerusahaan" placeholder="08xxxxxxxxxx"></label>
+      <label>Email<input id="emailPerusahaan" placeholder="email@perusahaan.com"></label>
+    </div>
+    <label>Nama penanggung jawab<input id="penanggungJawab" placeholder="Nama direktur / pemilik"></label>
+    <label>Jabatan<input id="jabatan" value="Direktur"></label>
+    <label>Nama / logo (teks)<input id="logoTeks" placeholder="Opsional, mis. SB"></label>
+    <h3>Informasi Dokumen</h3>
+    <label id="labelPihak">Nama pelanggan / penerima<input id="pihak" placeholder="Nama pelanggan atau penerima"></label>
+    <label>Alamat tujuan<textarea id="alamatPihak" rows="2" placeholder="Alamat pelanggan / tujuan"></textarea></label>
+    <div class="two">
+      <label>Nomor dokumen<input id="nomorDokumen"></label>
+      <label>Tanggal<input id="tanggalDokumen" type="date"></label>
+    </div>
+    <label id="labelJatuhTempo">Jatuh tempo<input id="jatuhTempo" type="date"></label>
+    <label>Perihal / keterangan<textarea id="keterangan" rows="2" placeholder="Keterangan dokumen"></textarea></label>
+    <h3>Rincian</h3>
+    <div class="table-scroll"><table class="input-table"><thead><tr><th>Nama barang / jasa</th><th>Qty</th><th>Harga</th><th></th></tr></thead><tbody id="barisItem"></tbody></table></div>
+    <button type="button" class="secondary" id="tambahItem">+ Tambah item</button>
+    <div class="two">
+      <label>Pajak (%)<input id="pajak" type="number" min="0" value="0"></label>
+      <label>Diskon (Rp)<input id="diskon" type="number" min="0" value="0"></label>
+    </div>
+    <label>Catatan / syarat pembayaran<textarea id="catatan" rows="3" placeholder="Catatan tambahan, rekening, syarat pembayaran, dll."></textarea></label>
+    <div class="actions">
+      <button id="simpan" type="button">Simpan</button>
+      <button id="cetak" type="button">Cetak / PDF</button>
+      <button id="baru" type="button" class="secondary">Dokumen Baru</button>
+    </div>
+    <h3>Riwayat Dokumen</h3>
+    <div id="riwayat" class="history"></div>
+  </aside>
+  <section class="preview-wrap">
+    <div class="preview-heading no-print"><span>Pratinjau dokumen</span><span>Ukuran A4</span></div>
+    <article id="lembar" class="paper template-standar">
+      <div class="doc-head"><div class="brand"><div class="logo" id="pLogo">NP</div><div><h1 id="pPerusahaan">NAMA PERUSAHAAN</h1><p id="pAlamat"></p><p id="pKontak"></p></div></div><div class="doc-meta"><h2 id="pJudul">INVOICE</h2><p id="pNomor"></p><p id="pTanggal"></p></div></div>
+      <div class="rule"></div>
+      <div class="party"><div><small id="pLabelPihak">DITAGIHKAN KEPADA</small><strong id="pPihak">Nama pelanggan</strong><span id="pAlamatPihak"></span></div><div id="pJatuhTempoBox"><small>JATUH TEMPO</small><strong id="pJatuhTempo">-</strong></div></div>
+      <p id="pKeterangan" class="description"></p>
+      <table class="doc-table"><thead id="pHeadTabel"><tr><th>No.</th><th>Deskripsi</th><th>Qty</th><th>Harga</th><th>Jumlah</th></tr></thead><tbody id="pItems"></tbody></table>
+      <div class="totals" id="pTotals"></div>
+      <div class="notes"><strong id="pCatatanLabel">Catatan / Ketentuan</strong><p id="pCatatan"></p></div>
+      <div class="signatures"><div><span id="pTtdKiri">Hormat kami,</span><b id="pNamaTtd"></b><span id="pJabatanTtd"></span></div><div><span id="pTtdKanan">Penerima,</span><b></b><span>(................................)</span></div></div>
+      <footer id="pFooter"></footer>
+    </article>
+  </section>
+</main>
+<script src="dokumen.js"></script>
+</body>
+</html>
