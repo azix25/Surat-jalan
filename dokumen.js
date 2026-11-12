@@ -157,6 +157,7 @@ async function startRecordedVoiceCommand(){
   const AudioCtx=window.AudioContext||window.webkitAudioContext;
   if(AudioCtx){
    voiceAudioContext=new AudioCtx();
+   if(voiceAudioContext.state==="suspended")await voiceAudioContext.resume();
    const source=voiceAudioContext.createMediaStreamSource(voiceStream),analyser=voiceAudioContext.createAnalyser();
    analyser.fftSize=1024;source.connect(analyser);
    const samples=new Uint8Array(analyser.fftSize);
