@@ -2,8 +2,40 @@
 .help-text{font-size:11px;line-height:1.5;color:#657286;margin:0 0 8px}
 .template-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .template-actions span{font-size:10px;color:#657286}
-.paper.has-custom-template{background-size:100% 100%;background-position:center;background-repeat:no-repeat}
-@media print{.paper.has-custom-template{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+/* Mode Canva: gambar menjadi desain utama; dekorasi template HTML bawaan dinetralkan.
+   Teks/data dokumen tetap dirender agar masih dapat diubah manual dan oleh AI. */
+.paper.has-custom-template{
+  background-size:100% 100%;
+  background-position:center;
+  background-repeat:no-repeat;
+  background-color:#fff;
+}
+.paper.has-custom-template .rule{display:none}
+.paper.has-custom-template .logo{
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:inherit;
+  box-shadow:none;
+}
+.paper.has-custom-template .doc-meta h2{color:inherit}
+.paper.has-custom-template .doc-table th{
+  background:transparent;
+  color:inherit;
+  border-top:0;
+  border-left:0;
+  border-right:0;
+}
+.paper.has-custom-template .doc-table td{background:transparent}
+.paper.has-custom-template .total-line.grand{border-color:currentColor}
+.paper.has-custom-template footer{border-color:transparent}
+@media print{
+  .paper.has-custom-template{
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+    background-size:100% 100%!important;
+  }
+}
 
 .canva-link{display:inline-block;margin:0 0 8px;color:#1769aa;font-size:12px;font-weight:700;text-decoration:none}.canva-link:hover{text-decoration:underline}
 
