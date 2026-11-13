@@ -452,3 +452,74 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
   .azx-office-topbar .account span{max-width:130px}
 }
 @media print{.azx-office-topbar{display:none!important}}
+
+
+/* Responsive refresh khusus halaman Dokumen AZX Office. */
+.layout{grid-template-columns:minmax(330px,430px) minmax(0,1fr);align-items:start}
+.panel{min-width:0}
+.preview-wrap{min-width:0}
+.history{display:grid;gap:8px;margin-top:10px}
+.history-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px;border:1px solid #e5ebf2;border-radius:10px;background:#fff}
+.history-info{display:flex;min-width:0;flex-direction:column;gap:4px;overflow-wrap:anywhere}
+.history-info strong{color:#203b5c;font-size:12px;line-height:1.4}
+.history-info small{color:#718096;font-size:11px;line-height:1.4}
+.history-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.history-actions button{min-height:36px;padding:7px 11px;border:1px solid #d8e2ee;border-radius:7px;background:#f4f7fb;color:#29435f;font-size:11px;font-weight:700;cursor:pointer}
+.history-actions .history-edit{border-color:#c8dcf1;background:#eaf3fc;color:#17558d}
+.history-actions .history-delete{border-color:#f1d5d5;background:#fff1f1;color:#a12d2d}
+.history-actions button:focus-visible,.actions button:focus-visible,.panel button:focus-visible{outline:3px solid #8bb9e5;outline-offset:2px}
+@media(min-width:1100px){
+ .layout{gap:24px}
+ .panel{padding:22px}
+ .preview-wrap{position:sticky;top:14px;max-height:calc(100vh - 28px);overflow:auto;padding:2px 3px 12px}
+}
+@media(max-width:850px){
+ .layout{display:flex;flex-direction:column;gap:16px}
+ .panel{order:0;width:100%;padding:17px}
+ .preview-wrap{order:1;width:100%;overflow:visible}
+ .paper{width:100%;min-width:0;max-width:100%;min-height:0;padding:clamp(18px,5vw,34px)}
+ .paper-format2{width:100%;min-width:0;min-height:0;padding:clamp(18px,5vw,34px)}
+ .preview-heading{padding:0 3px}
+ .table-scroll{max-width:100%;overscroll-behavior-x:contain}
+ .input-table{min-width:490px}
+ .history-row{grid-template-columns:minmax(0,1fr);gap:9px}
+ .history-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}
+ .history-actions button{min-height:42px}
+ .actions{position:sticky;bottom:8px;z-index:6;padding:9px;border:1px solid #dce5ef;border-radius:12px;background:#ffffffed;backdrop-filter:blur(10px);box-shadow:0 5px 20px #142b4a18}
+}
+@media(max-width:520px){
+ .azx-office-topbar{align-items:center}
+ .azx-office-topbar nav{gap:14px;overflow-x:auto;white-space:nowrap;padding:3px 0}
+ .azx-office-topbar .account{width:100%;margin:0;justify-content:space-between}
+ .azx-office-topbar .account span{max-width:calc(100vw - 115px)}
+ .layout{margin:10px auto;padding:0 8px}
+ .panel{padding:14px;border-radius:12px}
+ .panel h2{font-size:18px}
+ .panel h3{margin-top:19px}
+ .two{grid-template-columns:1fr 1fr;gap:7px}
+ .panel input,.panel select,.panel textarea{font-size:14px;min-height:42px}
+ .panel textarea{min-height:76px}
+ .actions{grid-template-columns:1fr 1fr;gap:7px}
+ .actions button{min-height:44px;padding:10px 7px;font-size:11px}
+ .history-actions{gap:6px}
+ .history-actions button{padding:8px 5px;font-size:11px}
+ .paper{padding:18px 14px;font-size:10px}
+ .paper .doc-head{gap:10px}
+ .paper .brand{gap:8px;max-width:62%}
+ .paper .brand h1{font-size:14px;overflow-wrap:anywhere}
+ .paper .logo{width:38px;height:38px;flex-basis:38px}
+ .paper .doc-meta{min-width:105px}
+ .paper .doc-meta h2{font-size:15px}
+ .paper .party{gap:10px}
+ .paper .doc-table{font-size:9px}
+ .paper .doc-table th,.paper .doc-table td{padding:7px 4px}
+ .paper-format2{padding:18px 14px}
+ .f2-company{grid-template-columns:40px minmax(0,1fr);gap:9px}
+ .f2-logo{width:38px;height:38px}
+ .f2-date{grid-column:2}
+}
+@media print{
+ .layout{display:block!important}
+ .preview-wrap{position:static!important;max-height:none!important;overflow:visible!important}
+ .history-row,.history-actions{display:none!important}
+}
