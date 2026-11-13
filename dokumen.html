@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AZX Office — Administrasi dan Dokumen Perusahaan</title>
-<link rel="stylesheet" href="dokumen.css?v=azx-modern-corporate-20261113-1">
+<link rel="stylesheet" href="dokumen.css?v=azx-header-inventory-match-20261113-1">
 </head>
 <body>
 <style>body{visibility:hidden}</style>
@@ -15,15 +15,18 @@
  const KEY="sb_publishable_HSLy26SUHWwpow0smZrB2Q_sNchYRDx";
  try{
   const client=window.supabase.createClient(URL,KEY);
+  window.azxOfficeSupabase=client;
   const {data,error}=await client.auth.getSession();
   if(error||!data.session){location.replace("index.html?next=dokumen.html");return;}
+  window.azxOfficeSession=data.session;
   document.body.style.visibility="visible";
  }catch(e){location.replace("index.html?next=dokumen.html");}
 })();
 </script>
-<header class="topbar">
-  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><a class="back" href="index.html">← Kembali ke Beranda</a><a class="back" href="inventory.html">AZX Inventory →</a></div>
-  <div><strong>AZX Office</strong><small>Administrasi · Dokumen Perusahaan · Arsip · Pengelolaan Bisnis</small></div>
+<header class="topbar azx-office-topbar">
+  <a class="brand" href="index.html"><span class="brand-mark">AZX</span><span><b>AZX OFFICE</b><small>Business & Document Management</small></span></a>
+  <nav><a href="index.html">Index.html</a><a href="inventory.html">AZX Inventory</a></nav>
+  <div class="account" id="accountArea" hidden><span id="userEmail"></span><button class="btn btn-light" id="logoutBtn" type="button">Keluar</button></div>
 </header>
 <main class="layout">
   <aside class="panel no-print">
@@ -176,5 +179,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="dokumen.js?v=azx-format2-print-preview-20261113-1"></script>
 <script src="azx-office-enhancements.js?v=azx-extra-suite-20261113-1"></script>
+<script>
+(()=> {
+  const client=window.azxOfficeSupabase;
+  const account=document.getElementById("accountArea");
+  const email=document.getElementById("userEmail");
+  const logout=document.getElementById("logoutBtn");
+  if(!client||!account||!email||!logout)return;
+  const session=window.azxOfficeSession;
+  email.textContent=session?.user?.email||"";
+  account.hidden=!session?.user?.email;
+  logout.addEventListener("click",async()=>{
+    logout.disabled=true;
+    logout.textContent="Keluar...";
+    const {error}=await client.auth.signOut();
+    if(error){logout.disabled=false;logout.textContent="Keluar";alert("Gagal keluar: "+error.message);return;}
+    location.replace("index.html");
+  });
+})();
+</script>
 </body>
 </html>
