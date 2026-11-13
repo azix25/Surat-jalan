@@ -174,10 +174,11 @@ if(companyLogo)$("statusLogoPerusahaan").textContent="Logo tersimpan di perangka
 
 // Perintah suara Bahasa Indonesia (Web Speech API).
 const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-let voiceRecognition=null,voiceFinalText="",voiceShouldSubmit=false;
+let voiceRecognition=null,voiceFinalText="",voiceShouldSubmit=false,voiceTargetLayoutMode="table";
 function voiceStatus(message){$("voiceStatus").textContent=message;}
 let voiceRecorder=null,voiceStream=null,voiceChunks=[],voiceAudioContext=null,voiceSilenceTimer=null,voiceSpeechDetected=false,voiceLastSoundAt=0;
 async function startRecordedVoiceCommand(){
+ voiceTargetLayoutMode=$("layoutMode").value;
  if(!window.isSecureContext){voiceStatus("Mikrofon hanya dapat digunakan melalui HTTPS atau localhost.");return;}
  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){voiceStatus("Perekam suara tidak didukung browser ini. Coba Chrome Android terbaru melalui HTTPS.");return;}
  if(!$("aiAccessCode").value.trim()){voiceStatus("Masukkan kode akses AI terlebih dahulu.");$("aiAccessCode").focus();return;}
@@ -209,7 +210,7 @@ async function startRecordedVoiceCommand(){
   }
   voiceRecorder.ondataavailable=e=>{if(e.data&&e.data.size)voiceChunks.push(e.data);};
   voiceRecorder.onerror=()=>voiceStatus("Perekaman gagal. Periksa izin dan mikrofon perangkat.");
-  voiceRecorder.onstart=()=>{$("voiceStart").disabled=true;$("voiceStop").disabled=false;voiceStatus("Mikrofon aktif. Silakan berbicara; rekaman berhenti otomatis setelah 3 detik tanpa suara.");};
+  voiceRecorder.onstart=()=>{$("voiceStart").disabled=true;$("voiceStop").disabled=false;voiceStatus("Mikrofon aktif untuk "+(voiceTargetLayoutMode==="no-table"?"Format 2":"Format 1")+". Silakan berbicara; rekaman berhenti otomatis setelah 3 detik tanpa suara.");};
   voiceRecorder.onstop=async()=>{
    $("voiceStart").disabled=false;$("voiceStop").disabled=true;
    if(voiceSilenceTimer){clearInterval(voiceSilenceTimer);voiceSilenceTimer=null;}
@@ -228,8 +229,9 @@ async function startRecordedVoiceCommand(){
     });
     const result=await response.json();if(!response.ok)throw new Error(result.error||"Suara gagal diproses.");
     const transcript=String(result.transcript||"").trim();if(!transcript)throw new Error("Tidak ada ucapan yang terdeteksi.");
-    $("aiPrompt").value=transcript;voiceStatus("Perintah tertangkap: "+transcript+" — AI sedang membuat dokumen...");
-    await generateWithAI();voiceStatus("Perintah suara selesai diproses. Periksa hasil dokumen.");
+    $("layoutMode").value=voiceTargetLayoutMode;syncFormatMode();render();
+    $("aiPrompt").value=transcript;voiceStatus("Perintah tertangkap untuk "+(voiceTargetLayoutMode==="no-table"?"Format 2":"Format 1")+": "+transcript+" — AI sedang menyusun...");
+    await generateWithAI();voiceStatus("Perintah suara selesai diproses untuk "+(voiceTargetLayoutMode==="no-table"?"Format 2":"Format 1")+". Periksa hasil dokumen.");
    }catch(error){voiceStatus("Gagal memproses suara: "+error.message);}
   };
   voiceRecorder.start();
@@ -240,6 +242,7 @@ async function startRecordedVoiceCommand(){
  }
 }
 async function startVoiceCommand(){
+ voiceTargetLayoutMode=$("layoutMode").value;
  if(!window.isSecureContext){voiceStatus("Mikrofon membutuhkan halaman HTTPS atau localhost. Buka situs GitHub Pages melalui alamat https://, bukan file lokal atau HTTP.");return}
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){voiceStatus("Browser ini tidak menyediakan akses mikrofon. Coba Chrome terbaru dan buka halaman melalui HTTPS.");return}
  if(!SpeechRecognition){startRecordedVoiceCommand();return;}
@@ -293,7 +296,7 @@ async function startVoiceCommand(){
  try{voiceRecognition.start();}catch(error){voiceShouldSubmit=false;$("voiceStart").disabled=false;$("voiceStop").disabled=true;voiceStatus("Mikrofon belum siap. Coba tekan kembali.");}
 }
 async function awaitVoiceAI(){
- try{await generateWithAI();voiceStatus("Perintah suara selesai diproses AI. Periksa hasil pada pratinjau dokumen.");}
+ try{$("layoutMode").value=voiceTargetLayoutMode;syncFormatMode();render();await generateWithAI();voiceStatus("Perintah suara selesai diproses AI untuk "+(voiceTargetLayoutMode==="no-table"?"Format 2":"Format 1")+". Periksa hasil pada pratinjau dokumen.");}
  catch(error){voiceStatus("AI belum dapat memproses perintah: "+error.message);}
 }
 $("voiceStart").addEventListener("click",startRecordedVoiceCommand);
