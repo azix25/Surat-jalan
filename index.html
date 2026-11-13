@@ -27,6 +27,17 @@ h1{max-width:520px;margin:0;color:var(--navy);font-size:clamp(32px,4.5vw,51px);l
 .mock-wide{margin-top:10px;padding:15px;border:1px solid #ffffff20;border-radius:11px;background:#ffffff12;color:#fff}.mock-wide small{color:#c5d5e8;font-size:10px}
 .bars{height:72px;margin-top:14px;display:flex;align-items:flex-end;gap:8px}.bars i{flex:1;display:block;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#9fc9f2,#4c86c2);opacity:.9}.bars i:nth-child(1){height:35%}.bars i:nth-child(2){height:58%}.bars i:nth-child(3){height:44%}.bars i:nth-child(4){height:78%}.bars i:nth-child(5){height:62%}.bars i:nth-child(6){height:94%}.bars i:nth-child(7){height:72%}
 .mock-row{display:flex;align-items:center;gap:10px;margin-top:11px;color:#e5eef8;font-size:10px}.dot{width:7px;height:7px;border-radius:50%;background:#8bc3a4}
+.auth-box{width:min(100%,430px);margin-top:22px;padding:20px;border:1px solid #e3eaf2;border-radius:15px;background:#f8fafc}
+.auth-box h2{margin:0 0 14px;color:var(--navy);font-size:18px}
+.auth-box label{display:block;margin:12px 0;color:#526176;font-size:12px;font-weight:700}
+.auth-box input{display:block;width:100%;height:44px;margin-top:6px;padding:0 12px;border:1px solid #d5deea;border-radius:8px;background:#fff;color:#1d2939;font:inherit;font-size:14px}
+.auth-box button{width:100%;min-height:46px;margin-top:8px;border:0;border-radius:9px;background:var(--blue);color:#fff;font-size:14px;font-weight:750;cursor:pointer}
+.auth-switch{margin:12px 0 0;color:#66758a;font-size:12px;text-align:center}
+.auth-switch button{width:auto;min-height:0;margin:0;padding:0;background:none;color:var(--blue);font:inherit;font-weight:800;text-decoration:underline}
+.auth-message{min-height:18px;margin:10px 0 0;color:#a33;font-size:12px;line-height:1.5}
+.workspace-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.workspace-links[hidden],.auth-box[hidden]{display:none!important}
+@media(max-width:760px){.auth-box{padding:17px}}
 @media(max-width:760px){body{padding:14px}.welcome{grid-template-columns:1fr;min-height:0;border-radius:19px}.intro{padding:30px 25px}.brand{margin-bottom:38px}h1{font-size:clamp(32px,9vw,44px)}.lead{font-size:14px;margin:16px 0 24px}.visual{min-height:340px;padding:28px}.mock{max-width:390px}.footnote{margin-top:30px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style></head>
@@ -35,7 +46,21 @@ h1{max-width:520px;margin:0;color:var(--navy);font-size:clamp(32px,4.5vw,51px);l
 <div class="brand"><div class="brand-mark" aria-hidden="true">AZX</div><div><div class="brand-name">AZX OFFICE</div><span class="brand-sub">Corporate Administration Suite</span></div></div>
 <p class="eyebrow">Modern Corporate Office</p><h1>Kelola dokumen bisnis dengan lebih profesional.</h1>
 <p class="lead">Satu ruang kerja untuk membuat dokumen, mengelola arsip, dan membantu aktivitas administrasi perusahaan dengan lebih teratur.</p>
-<div style="display:flex;flex-wrap:wrap;gap:10px"><a class="continue" href="dokumen.html"><span>Masuk ke AZX Office</span><span class="arrow" aria-hidden="true">→</span></a><a class="continue" href="inventory.html" style="background:#fff;color:#174f8c;border:1px solid #cbd9e8;box-shadow:none"><span>AZX Inventory</span><span class="arrow" aria-hidden="true">↗</span></a></div>
+<section class="auth-box" id="loginBox">
+<h2 id="authTitle">Masuk ke AZX Office</h2>
+<form id="indexAuthForm">
+<label>Email<input id="indexEmail" type="email" autocomplete="email" required placeholder="nama@perusahaan.com"></label>
+<label>Kata sandi<input id="indexPassword" type="password" minlength="8" autocomplete="current-password" required placeholder="Minimal 8 karakter"></label>
+<button id="indexAuthSubmit" type="submit">Masuk</button>
+</form>
+<p class="auth-switch" id="authSwitch">Belum punya akun? <button type="button" id="switchAuth">Buat akun</button></p>
+<p class="auth-message" id="indexAuthMessage" role="status" aria-live="polite"></p>
+</section>
+<div class="workspace-links" id="workspaceLinks" hidden>
+<a class="continue" href="dokumen.html"><span>Masuk ke AZX Office</span><span class="arrow" aria-hidden="true">→</span></a>
+<a class="continue" href="inventory.html" style="background:#fff;color:#174f8c;border:1px solid #cbd9e8;box-shadow:none"><span>AZX Inventory</span><span class="arrow" aria-hidden="true">↗</span></a>
+<button class="continue" id="indexLogout" type="button" style="background:#fff;color:#174f8c;border:1px solid #cbd9e8;box-shadow:none;cursor:pointer">Keluar</button>
+</div>
 <div class="footnote">AZX OFFICE <span aria-hidden="true">·</span> ADMINISTRASI BISNIS</div>
 </section>
 <section class="visual" aria-label="Ilustrasi dashboard AZX Office"><div class="mock">
@@ -43,4 +68,45 @@ h1{max-width:520px;margin:0;color:var(--navy);font-size:clamp(32px,4.5vw,51px);l
 <div class="mock-grid"><div class="mock-card"><small>Total dokumen</small><strong>128</strong></div><div class="mock-card"><small>Diproses bulan ini</small><strong>24</strong></div></div>
 <div class="mock-wide"><small>Aktivitas dokumen</small><div class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
 <div class="mock-row"><span class="dot"></span><span>Workspace siap digunakan</span></div>
-</div></section></main></body></html>
+</div></section></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+"use strict";
+const URL="https://nqwqlhcwiwprsbcdadhy.supabase.co";
+const KEY="sb_publishable_HSLy26SUHWwpow0smZrB2Q_sNchYRDx";
+const client=window.supabase?.createClient(URL,KEY);
+const $=id=>document.getElementById(id);
+let mode="login";
+function setMode(next){
+ mode=next;
+ $("authTitle").textContent=mode==="login"?"Masuk ke AZX Office":"Buat akun AZX Office";
+ $("indexAuthSubmit").textContent=mode==="login"?"Masuk":"Buat akun";
+ $("indexPassword").autocomplete=mode==="login"?"current-password":"new-password";
+ $("authSwitch").innerHTML=mode==="login"?'Belum punya akun? <button type="button" id="switchAuth">Buat akun</button>':'Sudah punya akun? <button type="button" id="switchAuth">Masuk</button>';
+ $("switchAuth").addEventListener("click",()=>setMode(mode==="login"?"signup":"login"));
+ $("indexAuthMessage").textContent=mode==="login"?"Gunakan akun AZX Office untuk membuka seluruh modul.":"Daftarkan akun. Jika verifikasi email aktif, konfirmasi melalui email sebelum masuk.";
+}
+function showSignedIn(user){
+ $("loginBox").hidden=true;$("workspaceLinks").hidden=false;
+ $("indexAuthMessage").textContent="Masuk sebagai "+(user?.email||"pengguna AZX Office")+".";
+}
+if(!client){$("indexAuthMessage").textContent="Layanan autentikasi belum termuat. Periksa koneksi internet.";return;}
+$("indexAuthForm").addEventListener("submit",async e=>{
+ e.preventDefault();const button=$("indexAuthSubmit");button.disabled=true;
+ const email=$("indexEmail").value.trim(),password=$("indexPassword").value;
+ try{
+  const result=mode==="login"?await client.auth.signInWithPassword({email,password}):await client.auth.signUp({email,password});
+  if(result.error)throw result.error;
+  if(mode==="signup"&&!result.data.session){$("indexAuthMessage").textContent="Pendaftaran berhasil. Konfirmasi email jika diminta, lalu masuk.";return;}
+  showSignedIn(result.data.user);
+ }catch(error){$("indexAuthMessage").textContent=error.message||"Autentikasi gagal.";}
+ finally{button.disabled=false;}
+});
+$("indexLogout").addEventListener("click",async()=>{await client.auth.signOut();$("workspaceLinks").hidden=true;$("loginBox").hidden=false;$("indexAuthMessage").textContent="Anda telah keluar.";setMode("login");});
+$("switchAuth").addEventListener("click",()=>setMode("signup"));
+client.auth.getSession().then(({data})=>{if(data.session)showSignedIn(data.session.user);});
+client.auth.onAuthStateChange((_event,session)=>{if(session)showSignedIn(session.user);});
+})();
+</script>
+</body></html>
