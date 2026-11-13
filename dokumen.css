@@ -354,3 +354,9 @@
     overflow-wrap:anywhere;
   }
 }
+
+
+/* Format 1: tanda tangan pemilik perusahaan selalu di sisi kiri. */
+.paper:not(.layout-no-table):not(.format2-paper) .signatures{justify-content:space-between;align-items:flex-start;}
+.paper:not(.layout-no-table):not(.format2-paper) .signatures>div:first-child{order:0;margin-right:auto;text-align:left;}
+.paper:not(.layout-no-table):not(.format2-paper) .signatures>div:last-child{order:1;margin-left:auto;text-align:right;}
