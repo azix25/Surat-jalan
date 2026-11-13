@@ -366,3 +366,9 @@
 .paper-format2 .f2-align-toolbar button{border:1px solid #cbd5e1;background:#fff;color:#243449;border-radius:5px;padding:6px 11px;font-size:11px;cursor:pointer;}
 .paper-format2 .f2-align-toolbar button:active{background:#e8eef5;}
 @media print{.paper-format2 .f2-align-toolbar{display:none!important;}}
+
+/* Kontrol perataan Format 2 berada di panel kiri, tepat di bawah pilihan Format Dokumen. */
+.format2-editor .panel .f2-align-toolbar{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:7px;margin:8px 0 14px;padding:9px 10px;border:1px solid #d9e0e8;border-radius:7px;background:#f8fafc;font-family:Arial,sans-serif;font-size:12px;color:#344256;}
+.format2-editor .panel .f2-align-toolbar button{border:1px solid #cbd5e1;background:#fff;color:#243449;border-radius:5px;padding:7px 13px;font-size:12px;cursor:pointer;}
+.format2-editor .panel .f2-align-toolbar button:active{background:#e8eef5;}
+.paper-format2 .f2-align-toolbar{display:none!important;}
