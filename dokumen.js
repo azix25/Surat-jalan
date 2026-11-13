@@ -1,4 +1,23 @@
 const $=id=>document.getElementById(id);
+const AI_CODE_STORAGE_KEY="azx_ai_access_code";
+function getAIAccessCode(){
+ const input=$("aiAccessCode");
+ const code=(localStorage.getItem(AI_CODE_STORAGE_KEY)||input?.value||"").trim();
+ if(!code){alert("Masukkan kode akses AI AZX Office satu kali. Kode akan tersimpan di perangkat ini dan otomatis dipakai juga oleh Inventory.");input?.focus();return "";}
+ localStorage.setItem(AI_CODE_STORAGE_KEY,code);
+ if(input){input.value=code;const label=input.closest("label");if(label)label.hidden=true;}
+ return code;
+}
+function clearSavedAIAccessCode(){
+ localStorage.removeItem(AI_CODE_STORAGE_KEY);
+ const input=$("aiAccessCode");
+ if(input){input.value="";const label=input.closest("label");if(label)label.hidden=false;}
+}
+(()=>{
+ const saved=localStorage.getItem(AI_CODE_STORAGE_KEY),input=$("aiAccessCode");
+ if(saved&&input){input.value=saved;const label=input.closest("label");if(label)label.hidden=true;}
+})();
+
 let customTemplate=localStorage.getItem("templateCanvaBisnis")||"";
 let companyLogo=localStorage.getItem("logoPerusahaanBisnis")||"";
 if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";}
@@ -238,9 +257,9 @@ async function requestAIWithRetry(url,options,status){
  throw lastError||new Error("AI belum dapat dihubungi. Silakan coba lagi.");
 }
 async function generateWithAI(){
- const prompt=$("aiPrompt").value.trim(),accessCode=$("aiAccessCode").value.trim(),btn=$("aiGenerate"),status=$("aiStatus");
+ const prompt=$("aiPrompt").value.trim(),accessCode=getAIAccessCode(),btn=$("aiGenerate"),status=$("aiStatus");
  if(!prompt){alert("Tulis perintah untuk AI terlebih dahulu.");$("aiPrompt").focus();return}
- if(!accessCode){alert("Masukkan kode akses AI.");$("aiAccessCode").focus();return}
+ if(!accessCode)return;
  btn.disabled=true;status.textContent="AI sedang menyusun dokumen...";
  try{
   const current=readData(),format2=current.layoutMode==="no-table";
@@ -287,7 +306,7 @@ async function startRecordedVoiceCommand(){
  voiceTargetLayoutMode=$("layoutMode").value;
  if(!window.isSecureContext){voiceStatus("Mikrofon hanya dapat digunakan melalui HTTPS atau localhost.");return;}
  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){voiceStatus("Perekam suara tidak didukung browser ini. Coba Chrome Android terbaru melalui HTTPS.");return;}
- if(!$("aiAccessCode").value.trim()){voiceStatus("Masukkan kode akses AI terlebih dahulu.");$("aiAccessCode").focus();return;}
+ if(!getAIAccessCode()){voiceStatus("Masukkan kode akses AI terlebih dahulu.");return;}
  try{
   voiceStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
   const mimeTypes=["audio/webm;codecs=opus","audio/webm","audio/mp4"];
@@ -330,7 +349,7 @@ async function startRecordedVoiceCommand(){
     const bytes=new Uint8Array(await blob.arrayBuffer());let binary="";
     for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);
     const response=await fetch("https://nqwqlhcwiwprsbcdadhy.supabase.co/functions/v1/dokumen-ai",{
-     method:"POST",headers:{"Content-Type":"application/json","x-ai-access-code":$("aiAccessCode").value.trim()},
+     method:"POST",headers:{"Content-Type":"application/json","x-ai-access-code":getAIAccessCode()},
      body:JSON.stringify({audioBase64:btoa(binary),mimeType:blob.type||"audio/webm"})
     });
     const result=await response.json();if(!response.ok)throw new Error(result.error||"Suara gagal diproses.");
@@ -352,7 +371,7 @@ async function startVoiceCommand(){
  if(!window.isSecureContext){voiceStatus("Mikrofon membutuhkan halaman HTTPS atau localhost. Buka situs GitHub Pages melalui alamat https://, bukan file lokal atau HTTP.");return}
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){voiceStatus("Browser ini tidak menyediakan akses mikrofon. Coba Chrome terbaru dan buka halaman melalui HTTPS.");return}
  if(!SpeechRecognition){startRecordedVoiceCommand();return;}
- if(!$("aiAccessCode").value.trim()){voiceStatus("Masukkan kode akses AI terlebih dahulu.");$("aiAccessCode").focus();return;}
+ if(!getAIAccessCode()){voiceStatus("Masukkan kode akses AI terlebih dahulu.");return;}
  voiceFinalText="";voiceShouldSubmit=true;
  try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});stream.getTracks().forEach(track=>track.stop());}catch(error){voiceShouldSubmit=false;const reason=error.name==="NotAllowedError"?"Izin mikrofon ditolak. Buka pengaturan situs lalu izinkan Mikrofon.":error.name==="NotFoundError"?"Mikrofon tidak ditemukan pada perangkat.":"Tidak bisa mengakses mikrofon: "+error.message;voiceStatus(reason);return;}
  voiceRecognition=new SpeechRecognition();
