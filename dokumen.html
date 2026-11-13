@@ -118,6 +118,27 @@
       <button id="cetak" type="button">Cetak / Unduh PDF</button>
       <button id="baru" type="button" class="secondary">Buat Dokumen Baru</button>
     </div>
+
+    <section class="azx-extra-tools no-print" aria-label="Fitur tambahan AZX Office">
+      <h3>Pengelolaan & Keamanan Dokumen</h3>
+      <div class="azx-dashboard" id="azxDashboard" aria-live="polite">
+        <div><strong id="azxStatTotal">0</strong><span>Total dokumen</span></div>
+        <div><strong id="azxStatMonth">0</strong><span>Bulan ini</span></div>
+        <div><strong id="azxStatCategories">0</strong><span>Kategori aktif</span></div>
+      </div>
+      <label>Cari arsip dokumen<input id="azxHistorySearch" type="search" placeholder="Cari nomor, nama, atau kategori..."></label>
+      <div class="azx-tool-buttons">
+        <button type="button" class="secondary" id="azxDuplicate">Duplikat dokumen saat ini</button>
+        <button type="button" class="secondary" id="azxBackupExport">Cadangkan data</button>
+        <label class="azx-file-button">Pulihkan cadangan<input id="azxBackupImport" type="file" accept="application/json,.json"></label>
+        <button type="button" class="secondary" id="azxRestoreDraft">Pulihkan draf otomatis</button>
+      </div>
+      <p id="azxAutosaveStatus" class="help-text" aria-live="polite">Autosave siap.</p>
+      <h3>Stempel & Watermark</h3>
+      <label>Teks watermark<input id="azxWatermarkText" type="text" maxlength="40" placeholder="Contoh: DRAFT / RAHASIA"></label>
+      <label>Stempel dokumen<input id="azxStampText" type="text" maxlength="40" placeholder="Contoh: LUNAS / DITERIMA"></label>
+      <p class="help-text">Watermark dan stempel akan terlihat pada pratinjau dan hasil cetak/PDF.</p>
+    </section>
     <h3>Arsip dan Riwayat Dokumen</h3>
     <div id="riwayat" class="history"></div>
   </aside>
@@ -140,5 +161,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="dokumen.js?v=azx-format2-controls-above-category-20261113-37"></script>
+<script src="azx-office-enhancements.js?v=azx-extra-suite-20261113-1"></script>
 </body>
 </html>
