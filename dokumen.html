@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SB Office — Administrasi dan Dokumen Perusahaan</title>
-<link rel="stylesheet" href="dokumen.css?v=sb-office-labels-20261112-4">
+<link rel="stylesheet" href="dokumen.css?v=sb-office-editable-item-fields-20261113-1">
 </head>
 <body>
 <header class="topbar">
@@ -105,7 +105,7 @@
     <label id="labelJatuhTempo">Jatuh tempo<input id="jatuhTempo" type="date"></label>
     <label>Uraian / perihal dokumen<textarea id="keterangan" rows="2" placeholder="Keterangan dokumen"></textarea></label>
     <h3>Rincian Barang, Jasa, atau Pekerjaan</h3>
-    <div class="table-scroll"><table class="input-table"><thead><tr><th>Deskripsi barang / jasa</th><th>Qty</th><th id="judulKolomHarga">Harga satuan</th><th></th></tr></thead><tbody id="barisItem"></tbody></table></div>
+    <div class="table-scroll"><table class="input-table"><thead><tr><th>Nama barang / jasa</th><th>Jumlah</th><th id="judulKolomHarga">Harga satuan</th><th></th></tr></thead><tbody id="barisItem"></tbody></table></div>
     <button type="button" class="secondary" id="tambahItem">+ Tambah item</button>
     <div class="two">
       <label>Pajak (%)<input id="pajak" type="number" min="0" value="0"></label>
@@ -136,6 +136,6 @@
   </section>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="dokumen.js?v=sb-office-labels-20261112-4"></script>
+<script src="dokumen.js?v=sb-office-editable-item-fields-20261113-1"></script>
 </body>
 </html>
