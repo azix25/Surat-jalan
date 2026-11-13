@@ -137,7 +137,79 @@ function nextDocumentNumber(sequence){
 }
 function makeNumber(){return nextDocumentNumber()}
 function newDoc(){if(!confirm("Buat dokumen baru? Perubahan yang belum disimpan akan hilang."))return;const keep={perusahaan:$("perusahaan").value,alamatPerusahaan:$("alamatPerusahaan").value,teleponPerusahaan:$("teleponPerusahaan").value,emailPerusahaan:$("emailPerusahaan").value,penanggungJawab:$("penanggungJawab").value,jabatan:$("jabatan").value||"Direktur"};["pihak","alamatPihak","nomorDokumen","tanggalDokumen","jatuhTempo","keterangan","pajak","diskon","catatan"].forEach(id=>$(id).value="");$("layoutMode").value="table";if($("pWordContent"))$("pWordContent").innerHTML="";if($("f2WordContent"))$("f2WordContent").innerHTML="";$("rincianBebas").value="";$("teksPenutupKiri").value="Hormat kami,";$("teksPenutupKanan").value="Mengetahui,";Object.entries(keep).forEach(([id,value])=>$(id).value=value);$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber();$("barisItem").innerHTML="";addItem();render()}
-$("fileTemplateCanva").addEventListener("change",e=>importCanvaTemplate(e.target.files[0]));$("fileLogoPerusahaan").addEventListener("change",e=>importCompanyLogo(e.target.files[0]));$("hapusLogoPerusahaan").onclick=()=>{companyLogo="";localStorage.removeItem("logoPerusahaanBisnis");$("statusLogoPerusahaan").textContent="Belum ada logo diunggah";render();};$("hapusTemplateCanva").onclick=()=>{customTemplate="";localStorage.removeItem("templateCanvaBisnis");applyCustomTemplate();render()};$("tambahItem").onclick=()=>addItem();$("simpan").onclick=save;$("cetak").onclick=async()=>{const p=numberParts(),n=(Number(localStorage.getItem(p.key))||0)+1;$("nomorDokumen").value=nextDocumentNumber(n);render();if($("layoutMode").value==="no-table"){const el=$("lembarFormat2");if(typeof window.html2pdf!=="function"){alert("Fitur PDF belum termuat. Periksa koneksi internet lalu coba lagi.");return;}const oldWidth=el.style.width,oldMin=el.style.minHeight;el.style.width="210mm";el.style.minHeight="297mm";const safeName=String($("nomorDokumen").value||"Dokumen").replace(/[^a-z0-9_-]+/gi,"-");try{await window.html2pdf().set({margin:0,filename:safeName+".pdf",image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff",windowWidth:794},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["css","legacy"],avoid:[".f2-company",".f2-recipient"]}}).from(el).save();localStorage.setItem(p.key,String(n));$("nomorDokumen").value=nextDocumentNumber(n+1);render();}catch(err){console.error("PDF Format 2 gagal dibuat:",err);alert("PDF gagal dibuat. Silakan coba lagi.");}finally{el.style.width=oldWidth;el.style.minHeight=oldMin;}}else{localStorage.setItem(p.key,String(n));window.print();$("nomorDokumen").value=nextDocumentNumber(n+1);render();}};$("baru").onclick=newDoc;$("jenis").onchange=()=>{if(!$("nomorDokumen").value||$("nomorDokumen").value.includes("/"))$("nomorDokumen").value=makeNumber();applyDefaultColumnLabels();render()};$("template").onchange=render;$("templateFormat2").onchange=render;function syncFormatMode(){const f2=$("layoutMode").value==="no-table";if($("previewTitle"))$("previewTitle").textContent=f2?"Pratinjau Format 2":"Pratinjau Format 1";$("templateBuiltInWrap").querySelector("select").hidden=f2;$("templateFormat2").hidden=!f2;$("templateBuiltInWrap").querySelector("label").firstChild.textContent=f2?"Template Format 2":"Template bawaan";document.body.classList.toggle("format2-editor",f2);}fieldIds.forEach(id=>$(id).addEventListener("input",render));$("layoutMode").addEventListener("change",()=>{syncFormatMode();render()});syncFormatMode();applyDefaultColumnLabels();$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber();$("perusahaan").addEventListener("input",()=>{$("nomorDokumen").value=makeNumber();render();});$("tanggalDokumen").addEventListener("change",()=>{$("nomorDokumen").value=makeNumber();render();});addItem();history();
+$("fileTemplateCanva").addEventListener("change",e=>importCanvaTemplate(e.target.files[0]));$("fileLogoPerusahaan").addEventListener("change",e=>importCompanyLogo(e.target.files[0]));$("hapusLogoPerusahaan").onclick=()=>{companyLogo="";localStorage.removeItem("logoPerusahaanBisnis");$("statusLogoPerusahaan").textContent="Belum ada logo diunggah";render();};$("hapusTemplateCanva").onclick=()=>{customTemplate="";localStorage.removeItem("templateCanvaBisnis");applyCustomTemplate();render()};$("tambahItem").onclick=()=>addItem();$("simpan").onclick=save;async function exportFormat2PDF(source,filename){
+ if(typeof window.html2pdf!=="function")throw new Error("Pustaka PDF belum termuat.");
+ const clone=source.cloneNode(true);
+ clone.hidden=false;
+ clone.removeAttribute("hidden");
+ clone.style.width="210mm";
+ clone.style.minHeight="0";
+ clone.style.height="auto";
+ clone.style.maxWidth="none";
+ clone.style.margin="0";
+ clone.style.boxShadow="none";
+ clone.style.overflow="visible";
+ clone.style.boxSizing="border-box";
+ clone.querySelectorAll("[contenteditable]").forEach(node=>node.removeAttribute("contenteditable"));
+ const body=clone.querySelector(".f2-word-content");
+ if(body){
+  body.style.minHeight="0";
+  body.style.height="auto";
+  body.style.overflow="visible";
+  body.style.breakInside="auto";
+  body.style.pageBreakInside="auto";
+ }
+ const images=[...clone.querySelectorAll("img")];
+ await Promise.all(images.map(img=>{
+  if(img.complete&&img.naturalWidth)return Promise.resolve();
+  if(typeof img.decode==="function")return img.decode().catch(()=>{});
+  return new Promise(resolve=>{img.onload=resolve;img.onerror=resolve;});
+ }));
+ if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+ const worker=window.html2pdf().set({
+  margin:[0,0,0,0],
+  filename:filename,
+  image:{type:"jpeg",quality:0.96},
+  html2canvas:{
+   scale:1.5,
+   useCORS:true,
+   allowTaint:false,
+   backgroundColor:"#ffffff",
+   scrollX:0,
+   scrollY:0,
+   logging:false
+  },
+  jsPDF:{unit:"mm",format:"a4",orientation:"portrait",compress:true},
+  pagebreak:{
+   mode:["css","legacy"],
+   avoid:["img","table","tr","blockquote",".f2-company",".f2-recipient"]
+  }
+ }).from(clone);
+ await worker.save();
+}
+$("cetak").onclick=async()=>{
+ const p=numberParts(),n=(Number(localStorage.getItem(p.key))||0)+1;
+ $("nomorDokumen").value=nextDocumentNumber(n);
+ render();
+ if($("layoutMode").value==="no-table"){
+  const el=$("lembarFormat2");
+  const safeName=String($("nomorDokumen").value||"Dokumen").replace(/[^a-z0-9_-]+/gi,"-")+".pdf";
+  try{
+   await exportFormat2PDF(el,safeName);
+   localStorage.setItem(p.key,String(n));
+   $("nomorDokumen").value=nextDocumentNumber(n+1);
+   render();
+  }catch(err){
+   console.error("PDF Format 2 gagal dibuat:",err);
+   alert("PDF gagal dibuat secara utuh. Periksa koneksi internet lalu coba lagi. Dokumen dan nomor dokumen tidak dihapus.");
+  }
+ }else{
+  localStorage.setItem(p.key,String(n));
+  window.print();
+  $("nomorDokumen").value=nextDocumentNumber(n+1);
+  render();
+ }
+};$("baru").onclick=newDoc;$("jenis").onchange=()=>{if(!$("nomorDokumen").value||$("nomorDokumen").value.includes("/"))$("nomorDokumen").value=makeNumber();applyDefaultColumnLabels();render()};$("template").onchange=render;$("templateFormat2").onchange=render;function syncFormatMode(){const f2=$("layoutMode").value==="no-table";if($("previewTitle"))$("previewTitle").textContent=f2?"Pratinjau Format 2":"Pratinjau Format 1";$("templateBuiltInWrap").querySelector("select").hidden=f2;$("templateFormat2").hidden=!f2;$("templateBuiltInWrap").querySelector("label").firstChild.textContent=f2?"Template Format 2":"Template bawaan";document.body.classList.toggle("format2-editor",f2);}fieldIds.forEach(id=>$(id).addEventListener("input",render));$("layoutMode").addEventListener("change",()=>{syncFormatMode();render()});syncFormatMode();applyDefaultColumnLabels();$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber();$("perusahaan").addEventListener("input",()=>{$("nomorDokumen").value=makeNumber();render();});$("tanggalDokumen").addEventListener("change",()=>{$("nomorDokumen").value=makeNumber();render();});addItem();history();
 async function generateWithAI(){
  const prompt=$("aiPrompt").value.trim(),accessCode=$("aiAccessCode").value.trim(),btn=$("aiGenerate"),status=$("aiStatus");
  if(!prompt){alert("Tulis perintah untuk AI terlebih dahulu.");$("aiPrompt").focus();return}
