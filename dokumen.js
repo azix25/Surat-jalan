@@ -202,6 +202,41 @@ $("cetak").onclick=()=>{
  $("nomorDokumen").value=nextDocumentNumber(n+1);
  render();
 };$("baru").onclick=newDoc;$("jenis").onchange=()=>{if(!$("nomorDokumen").value||$("nomorDokumen").value.includes("/"))$("nomorDokumen").value=makeNumber();applyDefaultColumnLabels();render()};$("template").onchange=render;$("templateFormat2").onchange=render;function syncFormatMode(){const f2=$("layoutMode").value==="no-table";if($("previewTitle"))$("previewTitle").textContent=f2?"Pratinjau Format 2":"Pratinjau Format 1";$("templateBuiltInWrap").querySelector("select").hidden=f2;$("templateFormat2").hidden=!f2;$("templateBuiltInWrap").querySelector("label").firstChild.textContent=f2?"Template Format 2":"Template bawaan";document.body.classList.toggle("format2-editor",f2);}fieldIds.forEach(id=>$(id).addEventListener("input",render));$("layoutMode").addEventListener("change",()=>{syncFormatMode();render()});syncFormatMode();applyDefaultColumnLabels();$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber();$("perusahaan").addEventListener("input",()=>{$("nomorDokumen").value=makeNumber();render();});$("tanggalDokumen").addEventListener("change",()=>{$("nomorDokumen").value=makeNumber();render();});addItem();history();
+async function requestAIWithRetry(url,options,status){
+ const maxAttempts=3;
+ let lastError;
+ for(let attempt=1;attempt<=maxAttempts;attempt++){
+  try{
+   const response=await fetch(url,options);
+   if(response.ok)return response;
+   const retryResponse=response.clone();
+   let payload={};
+   try{payload=await retryResponse.json();}catch(_){}
+   const message=payload.error||payload.message||("Permintaan AI gagal (HTTP "+response.status+").");
+   const detail=String(message);
+   const quotaExhausted=/RESOURCE_EXHAUSTED|quota.{0,30}(exceed|limit|habis)|exceed.{0,30}quota/i.test(detail);
+   const temporary=[502,503,504].includes(response.status)||(response.status===429&&!quotaExhausted);
+   if(!temporary||attempt===maxAttempts)throw new Error(detail);
+   const retryAfter=Number(response.headers.get("Retry-After"));
+   const delay=Number.isFinite(retryAfter)&&retryAfter>0
+    ?Math.min(retryAfter*1000,15000)
+    :1500*Math.pow(2,attempt-1);
+   status.textContent="Layanan AI sedang sibuk. Mencoba kembali ("+attempt+"/"+(maxAttempts-1)+")...";
+   await new Promise(resolve=>setTimeout(resolve,delay));
+  }catch(error){
+   if(error instanceof TypeError){
+    lastError=error;
+    if(attempt<maxAttempts){
+     status.textContent="Koneksi AI terganggu. Mencoba kembali ("+attempt+"/"+(maxAttempts-1)+")...";
+     await new Promise(resolve=>setTimeout(resolve,1500*Math.pow(2,attempt-1)));
+     continue;
+    }
+   }
+   throw error;
+  }
+ }
+ throw lastError||new Error("AI belum dapat dihubungi. Silakan coba lagi.");
+}
 async function generateWithAI(){
  const prompt=$("aiPrompt").value.trim(),accessCode=$("aiAccessCode").value.trim(),btn=$("aiGenerate"),status=$("aiStatus");
  if(!prompt){alert("Tulis perintah untuk AI terlebih dahulu.");$("aiPrompt").focus();return}
@@ -212,12 +247,11 @@ async function generateWithAI(){
   const aiInstruction=format2
    ?prompt+"\\n\\nMODE FORMAT 2: Buat isi dokumen dalam bentuk teks/HTML Word yang rapi untuk area isi bebas. Jangan membuat tabel barang, rincian harga, total, tanda tangan, atau blok penutup. Pertahankan kategori dokumen yang dipilih. Kembalikan isi utama pada rincianFormat2 atau rincianBebas."
    :prompt;
-  const response=await fetch("https://nqwqlhcwiwprsbcdadhy.supabase.co/functions/v1/dokumen-ai",{
+  const response=await requestAIWithRetry("https://nqwqlhcwiwprsbcdadhy.supabase.co/functions/v1/dokumen-ai",{
    method:"POST",headers:{"Content-Type":"application/json","x-ai-access-code":accessCode},
    body:JSON.stringify({instruction:aiInstruction,currentDocument:{...current,formatMode:format2?"format2":"format1",templateSource:format2?"Template Format 2 (isi bebas tanpa tabel dan tanda tangan)":customTemplate?"Canva (desain latar dipertahankan; isi dokumen dapat diedit)":"Template bawaan"}})
-  });
+  },status);
   const result=await response.json();
-  if(!response.ok)throw new Error(result.error||"Permintaan AI gagal.");
   const d=result.document||{};
   const merged={...current,...d,layoutMode:current.layoutMode,items:Array.isArray(d.items)?d.items:current.items};
   if(format2){
@@ -228,8 +262,16 @@ async function generateWithAI(){
   }
   setData(merged);
   status.textContent=result.message||"Draf AI sudah dimasukkan. Periksa kembali data dan nominal sebelum digunakan.";
- }catch(error){status.textContent="Belum berhasil: "+error.message}
- finally{btn.disabled=false}
+ }catch(error){
+  const message=String(error.message||error);
+  if(/RESOURCE_EXHAUSTED|quota|limit/i.test(message)){
+   status.textContent="Kuota Gemini sedang habis atau mencapai batas. Tunggu hingga kuota pulih atau periksa paket dan batas API Gemini.";
+  }else if(/503|UNAVAILABLE|overloaded|busy/i.test(message)){
+   status.textContent="Server Gemini sedang penuh. Sudah dicoba ulang otomatis 3 kali. Silakan tunggu sebentar lalu coba lagi.";
+  }else{
+   status.textContent="Belum berhasil: "+message;
+  }
+ }finally{btn.disabled=false}
 }
 $("aiGenerate").onclick=generateWithAI;
 applyCustomTemplate();
