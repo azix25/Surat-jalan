@@ -1,125 +1,92 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Surat Jalan</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="theme-color" content="#073b70">
+  <title>AZX Office</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #fff;
+      background: linear-gradient(135deg, #062b52 0%, #07508a 52%, #0876ad 100%);
+    }
+    .welcome {
+      width: min(100%, 520px);
+      padding: 48px 30px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 20px;
+      background: rgba(3, 34, 66, .38);
+      box-shadow: 0 18px 55px rgba(0,0,0,.24);
+    }
+    .welcome h1 {
+      margin: 0 0 14px;
+      color: #fff;
+      font-size: clamp(25px, 5vw, 34px);
+      line-height: 1.25;
+      letter-spacing: .5px;
+    }
+    .welcome p {
+      margin: 0 0 30px;
+      color: #d9ecff;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .continue {
+      display: flex;
+      min-height: 58px;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px 22px;
+      border: 1px solid rgba(255,255,255,.5);
+      border-radius: 12px;
+      background: #fff;
+      color: #07508a;
+      font-size: 17px;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 8px 20px rgba(0,0,0,.18);
+      transition: transform .18s ease, background .18s ease;
+    }
+    .continue:hover, .continue:focus-visible {
+      background: #eaf5ff;
+      transform: translateY(-2px);
+      outline: 2px solid #fff;
+      outline-offset: 3px;
+    }
+    .arrow { font-size: 22px; line-height: 1; }
+    .footer {
+      margin-top: 28px;
+      color: #c4def5;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+    }
+    @media (max-width: 480px) {
+      body { padding: 16px; }
+      .welcome { padding: 40px 22px; }
+    }
+  </style>
 </head>
 <body>
-
-<div class="container">
-
-  <div class="toolbar no-print">
-    <button onclick="tambahBaris()">+ Tambah Baris</button>
-    <button onclick="simpanSurat()">Simpan</button>
-    <button onclick="suratBaru()">Surat Baru</button>
-    <button onclick="window.print()">Cetak / PDF</button>
-    <button onclick="lihatRiwayat()">Riwayat</button>
-    <a class="tombol-dokumen" href="dokumen.html">Dokumen Bisnis</a>
-  </div>
-
-  <div class="surat" id="areaSurat">
-
-    <h2>PT DIRGA REKSA</h2>
-
-    <div class="info">
-
-      <div class="info-kiri">
-        <div class="field">
-          <label>No. Surat Jalan</label>
-          <input type="text" id="nomor" readonly>
-        </div>
-
-        <div class="field">
-          <label>Tanggal</label>
-          <input type="date" id="tanggal">
-        </div>
-      </div>
-
-      <div class="info-kanan">
-        <div class="field">
-          <label>Nama Penerima</label>
-          <input type="text" id="penerima">
-        </div>
-
-        <div class="field">
-          <label>Alamat</label>
-          <input type="text" id="alamatPenerima">
-        </div>
-
-        <div class="field">
-          <label>No. Telepon</label>
-          <input type="text" id="teleponPenerima">
-        </div>
-      </div>
-
-    </div>
-
-    <table id="tabelBahan">
-
-      <colgroup>
-        <col class="kolom-no">
-        <col class="kolom-nama">
-        <col class="kolom-ukuran">
-        <col class="kolom-total">
-        <col class="kolom-aksi no-print">
-      </colgroup>
-
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Nama Bahan</th>
-          <th>Ukuran</th>
-          <th>Total</th>
-          <th class="no-print">Aksi</th>
-        </tr>
-      </thead>
-
-      <tbody id="isiTabel"></tbody>
-
-      <tfoot>
-        <tr>
-          <td colspan="3" class="label-jumlah">JUMLAH</td>
-          <td id="jumlahTotal" class="nilai-jumlah">0</td>
-          <td class="no-print"></td>
-        </tr>
-      </tfoot>
-
-    </table>
-
-    <div class="catatan">
-      <strong>Catatan:</strong>
-      <textarea id="catatan" placeholder="Tulis catatan jika diperlukan..."></textarea>
-    </div>
-
-    <div class="ttd">
-
-      <div>
-        <p>Pengirim,</p>
-        <div class="garis-ttd"></div>
-        <p>(............................)</p>
-      </div>
-
-      <div>
-        <p>Penerima,</p>
-        <div class="garis-ttd"></div>
-        <p>(............................)</p>
-      </div>
-
-    </div>
-
-  </div>
-
-  <div id="panelRiwayat" class="no-print riwayat" hidden>
-    <h3>Riwayat Surat Jalan</h3>
-    <div id="daftarRiwayat"></div>
-    <button onclick="tutupRiwayat()">Tutup Riwayat</button>
-  </div>
-
-</div>
-
-<script src="script.js"></script>
+  <main class="welcome">
+    <h1>SELAMAT DATANG DI AZX Office</h1>
+    <p>Sistem administrasi dan pengelolaan dokumen bisnis.</p>
+    <a class="continue" href="dokumen.html">
+      <span>Lanjutkan</span>
+      <span class="arrow" aria-hidden="true">→</span>
+    </a>
+    <div class="footer">AZX OFFICE · ADMINISTRASI</div>
+  </main>
 </body>
 </html>
