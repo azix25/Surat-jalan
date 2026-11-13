@@ -146,12 +146,24 @@ async function generateWithAI(){
  try{
   const response=await fetch("https://nqwqlhcwiwprsbcdadhy.supabase.co/functions/v1/dokumen-ai",{
    method:"POST",headers:{"Content-Type":"application/json","x-ai-access-code":accessCode},
-   body:JSON.stringify({instruction:prompt,currentDocument:{...readData(),templateSource:customTemplate?"Canva (desain latar dipertahankan; isi dokumen dapat diedit)":"Template bawaan"}})
+   const current=readData(),format2=current.layoutMode==="no-table";
+  const aiInstruction=format2
+   ?prompt+"\\n\\nMODE FORMAT 2: Buat isi dokumen dalam bentuk teks/HTML Word yang rapi untuk area isi bebas. Jangan membuat tabel barang, rincian harga, total, tanda tangan, atau blok penutup. Pertahankan kategori dokumen yang dipilih. Kembalikan isi utama pada rincianFormat2 atau rincianBebas."
+   :prompt;
+  const response=await fetch("https://nqwqlhcwiwprsbcdadhy.supabase.co/functions/v1/dokumen-ai",{
+   method:"POST",headers:{"Content-Type":"application/json","x-ai-access-code":accessCode},
+   body:JSON.stringify({instruction:aiInstruction,currentDocument:{...current,formatMode:format2?"format2":"format1",templateSource:format2?"Template Format 2 (isi bebas tanpa tabel dan tanda tangan)":customTemplate?"Canva (desain latar dipertahankan; isi dokumen dapat diedit)":"Template bawaan"}})
   });
   const result=await response.json();
   if(!response.ok)throw new Error(result.error||"Permintaan AI gagal.");
   const d=result.document||{};
-  const merged={...readData(),...d,items:Array.isArray(d.items)?d.items:readData().items};
+  const merged={...current,...d,layoutMode:current.layoutMode,items:Array.isArray(d.items)?d.items:current.items};
+  if(format2){
+   const generatedBody=d.rincianFormat2??d.rincianBebas??d.isiDokumen??d.body;
+   if(generatedBody!==undefined)merged.rincianFormat2=generatedBody;
+   else if(typeof d.keterangan==="string"&&d.keterangan.trim())merged.rincianFormat2=d.keterangan;
+   merged.rincianBebas=current.rincianBebas;
+  }
   setData(merged);
   status.textContent=result.message||"Draf AI sudah dimasukkan. Periksa kembali data dan nominal sebelum digunakan.";
  }catch(error){status.textContent="Belum berhasil: "+error.message}
