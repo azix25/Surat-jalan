@@ -283,7 +283,10 @@ async function generateWithAI(){
   status.textContent=result.message||"Draf AI sudah dimasukkan. Periksa kembali data dan nominal sebelum digunakan.";
  }catch(error){
   const message=String(error.message||error);
-  if(/RESOURCE_EXHAUSTED|quota|limit/i.test(message)){
+  if(/401|403|unauthorized|kode akses|access code/i.test(message)){
+   clearSavedAIAccessCode();
+   status.textContent="Kode akses ditolak. Masukkan kode AZX yang benar satu kali; kode lama sudah dihapus dari perangkat.";
+  }else if(/RESOURCE_EXHAUSTED|quota|limit/i.test(message)){
    status.textContent="Batas penggunaan Cloudflare Workers AI tercapai. Periksa kuota atau coba lagi nanti.";
   }else if(/503|UNAVAILABLE|overloaded|busy/i.test(message)){
    status.textContent="Layanan Cloudflare Workers AI sedang sibuk. Silakan coba lagi sebentar.";
