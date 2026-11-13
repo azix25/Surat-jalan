@@ -17,7 +17,11 @@
       padding: 24px;
       font-family: Arial, Helvetica, sans-serif;
       color: #fff;
-      background: linear-gradient(135deg, #062b52 0%, #07508a 52%, #0876ad 100%);
+      background:
+        linear-gradient(135deg, rgba(3, 28, 57, .78), rgba(5, 65, 112, .68)),
+        url("https://www.alcedis.de/sites/default/files/styles/full_size/public/2025-05/AdobeStock_1001395080.jpeg?itok=JxsKBw1h")
+        center center / cover no-repeat fixed,
+        #073b70;
     }
     .welcome {
       width: min(100%, 520px);
@@ -25,7 +29,9 @@
       text-align: center;
       border: 1px solid rgba(255,255,255,.2);
       border-radius: 20px;
-      background: rgba(3, 34, 66, .38);
+      background: rgba(3, 34, 66, .62);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
       box-shadow: 0 18px 55px rgba(0,0,0,.24);
     }
     .welcome h1 {
