@@ -53,7 +53,7 @@ h1{max-width:520px;margin:0;color:var(--navy);font-size:clamp(32px,4.5vw,51px);l
 <label>Kata sandi<input id="indexPassword" type="password" minlength="8" autocomplete="current-password" required placeholder="Minimal 8 karakter"></label>
 <button id="indexAuthSubmit" type="submit">Masuk</button>
 </form>
-<p class="auth-switch" id="authSwitch">Belum punya akun? <button type="button" id="switchAuth">Buat akun</button></p>
+<p class="auth-switch">Gunakan email dan kata sandi akun AZX bersama yang telah diberikan admin. Pendaftaran akun baru tidak tersedia.</p>
 <p class="auth-message" id="indexAuthMessage" role="status" aria-live="polite"></p>
 </section>
 <div class="workspace-links" id="workspaceLinks" hidden>
@@ -77,19 +77,10 @@ const URL="https://nqwqlhcwiwprsbcdadhy.supabase.co";
 const KEY="sb_publishable_HSLy26SUHWwpow0smZrB2Q_sNchYRDx";
 const client=window.supabase?.createClient(URL,KEY);
 const $=id=>document.getElementById(id);
-let mode="login";
-function setMode(next){
- mode=next;
- $("authTitle").textContent=mode==="login"?"Masuk ke AZX Office":"Buat akun AZX Office";
- $("indexAuthSubmit").textContent=mode==="login"?"Masuk":"Buat akun";
- $("indexPassword").autocomplete=mode==="login"?"current-password":"new-password";
- $("authSwitch").innerHTML=mode==="login"?'Belum punya akun? <button type="button" id="switchAuth">Buat akun</button>':'Sudah punya akun? <button type="button" id="switchAuth">Masuk</button>';
- $("switchAuth").addEventListener("click",()=>setMode(mode==="login"?"signup":"login"));
- $("indexAuthMessage").textContent=mode==="login"?"Gunakan akun AZX Office untuk membuka seluruh modul.":"Daftarkan akun. Jika verifikasi email aktif, konfirmasi melalui email sebelum masuk.";
-}
 function showSignedIn(user){
  const next=new URLSearchParams(location.search).get("next");
  if(next==="inventory.html"){location.replace("inventory.html");return;}
+ if(next==="dokumen.html"){location.replace("dokumen.html");return;}
  $("loginBox").hidden=true;$("workspaceLinks").hidden=false;
  $("indexAuthMessage").textContent="Masuk sebagai "+(user?.email||"pengguna AZX Office")+".";
 }
@@ -98,16 +89,23 @@ $("indexAuthForm").addEventListener("submit",async e=>{
  e.preventDefault();const button=$("indexAuthSubmit");button.disabled=true;
  const email=$("indexEmail").value.trim(),password=$("indexPassword").value;
  try{
-  const result=mode==="login"?await client.auth.signInWithPassword({email,password}):await client.auth.signUp({email,password});
+  const result=await client.auth.signInWithPassword({email,password});
   if(result.error)throw result.error;
-  if(mode==="signup"&&!result.data.session){$("indexAuthMessage").textContent="Pendaftaran berhasil. Konfirmasi email jika diminta, lalu masuk.";return;}
   showSignedIn(result.data.user);
- }catch(error){$("indexAuthMessage").textContent=error.message||"Autentikasi gagal.";}
+ }catch(error){$("indexAuthMessage").textContent=error.message||"Email atau kata sandi tidak sesuai.";}
  finally{button.disabled=false;}
 });
-$("indexLogout").addEventListener("click",async()=>{await client.auth.signOut();$("workspaceLinks").hidden=true;$("loginBox").hidden=false;$("indexAuthMessage").textContent="Anda telah keluar.";setMode("login");});
-$("switchAuth").addEventListener("click",()=>setMode("signup"));
-client.auth.getSession().then(({data})=>{if(data.session)showSignedIn(data.session.user);});
+$("indexLogout").addEventListener("click",async()=>{
+ const {error}=await client.auth.signOut();
+ if(error){$("indexAuthMessage").textContent=error.message;return;}
+ $("workspaceLinks").hidden=true;$("loginBox").hidden=false;
+ $("indexAuthMessage").textContent="Anda telah keluar.";
+ $("indexAuthForm").reset();
+});
+client.auth.getSession().then(({data,error})=>{
+ if(error){$("indexAuthMessage").textContent=error.message;return;}
+ if(data.session)showSignedIn(data.session.user);
+});
 client.auth.onAuthStateChange((_event,session)=>{if(session)showSignedIn(session.user);});
 })();
 </script>
