@@ -1,98 +1,46 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#073b70">
-  <title>AZX Office</title>
-  <style>
-    * { box-sizing: border-box; }
-    html, body { min-height: 100%; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      font-family: Arial, Helvetica, sans-serif;
-      color: #fff;
-      background:
-        linear-gradient(135deg, rgba(3, 28, 57, .78), rgba(5, 65, 112, .68)),
-        url("https://www.alcedis.de/sites/default/files/styles/full_size/public/2025-05/AdobeStock_1001395080.jpeg?itok=JxsKBw1h")
-        center center / cover no-repeat fixed,
-        #073b70;
-    }
-    .welcome {
-      width: min(100%, 520px);
-      padding: 48px 30px;
-      text-align: center;
-      border: 1px solid rgba(255,255,255,.2);
-      border-radius: 20px;
-      background: rgba(3, 34, 66, .62);
-      backdrop-filter: blur(3px);
-      -webkit-backdrop-filter: blur(3px);
-      box-shadow: 0 18px 55px rgba(0,0,0,.24);
-    }
-    .welcome h1 {
-      margin: 0 0 14px;
-      color: #fff;
-      font-size: clamp(25px, 5vw, 34px);
-      line-height: 1.25;
-      letter-spacing: .5px;
-    }
-    .welcome p {
-      margin: 0 0 30px;
-      color: #d9ecff;
-      font-size: 15px;
-      line-height: 1.6;
-    }
-    .continue {
-      display: flex;
-      min-height: 58px;
-      width: 100%;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 16px 22px;
-      border: 1px solid rgba(255,255,255,.5);
-      border-radius: 12px;
-      background: #fff;
-      color: #07508a;
-      font-size: 17px;
-      font-weight: 700;
-      text-decoration: none;
-      box-shadow: 0 8px 20px rgba(0,0,0,.18);
-      transition: transform .18s ease, background .18s ease;
-    }
-    .continue:hover, .continue:focus-visible {
-      background: #eaf5ff;
-      transform: translateY(-2px);
-      outline: 2px solid #fff;
-      outline-offset: 3px;
-    }
-    .arrow { font-size: 22px; line-height: 1; }
-    .footer {
-      margin-top: 28px;
-      color: #c4def5;
-      font-size: 12px;
-      letter-spacing: 1.5px;
-    }
-    @media (max-width: 480px) {
-      body { padding: 16px; }
-      .welcome { padding: 40px 22px; }
-    }
-  </style>
-</head>
-<body>
-  <main class="welcome">
-    <h1>SELAMAT DATANG DI AZX Office</h1>
-    <p>Sistem administrasi dan pengembangan aplikasi berbasis Ai </p>
-    <a class="continue" href="dokumen.html">
-      <span>Lanjutkan</span>
-      <span class="arrow" aria-hidden="true">→</span>
-    </a>
-    <div class="footer">AZX OFFICE · ADMINISTRASI</div>
-  </main>
-</body>
-</html>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#142b4a"><meta name="description" content="AZX Office — sistem administrasi dan pengelolaan dokumen perusahaan.">
+<title>AZX Office | Modern Corporate Office</title>
+<style>
+:root{color-scheme:light;--navy:#142b4a;--blue:#2463a6;--ink:#1d2939;--muted:#66758a}
+*{box-sizing:border-box}html,body{min-height:100%;margin:0}
+body{min-height:100vh;padding:clamp(18px,4vw,54px);display:grid;place-items:center;background:radial-gradient(circle at 12% 10%,#e4edf8 0,transparent 34%),linear-gradient(135deg,#f7f9fc,#edf2f7);font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--ink)}
+.welcome{width:min(100%,1040px);min-height:560px;display:grid;grid-template-columns:1.05fr .95fr;overflow:hidden;border:1px solid #e1e8f0;border-radius:26px;background:#fff;box-shadow:0 24px 70px rgba(20,43,74,.12)}
+.intro{padding:clamp(30px,5vw,64px);display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:clamp(42px,7vw,78px)}
+.brand-mark{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#1d4776,#142b4a);color:#fff;font-size:16px;font-weight:800;letter-spacing:-1px;box-shadow:0 8px 18px #142b4a2b}
+.brand-name{font-size:16px;font-weight:800;letter-spacing:.7px;color:var(--navy)}.brand-sub{display:block;margin-top:4px;color:var(--muted);font-size:10px;letter-spacing:1.2px;text-transform:uppercase}
+.eyebrow{margin:0 0 13px;color:var(--blue);font-size:11px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase}
+h1{max-width:520px;margin:0;color:var(--navy);font-size:clamp(32px,4.5vw,51px);line-height:1.1;letter-spacing:-1.7px}
+.lead{max-width:470px;margin:20px 0 30px;color:#627187;font-size:15px;line-height:1.8}
+.continue{min-height:54px;min-width:210px;padding:0 22px;display:inline-flex;align-items:center;justify-content:center;gap:22px;border-radius:10px;background:var(--blue);color:#fff;text-decoration:none;font-size:14px;font-weight:750;box-shadow:0 8px 18px #2463a633;transition:background .2s,transform .2s,box-shadow .2s}
+.continue:hover,.continue:focus-visible{background:#174f8c;transform:translateY(-2px);box-shadow:0 12px 24px #2463a640;outline:3px solid #b8d5f4;outline-offset:3px}
+.arrow{font-size:20px;line-height:1}.footnote{margin-top:42px;color:#8995a5;font-size:11px;letter-spacing:1.1px}
+.visual{position:relative;min-height:560px;padding:48px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(145deg,#18385f,#102641)}
+.visual:before,.visual:after{content:"";position:absolute;border:1px solid #ffffff16;border-radius:50%}.visual:before{width:480px;height:480px;right:-180px;top:-170px}.visual:after{width:360px;height:360px;left:-180px;bottom:-170px}
+.mock{position:relative;z-index:1;width:min(100%,410px);padding:18px;border:1px solid #ffffff30;border-radius:17px;background:#ffffff12;box-shadow:0 25px 60px #07182b55;backdrop-filter:blur(10px)}
+.mock-top{display:flex;align-items:center;justify-content:space-between;padding:3px 2px 17px;color:#fff;font-size:12px;font-weight:700}.mock-pill{padding:5px 9px;border-radius:20px;background:#d5e8fb20;color:#d8eaff;font-size:9px;font-weight:600}
+.mock-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.mock-card{min-height:95px;padding:14px;border:1px solid #ffffff20;border-radius:11px;background:#ffffff12;color:#fff}.mock-card small{display:block;color:#c5d5e8;font-size:10px}.mock-card strong{display:block;margin-top:13px;font-size:23px;letter-spacing:-.5px}
+.mock-wide{margin-top:10px;padding:15px;border:1px solid #ffffff20;border-radius:11px;background:#ffffff12;color:#fff}.mock-wide small{color:#c5d5e8;font-size:10px}
+.bars{height:72px;margin-top:14px;display:flex;align-items:flex-end;gap:8px}.bars i{flex:1;display:block;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#9fc9f2,#4c86c2);opacity:.9}.bars i:nth-child(1){height:35%}.bars i:nth-child(2){height:58%}.bars i:nth-child(3){height:44%}.bars i:nth-child(4){height:78%}.bars i:nth-child(5){height:62%}.bars i:nth-child(6){height:94%}.bars i:nth-child(7){height:72%}
+.mock-row{display:flex;align-items:center;gap:10px;margin-top:11px;color:#e5eef8;font-size:10px}.dot{width:7px;height:7px;border-radius:50%;background:#8bc3a4}
+@media(max-width:760px){body{padding:14px}.welcome{grid-template-columns:1fr;min-height:0;border-radius:19px}.intro{padding:30px 25px}.brand{margin-bottom:38px}h1{font-size:clamp(32px,9vw,44px)}.lead{font-size:14px;margin:16px 0 24px}.visual{min-height:340px;padding:28px}.mock{max-width:390px}.footnote{margin-top:30px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style></head>
+<body><main class="welcome">
+<section class="intro">
+<div class="brand"><div class="brand-mark" aria-hidden="true">AZX</div><div><div class="brand-name">AZX OFFICE</div><span class="brand-sub">Corporate Administration Suite</span></div></div>
+<p class="eyebrow">Modern Corporate Office</p><h1>Kelola dokumen bisnis dengan lebih profesional.</h1>
+<p class="lead">Satu ruang kerja untuk membuat dokumen, mengelola arsip, dan membantu aktivitas administrasi perusahaan dengan lebih teratur.</p>
+<a class="continue" href="dokumen.html"><span>Masuk ke AZX Office</span><span class="arrow" aria-hidden="true">→</span></a>
+<div class="footnote">AZX OFFICE <span aria-hidden="true">·</span> ADMINISTRASI BISNIS</div>
+</section>
+<section class="visual" aria-label="Ilustrasi dashboard AZX Office"><div class="mock">
+<div class="mock-top"><span>Ringkasan Workspace</span><span class="mock-pill">OVERVIEW</span></div>
+<div class="mock-grid"><div class="mock-card"><small>Total dokumen</small><strong>128</strong></div><div class="mock-card"><small>Diproses bulan ini</small><strong>24</strong></div></div>
+<div class="mock-wide"><small>Aktivitas dokumen</small><div class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+<div class="mock-row"><span class="dot"></span><span>Workspace siap digunakan</span></div>
+</div></section></main></body></html>
