@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#142b4a">
 <title>AZX Inventory | Manajemen Persediaan</title>
-<link rel="stylesheet" href="inventory.css?v=azx-inventory-3">
+<link rel="stylesheet" href="inventory.css?v=azx-inventory-4">
 </head>
 <body>
 <header class="topbar">
@@ -94,7 +94,6 @@
   <section class="reduce-dialog" role="dialog" aria-modal="true" aria-labelledby="reduceTitle">
     <div class="reduce-head"><div><span class="eyebrow">STOCK ADJUSTMENT</span><h2 id="reduceTitle">Kurangi stok</h2><p id="reduceItemInfo">Pilih jumlah pengurangan stok.</p></div><button type="button" class="modal-close" id="closeReduceModal" aria-label="Tutup">×</button></div>
     <form id="reduceForm" class="reduce-form">
-      <label>Jenis pengurangan<select id="reduceType" required><option value="keluar">Barang keluar</option></select></label>
       <label>Jumlah yang dikurangi<input id="reduceQuantity" type="number" min="0.001" step="0.001" required placeholder="Masukkan jumlah"></label>
       <label>Nama pengambil / tujuan (opsional)<input id="reducePerson" maxlength="150" placeholder="Nama orang atau tujuan"></label>
       <label>Keterangan (opsional)<textarea id="reduceNotes" rows="2" maxlength="500" placeholder="Tambahkan catatan jika perlu"></textarea></label>
@@ -104,5 +103,5 @@
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="inventory.js?v=azx-inventory-3"></script>
+<script src="inventory.js?v=azx-inventory-4"></script>
 </body></html>
