@@ -10,7 +10,7 @@ function defaultColumnLabels(type){const detail=["suratjalan","deliveryorder","t
 function applyDefaultColumnLabels(){const defaults=defaultColumnLabels($("jenis").value);Object.entries(defaults).forEach(([id,value])=>{if($(id))$(id).value=value;});}
 function addItem(item={}){
  const tr=document.createElement("tr");
- tr.innerHTML='<td><input class="item-name" type="text" placeholder="Nama barang / jasa" autocomplete="off"></td><td><input class="item-qty" type="number" min="0" step="any" value="1"></td><td><input class="item-price" type="number" min="0" value="0"></td><td><button type="button" aria-label="Hapus item">×</button></td>';
+ tr.innerHTML='<td><input class="item-name" type="text" placeholder="Nama barang / jasa" autocomplete="off"></td><td><input class="item-qty" type="text" inputmode="decimal" autocomplete="off" value="1" aria-label="Jumlah"></td><td><input class="item-price" type="number" min="0" value="0"></td><td><button type="button" aria-label="Hapus item">×</button></td>';
  tr.querySelector(".item-name").value=item.nama??"";
  tr.querySelector(".item-qty").value=item.qty??1;
  tr.querySelector(".item-price").value=item.harga??0;
