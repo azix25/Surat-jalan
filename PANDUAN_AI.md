@@ -1,26 +1,27 @@
-# Konfigurasi AI Dokumen (Gemini)
+# Konfigurasi AI AZX Office (Cloudflare Workers AI)
 
-Fitur AI dokumen menggunakan Google Gemini API melalui Supabase Edge Function. Kunci API disimpan sebagai Supabase Secret, bukan di HTML/JavaScript atau repository.
+AI untuk **AZX Office** dan **AZX Inventory** menggunakan Cloudflare Workers AI melalui Supabase Edge Functions.
 
-## Aktifkan akses gratis
-1. Buka Google AI Studio: https://aistudio.google.com/apikey
-2. Masuk dengan akun Google, buat API key untuk Gemini API, lalu salin.
-3. Buka Supabase Secrets: https://supabase.com/dashboard/project/nqwqlhcwiwprsbcdadhy/functions/secrets
-4. Tambahkan atau perbarui secret:
-   - Nama: `GEMINI_API_KEY`
-   - Nilai: API key dari Google AI Studio
-5. Pertahankan secret `AI_ACCESS_CODE` yang sudah ada. Jika belum ada, buat kode akses panjang dan rahasia.
-6. Buka halaman `dokumen.html`, masukkan nilai `AI_ACCESS_CODE` pada kolom Kode akses AI.
+## Pengaturan pengelola (sekali di server)
+Di Supabase Dashboard → Edge Functions → Secrets, pastikan tersedia:
+- `CLOUDFLARE_ACCOUNT_ID`
+- `CLOUDFLARE_API_TOKEN`
+- `AI_ACCESS_CODE` (kode akses AZX yang sudah dipakai sebelumnya)
 
-## Cara menggunakan
-1. Pilih jenis dokumen: invoice, surat jalan, penawaran, atau penagihan.
-2. Tulis instruksi yang jelas di kotak AI.
-3. Tekan **Buat dengan AI**.
-4. Periksa identitas, tanggal, nomor, rincian, harga, pajak, dan total. AI tidak boleh dianggap sebagai pengganti pemeriksaan manusia.
-5. Simpan atau cetak menjadi PDF.
+Jangan simpan Cloudflare API Token di HTML, JavaScript, atau repository. Jangan masukkan Cloudflare API Token ke kolom kode akses pengguna.
 
-## Catatan penting
-- Gemini API menyediakan Free Tier untuk model/region yang memenuhi syarat, dengan kuota dan batas permintaan. Gratis bukan berarti tanpa batas. Jika kuota habis, tunggu kuota pulih; jangan aktifkan billing jika ingin tetap gratis.
-- Ketersediaan Free Tier, model, dan batas pemakaian ditentukan Google dan dapat berubah. Periksa halaman harga: https://ai.google.dev/gemini-api/docs/pricing
-- Jangan memasukkan API key Google ke kolom Kode akses AI, chat, atau GitHub.
-- Template Canva tetap disimpan secara lokal pada browser/perangkat.
+## Pengaturan pengguna
+1. Masuk ke AZX Office atau AZX Inventory.
+2. Pada penggunaan AI pertama di perangkat/browser tersebut, masukkan **AI_ACCESS_CODE** yang diberikan pengelola.
+3. Kode akses disimpan lokal pada browser perangkat tersebut dan otomatis digunakan oleh kedua modul (dokumen dan inventory). Tidak perlu dimasukkan lagi setiap kali.
+4. Jika kode ditolak atau diganti pengelola, masukkan kode terbaru saat diminta.
+
+Catatan: penyimpanan lokal berlaku pada browser/perangkat dan domain yang sama. Menghapus data situs/browser akan menghapus kode tersimpan.
+
+## Cara menggunakan AI dokumen
+1. Pilih jenis dokumen dan tulis instruksi.
+2. Tekan **Buat dengan AI** atau gunakan perintah suara.
+3. Periksa identitas, tanggal, nomor, rincian, dan nominal sebelum disimpan atau dicetak.
+
+## Model dan kuota
+Backend menggunakan Cloudflare Workers AI (Llama 3.3 70B untuk teks dan Whisper Large v3 Turbo untuk transkripsi suara). Ketersediaan dan kuota mengikuti akun Cloudflare; penggunaan gratis memiliki batas dan dapat berubah.
