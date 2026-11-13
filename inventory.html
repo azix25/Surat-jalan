@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#142b4a">
 <title>AZX Inventory | Manajemen Persediaan</title>
-<link rel="stylesheet" href="inventory.css?v=azx-inventory-2">
+<link rel="stylesheet" href="inventory.css?v=azx-inventory-3">
 </head>
 <body>
 <header class="topbar">
@@ -60,7 +60,7 @@
         <section class="view" id="view-transaction">
           <div class="section-head"><div><h2>Catat transaksi barang</h2><p>Setiap transaksi akan masuk ke riwayat dan memperbarui stok.</p></div></div>
           <form id="transactionForm" class="form-grid">
-            <label>Jenis transaksi<select id="txType" required><option value="masuk">Barang masuk</option><option value="keluar">Barang keluar</option><option value="diambil">Barang diambil</option><option value="rusak">Barang rusak</option><option value="koreksi_tambah">Koreksi stok (+)</option><option value="koreksi_kurang">Koreksi stok (−)</option></select></label>
+            <label>Jenis transaksi<select id="txType" required><option value="masuk">Barang masuk</option><option value="keluar">Barang keluar</option></select></label>
             <label>Barang<select id="txItem" required><option value="">Pilih barang</option></select></label>
             <label>Jumlah<input id="txQuantity" type="number" min="0.001" step="0.001" required placeholder="0"></label>
             <label>Tanggal transaksi<input id="txDate" type="date" required></label>
@@ -71,14 +71,14 @@
           </form>
         </section>
         <section class="view" id="view-history">
-          <div class="section-head"><div><h2>Riwayat transaksi</h2><p>Jejak barang masuk, keluar, diambil, rusak, dan koreksi.</p></div></div>
-          <div class="filter-row"><input id="historySearch" type="search" placeholder="Cari barang, kode, orang, atau referensi..."><select id="historyType"><option value="all">Semua transaksi</option><option value="masuk">Masuk</option><option value="keluar">Keluar</option><option value="diambil">Diambil</option><option value="rusak">Rusak</option><option value="koreksi_tambah">Koreksi tambah</option><option value="koreksi_kurang">Koreksi kurang</option></select><input id="historyFrom" type="date" aria-label="Dari tanggal"><input id="historyTo" type="date" aria-label="Sampai tanggal"></div>
-          <div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Kode / Barang</th><th>Jenis</th><th>Jumlah</th><th>Orang / Asal / Tujuan</th><th>Referensi / Keterangan</th></tr></thead><tbody id="historyRows"></tbody></table></div>
+          <div class="section-head"><div><h2>Riwayat transaksi</h2><p>Semua barang masuk dan keluar tersimpan otomatis lengkap dengan tanggal dan jam.</p></div></div>
+          <div class="filter-row"><input id="historySearch" type="search" placeholder="Cari barang, kode, orang, atau referensi..."><select id="historyType"><option value="all">Semua masuk &amp; keluar</option><option value="masuk">Barang masuk</option><option value="keluar">Barang keluar</option></select><input id="historyFrom" type="date" aria-label="Dari tanggal"><input id="historyTo" type="date" aria-label="Sampai tanggal"></div>
+          <div class="table-wrap"><table><thead><tr><th>Tanggal &amp; Jam</th><th>Kode / Barang</th><th>Jenis</th><th>Jumlah</th><th>Orang / Asal / Tujuan</th><th>Referensi / Keterangan</th></tr></thead><tbody id="historyRows"></tbody></table></div>
         </section>
         <section class="view" id="view-reports">
           <div class="section-head"><div><h2>Laporan inventaris</h2><p>Atur periode dan jenis laporan, lalu pratinjau sebelum dicetak.</p></div></div>
           <div class="form-grid report-controls">
-            <label>Jenis laporan<select id="reportType"><option value="stock">Posisi stok saat ini</option><option value="all">Semua pergerakan barang</option><option value="masuk">Barang masuk</option><option value="keluar">Barang keluar</option><option value="diambil">Barang diambil</option><option value="rusak">Barang rusak</option></select></label>
+            <label>Jenis laporan<select id="reportType"><option value="stock">Posisi stok saat ini</option><option value="all">Semua masuk &amp; keluar</option><option value="masuk">Barang masuk</option><option value="keluar">Barang keluar</option></select></label>
             <label>Dari tanggal<input id="reportFrom" type="date"></label><label>Sampai tanggal<input id="reportTo" type="date"></label>
             <label>Filter barang<select id="reportItem"><option value="all">Semua barang</option></select></label>
           </div>
@@ -94,7 +94,7 @@
   <section class="reduce-dialog" role="dialog" aria-modal="true" aria-labelledby="reduceTitle">
     <div class="reduce-head"><div><span class="eyebrow">STOCK ADJUSTMENT</span><h2 id="reduceTitle">Kurangi stok</h2><p id="reduceItemInfo">Pilih jumlah pengurangan stok.</p></div><button type="button" class="modal-close" id="closeReduceModal" aria-label="Tutup">×</button></div>
     <form id="reduceForm" class="reduce-form">
-      <label>Jenis pengurangan<select id="reduceType" required><option value="keluar">Barang keluar</option><option value="diambil">Barang diambil</option><option value="rusak">Barang rusak</option><option value="koreksi_kurang">Koreksi stok (−)</option></select></label>
+      <label>Jenis pengurangan<select id="reduceType" required><option value="keluar">Barang keluar</option></select></label>
       <label>Jumlah yang dikurangi<input id="reduceQuantity" type="number" min="0.001" step="0.001" required placeholder="Masukkan jumlah"></label>
       <label>Nama pengambil / tujuan (opsional)<input id="reducePerson" maxlength="150" placeholder="Nama orang atau tujuan"></label>
       <label>Keterangan (opsional)<textarea id="reduceNotes" rows="2" maxlength="500" placeholder="Tambahkan catatan jika perlu"></textarea></label>
@@ -104,5 +104,5 @@
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="inventory.js?v=azx-inventory-2"></script>
+<script src="inventory.js?v=azx-inventory-3"></script>
 </body></html>
