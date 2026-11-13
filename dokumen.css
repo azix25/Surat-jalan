@@ -523,3 +523,88 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
  .preview-wrap{position:static!important;max-height:none!important;overflow:visible!important}
  .history-row,.history-actions{display:none!important}
 }
+
+
+/* DESKTOP REDESIGN — Dokumen AZX Office */
+@media (min-width: 851px) {
+  body { background:#edf2f7; }
+  .azx-office-topbar {
+    min-height:78px;
+    padding:14px clamp(24px,4vw,64px);
+  }
+  .layout {
+    max-width:1720px;
+    margin:26px auto;
+    padding:0 clamp(20px,3vw,48px);
+    display:grid;
+    grid-template-columns:minmax(390px, min(34vw, 500px)) minmax(520px, 1fr);
+    gap:28px;
+    align-items:start;
+  }
+  .panel {
+    padding:26px;
+    border:1px solid #dfe7f0;
+    border-radius:16px;
+    box-shadow:0 12px 34px rgba(22,43,69,.075);
+  }
+  .panel h2 { font-size:22px; margin-bottom:20px; }
+  .panel h3 {
+    margin-top:27px;
+    padding:0 0 11px;
+    font-size:12px;
+    letter-spacing:.8px;
+  }
+  .panel label { margin:13px 0; font-size:12px; }
+  .panel input,.panel select,.panel textarea {
+    min-height:42px;
+    padding:11px 12px;
+    border-radius:9px;
+    font-size:13px;
+  }
+  .panel textarea { min-height:78px; }
+  .two { gap:12px; }
+  .actions {
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:9px;
+    padding:13px;
+    margin:22px -4px 0;
+    border:1px solid #e1e8f0;
+    border-radius:12px;
+    background:#f7f9fc;
+  }
+  .actions button { min-height:44px; padding:11px 9px; }
+  .preview-wrap {
+    position:sticky;
+    top:18px;
+    min-width:0;
+    max-height:calc(100vh - 36px);
+    overflow:auto;
+    padding:18px;
+    border:1px solid #dfe7f0;
+    border-radius:16px;
+    background:linear-gradient(145deg,#f8fafc,#eaf0f7);
+    box-shadow:0 12px 34px rgba(22,43,69,.06);
+  }
+  .preview-heading {
+    display:flex;
+    justify-content:space-between;
+    margin:0 0 16px;
+    padding:0 4px 12px;
+    border-bottom:1px solid #dce5ef;
+    color:#294969;
+    font-size:13px;
+  }
+  .paper,.paper-format2 {
+    margin:0 auto 18px;
+    box-shadow:0 10px 34px rgba(22,43,69,.13);
+  }
+  .history-row {
+    grid-template-columns:minmax(0,1fr) auto;
+    padding:14px;
+    border:1px solid #e5ebf2;
+    border-radius:10px;
+    background:#fff;
+  }
+  .history-actions button { min-width:66px; min-height:38px; }
+  .azx-extra-tools { padding:18px; }
+}
