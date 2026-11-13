@@ -229,11 +229,10 @@
 
 /* Format dokumen alternatif: tanpa tabel, total, dan blok tanda tangan. */
 .layout-no-table .panel .column-title-editor{display:none!important}
-.layout-no-table .panel #penutupEditor{display:block}
-.paper.layout-no-table .doc-table,.paper.layout-no-table .totals,.paper.layout-no-table .signatures{display:none!important}
-.paper.layout-no-table .plain-closings{display:flex;justify-content:space-between;gap:24px;margin-top:24px;font-size:11px;white-space:pre-wrap}
-.paper .plain-closings{display:none}
-@media print{.paper.layout-no-table .plain-closings{display:flex}}
+.layout-no-table .panel #penutupEditor{display:none!important}
+.layout-no-table .panel .column-title-editor{display:none!important}
+.paper.layout-no-table .doc-table,.paper.layout-no-table .totals,.paper.layout-no-table .signatures,.paper.layout-no-table .plain-closings{display:none!important}
+.paper .plain-closings{display:none!important}
 
 /* Format 2 tetap memakai data kategori: rincian tampil sebagai teks, bukan tabel. */
 .paper .plain-items{display:none;margin-top:8px;font-size:10px;line-height:1.65;white-space:pre-wrap}
