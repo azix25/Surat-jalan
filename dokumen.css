@@ -279,3 +279,22 @@
 .paper.template-f2-bingkai{outline:1px solid #ddd;outline-offset:-12px;}
 .paper.format2-paper .doc-head,.paper.format2-paper .party{break-inside:avoid;}
 @media print{.paper.format2-paper .word-content{min-height:0;}}
+
+/* Format 2 memiliki pratinjau A4 mandiri, tidak memakai struktur kertas Format 1. */
+.paper-format2{box-sizing:border-box;width:210mm;min-height:297mm;margin:0 auto;padding:24mm 22mm;background:#fff;color:#171717;font-family:Arial,sans-serif;font-size:11pt;box-shadow:0 3px 18px rgba(0,0,0,.12);}
+.paper-format2[hidden]{display:none!important;}
+.f2-company{display:grid;grid-template-columns:54px 1fr auto;gap:14px;align-items:start;padding-bottom:18px;}
+.f2-logo{width:48px;height:48px;border:1px solid #e2e2e2;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:700;overflow:hidden;}
+.f2-logo img{width:100%;height:100%;object-fit:contain;}
+.f2-company-info strong{font-size:15pt;display:block;margin:0 0 5px;}
+.f2-company-info p,.f2-recipient p{margin:0;white-space:pre-wrap;line-height:1.5;font-size:10pt;}
+.f2-date{margin:0;font-size:10pt;white-space:nowrap;}
+.f2-recipient{margin:22px 0 18px;line-height:1.6;}
+.f2-recipient div{font-size:10pt;font-weight:700;margin-bottom:5px;}
+.f2-recipient strong{font-size:11pt;font-weight:400;}
+.f2-word-content{min-height:185mm;outline:none;font-size:11pt;line-height:1.65;white-space:normal;overflow-wrap:anywhere;}
+.f2-word-content:empty:before{content:attr(data-placeholder);color:#aaa;}
+.paper-format2.template-f2-garis .f2-recipient{border-top:1px solid #ddd;padding-top:14px;}
+.paper-format2.template-f2-bingkai{outline:1px solid #ddd;outline-offset:-12px;}
+@media(max-width:800px){.paper-format2{width:100%;min-height:0;padding:24px 20px;}}
+@media print{.paper-format2{width:210mm;min-height:297mm;margin:0;padding:24mm 22mm;box-shadow:none;}.paper-format2[hidden]{display:none!important;}#lembar[hidden]{display:none!important;}}
