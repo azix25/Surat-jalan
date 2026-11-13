@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#142b4a">
 <title>AZX Inventory | Manajemen Persediaan</title>
-<link rel="stylesheet" href="inventory.css?v=azx-inventory-4">
+<link rel="stylesheet" href="inventory.css?v=azx-inventory-5">
 </head>
 <body>
 <header class="topbar">
@@ -90,6 +90,17 @@
     <p class="footer-note">AZX INVENTORY · Data tersimpan pada database online dan dipisahkan berdasarkan akun.</p>
   </section>
 </main>
+<div class="modal-backdrop" id="addModal" hidden>
+  <section class="reduce-dialog" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+    <div class="reduce-head"><div><span class="eyebrow">STOCK IN</span><h2 id="addTitle">Tambah stok</h2><p id="addItemInfo">Pilih jumlah barang masuk.</p></div><button type="button" class="modal-close" id="closeAddModal" aria-label="Tutup">×</button></div>
+    <form id="addForm" class="reduce-form">
+      <label>Jumlah barang masuk<input id="addQuantity" type="number" min="0.001" step="0.001" required placeholder="Masukkan jumlah"></label>
+      <label>Asal barang / pemasok (opsional)<input id="addPerson" maxlength="150" placeholder="Nama pemasok atau asal barang"></label>
+      <label>Keterangan (opsional)<textarea id="addNotes" rows="2" maxlength="500" placeholder="Tambahkan catatan jika perlu"></textarea></label>
+      <div class="reduce-actions"><button type="button" class="btn btn-light" id="cancelAdd">Batal</button><button type="submit" class="btn btn-primary" id="saveAdd">Simpan barang masuk</button></div>
+    </form>
+  </section>
+</div>
 <div class="modal-backdrop" id="reduceModal" hidden>
   <section class="reduce-dialog" role="dialog" aria-modal="true" aria-labelledby="reduceTitle">
     <div class="reduce-head"><div><span class="eyebrow">STOCK ADJUSTMENT</span><h2 id="reduceTitle">Kurangi stok</h2><p id="reduceItemInfo">Pilih jumlah pengurangan stok.</p></div><button type="button" class="modal-close" id="closeReduceModal" aria-label="Tutup">×</button></div>
@@ -103,5 +114,5 @@
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="inventory.js?v=azx-inventory-4"></script>
+<script src="inventory.js?v=azx-inventory-5"></script>
 </body></html>
