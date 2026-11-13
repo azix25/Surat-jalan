@@ -417,3 +417,38 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
 @media(max-width:480px){.topbar{align-items:flex-start;gap:9px}.topbar .back{font-size:11px;padding:8px 9px}.topbar>div strong{font-size:16px}.topbar small{font-size:10px;line-height:1.4}.layout{padding:0 9px}.panel{border-radius:11px;padding:15px}.panel h2{font-size:18px}.azx-dashboard{gap:5px}.azx-dashboard>div{padding:10px 4px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.actions button,#tambahItem,.ai-button,.voice-button,.topbar .back{transition:none}}
 @media print{body{background:#fff}.paper,.paper-format2{border:0;border-radius:0;box-shadow:none}}
+
+
+/* Header AZX Office disamakan dengan header AZX Inventory. */
+.azx-office-topbar{
+  min-height:72px;padding:12px clamp(16px,4vw,54px);
+  display:flex;align-items:center;gap:32px;background:#142b4a;color:#fff;
+  box-shadow:0 5px 18px #142b4a22;
+}
+.azx-office-topbar .brand{
+  display:flex;align-items:center;gap:12px;max-width:none;color:#fff;text-decoration:none;
+}
+.azx-office-topbar .brand-mark{
+  width:42px;height:42px;flex:0 0 42px;border-radius:11px;
+  background:#ffffff1a;border:1px solid #ffffff40;display:grid;place-items:center;
+  font-weight:900;color:#fff;font-size:14px;
+}
+.azx-office-topbar .brand b,.azx-office-topbar .brand small{display:block}
+.azx-office-topbar .brand b{letter-spacing:1px;font-size:14px}
+.azx-office-topbar .brand small{font-size:10px;color:#c5d5e8;margin-top:2px}
+.azx-office-topbar nav{display:flex;gap:22px;margin-left:auto}
+.azx-office-topbar nav a{color:#dce8f5;text-decoration:none;font-size:12px}
+.azx-office-topbar nav a:hover{color:#fff;text-decoration:underline}
+.azx-office-topbar .account{display:flex;align-items:center;gap:12px;color:#dce8f5;font-size:12px}
+.azx-office-topbar .account[hidden]{display:none}
+.azx-office-topbar .account span{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.azx-office-topbar .btn{min-height:38px;border:0;border-radius:8px;padding:0 14px;font:700 12px Arial,sans-serif;cursor:pointer}
+.azx-office-topbar .btn-light{background:#edf2f7;color:#34445a}
+.azx-office-topbar .btn:disabled{opacity:.65;cursor:wait}
+@media(max-width:700px){
+  .azx-office-topbar{gap:10px;flex-wrap:wrap;padding:12px}
+  .azx-office-topbar nav{order:3;width:100%;margin:0;gap:18px}
+  .azx-office-topbar .account{margin-left:auto}
+  .azx-office-topbar .account span{max-width:130px}
+}
+@media print{.azx-office-topbar{display:none!important}}
