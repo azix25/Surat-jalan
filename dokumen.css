@@ -259,3 +259,5 @@
 .paper.layout-no-table .word-content p{margin:0 0 10px;}
 .paper.layout-no-table .word-content:focus{outline:none;}
 @media print{.paper.layout-no-table .word-content{min-height:0;}}
+
+.paper.layout-no-table .plain-items{display:none!important;}
