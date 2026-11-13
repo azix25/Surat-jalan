@@ -47,7 +47,7 @@
           <form id="itemForm" class="form-grid">
             <label>Kode barang<input id="itemSku" required maxlength="50" placeholder="BRG-001"></label>
             <label>Nama barang<input id="itemName" required maxlength="150" placeholder="Nama barang"></label>
-            <label class="span-all">Varian (opsional, satu warna/jenis per baris)<textarea id="itemVariants" rows="4" placeholder="Merah&#10;Biru&#10;Hitam&#10;Putih&#10;Kuning"></textarea><small class="muted">Kode otomatis dibuat, contoh M-300-MERAH. Kosongkan jika barang hanya satu jenis.</small></label>
+            <label class="span-all">Varian (opsional, satu warna/jenis per baris; format Nama=Stok)<textarea id="itemVariants" rows="4" placeholder="Merah=20&#10;Biru=15&#10;Hitam=12&#10;Putih=8&#10;Kuning=10"></textarea><small class="muted">Kode otomatis dibuat, contoh M-300-MERAH. Isi stok awal per varian dengan format Merah=20. Jika tanpa angka, stok awalnya 0. Kosongkan jika barang hanya satu jenis.</small></label>
             <label>Kategori<input id="itemCategory" maxlength="100" placeholder="Bahan / produk / perlengkapan"></label>
             <label>Satuan<input id="itemUnit" required maxlength="30" value="pcs" placeholder="pcs, dus, kg, meter"></label>
             <label>Stok awal<input id="itemOpening" type="number" min="0" step="0.001" value="0" required></label>
