@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AZX Office — Administrasi dan Dokumen Perusahaan</title>
-<link rel="stylesheet" href="dokumen.css?v=azx-format2-text-align-20261113-33">
+<link rel="stylesheet" href="dokumen.css?v=azx-format2-align-left-panel-20261113-34">
 </head>
 <body>
 <header class="topbar">
@@ -104,7 +104,7 @@
     </div>
     <label id="labelJatuhTempo">Jatuh tempo<input id="jatuhTempo" type="text" inputmode="text" placeholder="YYYY-MM-DD" autocomplete="off"></label>
     <label>Uraian / perihal dokumen<textarea id="keterangan" rows="2" placeholder="Keterangan dokumen"></textarea></label>
-    <h3>Format Dokumen</h3><label>Jenis tampilan<select id="layoutMode"><option value="table">Format 1 — Dengan tabel dan tanda tangan</option><option value="no-table">Format 2 — Tanpa tabel dan tanpa tanda tangan</option></select></label><div id="penutupEditor"><label>Teks penutup kiri<input id="teksPenutupKiri" type="text" inputmode="text" value="Hormat kami,"></label><label>Teks penutup kanan<input id="teksPenutupKanan" type="text" inputmode="text" value="Mengetahui,"></label></div><h3>Rincian Barang, Jasa, atau Pekerjaan</h3>
+    <h3>Format Dokumen</h3><label>Jenis tampilan<select id="layoutMode"><option value="table">Format 1 — Dengan tabel dan tanda tangan</option><option value="no-table">Format 2 — Tanpa tabel dan tanpa tanda tangan</option></select></label><div class="f2-align-toolbar no-print" role="toolbar" aria-label="Perataan tulisan Format 2"><span>Perataan tulisan:</span><button type="button" data-f2-align="left" aria-label="Rata kiri" title="Rata kiri">Kiri</button><button type="button" data-f2-align="center" aria-label="Rata tengah" title="Rata tengah">Tengah</button><button type="button" data-f2-align="right" aria-label="Rata kanan" title="Rata kanan">Kanan</button></div><div id="penutupEditor"><label>Teks penutup kiri<input id="teksPenutupKiri" type="text" inputmode="text" value="Hormat kami,"></label><label>Teks penutup kanan<input id="teksPenutupKanan" type="text" inputmode="text" value="Mengetahui,"></label></div><h3>Rincian Barang, Jasa, atau Pekerjaan</h3>
     <label id="editorRincianBebas">Isi rincian seperti Word<textarea id="rincianBebas" rows="8" placeholder="Ketik bebas seperti di Word. Contoh:\n1. Pasir beton — Jumlah 5 m³\n2. Semen Portland — Jumlah 50 sak\n3. Pengiriman ke lokasi proyek"></textarea></label><div class="column-title-editor"><label>Judul kolom nama<input id="kolomNamaLabel" value="Deskripsi barang / jasa" placeholder="Contoh: Bahan"></label><label>Judul kolom jumlah<input id="kolomJumlahLabel" value="Jumlah" placeholder="Contoh: Volume"></label><label>Judul kolom ketiga<input id="kolomDetailLabel" value="Harga satuan" placeholder="Contoh: Satuan / Keterangan"></label></div><div class="table-scroll"><table class="input-table"><thead><tr><th>Nama barang / jasa</th><th>Jumlah</th><th id="judulKolomHarga">Harga satuan</th><th></th></tr></thead><tbody id="barisItem"></tbody></table></div>
     <button type="button" class="secondary" id="tambahItem">+ Tambah item</button>
     <div class="two">
@@ -122,7 +122,7 @@
   </aside>
   <section class="preview-wrap">
     <div class="preview-heading no-print"><span id="previewTitle">Pratinjau Dokumen</span><span>Ukuran A4</span></div>
-    <article id="lembarFormat2" class="paper-format2" hidden><header class="f2-company"><div class="f2-logo" id="f2Logo">NP</div><div class="f2-company-info"><strong id="f2Perusahaan">NAMA PERUSAHAAN</strong><p id="f2Alamat"></p></div><p class="f2-date" id="f2Tanggal"></p></header><section class="f2-recipient"><div id="f2LabelPihak">KEPADA YTH.</div><strong id="f2Pihak"></strong><p id="f2AlamatPihak"></p></section><div class="f2-align-toolbar no-print" role="toolbar" aria-label="Perataan tulisan Format 2"><span>Perataan tulisan:</span><button type="button" data-f2-align="left" aria-label="Rata kiri" title="Rata kiri">Kiri</button><button type="button" data-f2-align="center" aria-label="Rata tengah" title="Rata tengah">Tengah</button><button type="button" data-f2-align="right" aria-label="Rata kanan" title="Rata kanan">Kanan</button></div><div id="f2WordContent" class="f2-word-content" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Klik di sini untuk mengetik isi dokumen..."></div></article>
+    <article id="lembarFormat2" class="paper-format2" hidden><header class="f2-company"><div class="f2-logo" id="f2Logo">NP</div><div class="f2-company-info"><strong id="f2Perusahaan">NAMA PERUSAHAAN</strong><p id="f2Alamat"></p></div><p class="f2-date" id="f2Tanggal"></p></header><section class="f2-recipient"><div id="f2LabelPihak">KEPADA YTH.</div><strong id="f2Pihak"></strong><p id="f2AlamatPihak"></p></section><div id="f2WordContent" class="f2-word-content" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Klik di sini untuk mengetik isi dokumen..."></div></article>
       <article id="lembar" class="paper template-standar">
       <div class="doc-head"><div class="brand"><div class="logo" id="pLogo">NP</div><div><h1 id="pPerusahaan">NAMA PERUSAHAAN</h1><p id="pAlamat"></p><p id="pKontak"></p></div></div><div class="doc-meta"><h2 id="pJudul">INVOICE</h2><p id="pNomor"></p><p id="pTanggal"></p></div></div>
       <div class="rule"></div>
@@ -138,6 +138,6 @@
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script src="dokumen.js?v=azx-format2-text-align-20261113-33"></script>
+<script src="dokumen.js?v=azx-format2-align-left-panel-20261113-34"></script>
 </body>
 </html>
