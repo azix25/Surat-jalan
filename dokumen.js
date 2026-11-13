@@ -144,9 +144,7 @@ async function generateWithAI(){
  if(!accessCode){alert("Masukkan kode akses AI.");$("aiAccessCode").focus();return}
  btn.disabled=true;status.textContent="AI sedang menyusun dokumen...";
  try{
-  const response=await fetch("https://nqwqlhcwiwprsbcdadhy.supabase.co/functions/v1/dokumen-ai",{
-   method:"POST",headers:{"Content-Type":"application/json","x-ai-access-code":accessCode},
-   const current=readData(),format2=current.layoutMode==="no-table";
+  const current=readData(),format2=current.layoutMode==="no-table";
   const aiInstruction=format2
    ?prompt+"\\n\\nMODE FORMAT 2: Buat isi dokumen dalam bentuk teks/HTML Word yang rapi untuk area isi bebas. Jangan membuat tabel barang, rincian harga, total, tanda tangan, atau blok penutup. Pertahankan kategori dokumen yang dipilih. Kembalikan isi utama pada rincianFormat2 atau rincianBebas."
    :prompt;
