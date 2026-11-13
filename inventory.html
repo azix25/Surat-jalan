@@ -40,13 +40,14 @@
         <section class="view active" id="view-overview">
           <div class="section-head"><div><h2>Persediaan barang</h2><p>Stok berjalan berdasarkan seluruh transaksi.</p></div><button class="btn btn-primary" data-goto="items">+ Tambah barang</button></div>
           <div class="filter-row"><input id="stockSearch" type="search" placeholder="Cari nama atau kode barang..."><select id="stockFilter"><option value="all">Semua stok</option><option value="low">Stok menipis</option><option value="zero">Stok kosong</option></select></div>
-          <div class="table-wrap"><table><thead><tr><th>Kode</th><th>Nama barang</th><th>Kategori</th><th>Stok tersedia</th><th>Batas minimum</th><th>Status</th></tr></thead><tbody id="stockRows"><tr><td colspan="6" class="empty">Belum ada data barang.</td></tr></tbody></table></div>
+          <div class="table-wrap"><table><thead><tr><th>Kode utama / SKU</th><th>Nama / Varian</th><th>Kategori</th><th>Stok tersedia</th><th>Batas minimum</th><th>Status</th></tr></thead><tbody id="stockRows"><tr><td colspan="6" class="empty">Belum ada data barang.</td></tr></tbody></table></div>
         </section>
         <section class="view" id="view-items">
           <div class="section-head"><div><h2>Data barang</h2><p>Daftarkan barang dan tentukan stok awal.</p></div></div>
           <form id="itemForm" class="form-grid">
             <label>Kode barang<input id="itemSku" required maxlength="50" placeholder="BRG-001"></label>
             <label>Nama barang<input id="itemName" required maxlength="150" placeholder="Nama barang"></label>
+            <label class="span-all">Varian (opsional, satu warna/jenis per baris)<textarea id="itemVariants" rows="4" placeholder="Merah&#10;Biru&#10;Hitam&#10;Putih&#10;Kuning"></textarea><small class="muted">Kode otomatis dibuat, contoh M-300-MERAH. Kosongkan jika barang hanya satu jenis.</small></label>
             <label>Kategori<input id="itemCategory" maxlength="100" placeholder="Bahan / produk / perlengkapan"></label>
             <label>Satuan<input id="itemUnit" required maxlength="30" value="pcs" placeholder="pcs, dus, kg, meter"></label>
             <label>Stok awal<input id="itemOpening" type="number" min="0" step="0.001" value="0" required></label>
@@ -54,7 +55,7 @@
             <label class="span-all">Catatan<input id="itemNotes" maxlength="500" placeholder="Catatan opsional"></label>
             <div class="span-all form-actions"><button class="btn btn-primary">Simpan barang</button><button class="btn btn-light" type="reset">Kosongkan</button></div>
           </form>
-          <div class="section-head subhead"><div><h3>Daftar barang</h3></div></div><div class="table-wrap"><table><thead><tr><th>Kode</th><th>Nama</th><th>Satuan</th><th>Stok sekarang</th><th></th></tr></thead><tbody id="itemRows"></tbody></table></div>
+          <div class="section-head subhead"><div><h3>Daftar barang</h3></div></div><div class="table-wrap"><table><thead><tr><th>Kode utama / SKU</th><th>Nama / Varian</th><th>Satuan</th><th>Stok sekarang</th><th></th></tr></thead><tbody id="itemRows"></tbody></table></div>
         </section>
         <section class="view" id="view-transaction">
           <div class="section-head"><div><h2>Catat transaksi barang</h2><p>Setiap transaksi akan masuk ke riwayat dan memperbarui stok.</p></div></div>
