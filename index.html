@@ -88,6 +88,8 @@ function setMode(next){
  $("indexAuthMessage").textContent=mode==="login"?"Gunakan akun AZX Office untuk membuka seluruh modul.":"Daftarkan akun. Jika verifikasi email aktif, konfirmasi melalui email sebelum masuk.";
 }
 function showSignedIn(user){
+ const next=new URLSearchParams(location.search).get("next");
+ if(next==="inventory.html"){location.replace("inventory.html");return;}
  $("loginBox").hidden=true;$("workspaceLinks").hidden=false;
  $("indexAuthMessage").textContent="Masuk sebagai "+(user?.email||"pengguna AZX Office")+".";
 }
