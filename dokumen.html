@@ -7,6 +7,20 @@
 <link rel="stylesheet" href="dokumen.css?v=azx-modern-corporate-20261113-1">
 </head>
 <body>
+<style>body{visibility:hidden}</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(async()=>{
+ const URL="https://nqwqlhcwiwprsbcdadhy.supabase.co";
+ const KEY="sb_publishable_HSLy26SUHWwpow0smZrB2Q_sNchYRDx";
+ try{
+  const client=window.supabase.createClient(URL,KEY);
+  const {data,error}=await client.auth.getSession();
+  if(error||!data.session){location.replace("index.html?next=dokumen.html");return;}
+  document.body.style.visibility="visible";
+ }catch(e){location.replace("index.html?next=dokumen.html");}
+})();
+</script>
 <header class="topbar">
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><a class="back" href="index.html">← Kembali ke Beranda</a><a class="back" href="inventory.html">AZX Inventory →</a></div>
   <div><strong>AZX Office</strong><small>Administrasi · Dokumen Perusahaan · Arsip · Pengelolaan Bisnis</small></div>
