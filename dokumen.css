@@ -346,6 +346,11 @@
   .paper-format2 .f2-word-content p,
   .paper-format2 .f2-word-content div,
   .paper-format2 .f2-word-content li{
-    break-inside:avoid;
+    break-inside:auto;
+    page-break-inside:auto;
+  }
+  .paper-format2 .f2-word-content{
+    overflow:visible;
+    overflow-wrap:anywhere;
   }
 }
