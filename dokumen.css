@@ -298,3 +298,54 @@
 .paper-format2.template-f2-bingkai{outline:1px solid #ddd;outline-offset:-12px;}
 @media(max-width:800px){.paper-format2{width:100%;min-height:0;padding:24px 20px;}}
 @media print{.paper-format2{width:210mm;min-height:297mm;margin:0;padding:24mm 22mm;box-shadow:none;}.paper-format2[hidden]{display:none!important;}#lembar[hidden]{display:none!important;}}
+
+
+/* Format 2: isi panjang diteruskan ke halaman A4 berikutnya tanpa mengecilkan huruf. */
+.paper-format2{
+  page:format2;
+  break-inside:auto;
+  overflow:visible;
+}
+.paper-format2 .f2-word-content{
+  min-height:185mm;
+  font-size:11pt;
+  line-height:1.65;
+  overflow:visible;
+  break-inside:auto;
+}
+.paper-format2 .f2-word-content p,
+.paper-format2 .f2-word-content div,
+.paper-format2 .f2-word-content li{
+  orphans:3;
+  widows:3;
+}
+@page format2{
+  size:A4 portrait;
+  margin:0;
+}
+@media print{
+  .paper-format2{
+    width:210mm;
+    min-height:297mm;
+    height:auto;
+    margin:0;
+    padding:24mm 22mm;
+    box-sizing:border-box;
+    box-shadow:none;
+    overflow:visible;
+    -webkit-box-decoration-break:clone;
+    box-decoration-break:clone;
+  }
+  .paper-format2 .f2-word-content{
+    min-height:0;
+    height:auto;
+    font-size:11pt;
+    line-height:1.65;
+    overflow:visible;
+  }
+  .paper-format2 .f2-word-content p,
+  .paper-format2 .f2-word-content div,
+  .paper-format2 .f2-word-content li{
+    break-inside:avoid;
+  }
+}
