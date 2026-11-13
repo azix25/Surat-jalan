@@ -228,9 +228,17 @@
 .item-input-wrap{display:flex;align-items:center;gap:3px;min-width:0}.item-input-wrap input{flex:1 1 auto;width:100%;min-width:0}.input-table .clear-field{flex:0 0 23px;width:23px;height:28px;padding:0!important;border:0;border-radius:4px;background:#eef2f6;color:#526174;font-size:16px;line-height:1;cursor:pointer}.input-table .clear-field:active{background:#dbe4ee}.input-table .delete-item{min-width:24px;cursor:pointer}
 
 /* Format dokumen alternatif: tanpa tabel, total, dan blok tanda tangan. */
-.layout-no-table .panel .column-title-editor,.layout-no-table .panel .table-scroll,.layout-no-table .panel #tambahItem,.layout-no-table .panel #pajak,.layout-no-table .panel #diskon{display:none!important}
+.layout-no-table .panel .column-title-editor{display:none!important}
 .layout-no-table .panel #penutupEditor{display:block}
 .paper.layout-no-table .doc-table,.paper.layout-no-table .totals,.paper.layout-no-table .signatures{display:none!important}
 .paper.layout-no-table .plain-closings{display:flex;justify-content:space-between;gap:24px;margin-top:24px;font-size:11px;white-space:pre-wrap}
 .paper .plain-closings{display:none}
 @media print{.paper.layout-no-table .plain-closings{display:flex}}
+
+/* Format 2 tetap memakai data kategori: rincian tampil sebagai teks, bukan tabel. */
+.paper .plain-items{display:none;margin-top:8px;font-size:10px;line-height:1.65;white-space:pre-wrap}
+.paper.layout-no-table .doc-table{display:none!important}
+.paper.layout-no-table .plain-items{display:block}
+.paper.layout-no-table .plain-items .plain-item{margin:4px 0;padding:3px 0;border-bottom:1px dotted #d9e0e8}
+.paper.layout-no-table .totals{display:block}
+.layout-no-table .panel #pajak,.layout-no-table .panel #diskon{display:block}
