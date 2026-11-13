@@ -100,16 +100,16 @@
     <label>Alamat pelanggan / tujuan<textarea id="alamatPihak" rows="2" placeholder="Alamat pelanggan / tujuan"></textarea></label>
     <div class="two">
       <label>Nomor dokumen<input id="nomorDokumen"></label>
-      <label>Tanggal<input id="tanggalDokumen" type="date"></label>
+      <label>Tanggal<input id="tanggalDokumen" type="text" inputmode="text" placeholder="YYYY-MM-DD" autocomplete="off"></label>
     </div>
-    <label id="labelJatuhTempo">Jatuh tempo<input id="jatuhTempo" type="date"></label>
+    <label id="labelJatuhTempo">Jatuh tempo<input id="jatuhTempo" type="text" inputmode="text" placeholder="YYYY-MM-DD" autocomplete="off"></label>
     <label>Uraian / perihal dokumen<textarea id="keterangan" rows="2" placeholder="Keterangan dokumen"></textarea></label>
     <h3>Rincian Barang, Jasa, atau Pekerjaan</h3>
     <div class="column-title-editor"><label>Judul kolom nama<input id="kolomNamaLabel" value="Deskripsi barang / jasa" placeholder="Contoh: Bahan"></label><label>Judul kolom jumlah<input id="kolomJumlahLabel" value="Jumlah" placeholder="Contoh: Volume"></label><label>Judul kolom ketiga<input id="kolomDetailLabel" value="Harga satuan" placeholder="Contoh: Satuan / Keterangan"></label></div><div class="table-scroll"><table class="input-table"><thead><tr><th>Nama barang / jasa</th><th>Jumlah</th><th id="judulKolomHarga">Harga satuan</th><th></th></tr></thead><tbody id="barisItem"></tbody></table></div>
     <button type="button" class="secondary" id="tambahItem">+ Tambah item</button>
     <div class="two">
-      <label>Pajak (%)<input id="pajak" type="number" min="0" value="0"></label>
-      <label>Diskon (Rp)<input id="diskon" type="number" min="0" value="0"></label>
+      <label>Pajak (%)<input id="pajak" type="text" inputmode="text" autocomplete="off" value="0"></label>
+      <label>Diskon (Rp)<input id="diskon" type="text" inputmode="text" autocomplete="off" value="0"></label>
     </div>
     <label>Catatan / syarat pembayaran<textarea id="catatan" rows="3" placeholder="Catatan tambahan, rekening, syarat pembayaran, dll."></textarea></label>
     <div class="actions">
@@ -136,6 +136,6 @@
   </section>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="dokumen.js?v=sb-office-editable-headers-clear-20261113-8"></script>
+<script src="dokumen.js?v=sb-office-full-keyboard-20261113-9"></script>
 </body>
 </html>
