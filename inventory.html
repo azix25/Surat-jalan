@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#142b4a">
+<title>AZX Inventory | Manajemen Persediaan</title>
+<link rel="stylesheet" href="inventory.css?v=azx-inventory-1">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="brand-mark">AZX</span><span><b>AZX INVENTORY</b><small>Warehouse & Stock Management</small></span></a>
+  <nav><a href="index.html">Beranda AZX</a><a href="dokumen.html">AZX Office</a></nav>
+  <div class="account" id="accountArea" hidden><span id="userEmail"></span><button class="btn btn-light" id="logoutBtn">Keluar</button></div>
+</header>
+<main class="container">
+  <section class="auth-card" id="authPanel">
+    <div class="auth-intro"><span class="eyebrow">AZX CORPORATE SUITE</span><h1>Kelola stok dengan lebih teratur.</h1><p>Masuk ke ruang inventaris perusahaan untuk mencatat barang, memantau persediaan, dan membuat laporan.</p><div class="auth-points"><span>✓ Riwayat transaksi tersimpan</span><span>✓ Stok dihitung otomatis</span><span>✓ Laporan siap cetak</span></div></div>
+    <div class="auth-form"><div class="tabs"><button class="tab active" data-auth="login">Masuk</button><button class="tab" data-auth="signup">Buat akun</button></div>
+      <form id="authForm"><label>Email<input id="authEmail" type="email" autocomplete="email" required placeholder="nama@perusahaan.com"></label><label>Kata sandi<input id="authPassword" type="password" minlength="8" autocomplete="current-password" required placeholder="Minimal 8 karakter"></label><button class="btn btn-primary full" id="authSubmit">Masuk ke Inventory</button></form>
+      <p class="notice" id="authMessage" aria-live="polite">Gunakan akun inventaris perusahaan. Data setiap akun dipisahkan.</p>
+    </div>
+  </section>
+
+  <section id="appPanel" hidden>
+    <div class="page-heading"><div><span class="eyebrow">WAREHOUSE OVERVIEW</span><h1>Dashboard Inventaris</h1><p>Ringkasan persediaan dan aktivitas barang perusahaan.</p></div><button class="btn btn-primary" id="refreshBtn">↻ Perbarui data</button></div>
+    <div class="stats">
+      <article class="stat"><span>Jenis barang</span><strong id="statKinds">0</strong><small>Barang terdaftar</small></article>
+      <article class="stat"><span>Total stok tersedia</span><strong id="statStock">0</strong><small>Akumulasi jumlah satuan</small></article>
+      <article class="stat"><span>Barang masuk</span><strong id="statIn">0</strong><small>Periode bulan ini</small></article>
+      <article class="stat"><span>Barang keluar</span><strong id="statOut">0</strong><small>Keluar + diambil + rusak</small></article>
+    </div>
+    <section class="ai-panel">
+      <div class="ai-title"><span class="ai-icon">✦</span><div><b>AZX AI Search</b><small>Tanyakan stok dengan bahasa sehari-hari</small></div><span class="ai-chip">AI ASSISTANT</span></div>
+      <div class="ai-search"><input id="aiQuestion" placeholder="Contoh: barang apa yang stoknya hampir habis?"><button class="btn btn-primary" id="aiSearchBtn">Cari dengan AI</button></div>
+      <div class="quick-asks"><button data-ask="Tampilkan barang yang stoknya hampir habis">Stok hampir habis</button><button data-ask="Barang apa saja yang stoknya kosong?">Stok kosong</button><button data-ask="Tampilkan ringkasan barang masuk dan keluar bulan ini">Aktivitas bulan ini</button></div>
+      <div class="ai-answer" id="aiAnswer" hidden></div>
+    </section>
+
+    <div class="workspace">
+      <aside class="side-nav">
+        <button class="nav-item active" data-view="overview">▦ <span>Ringkasan stok</span></button>
+        <button class="nav-item" data-view="items">▤ <span>Data barang</span></button>
+        <button class="nav-item" data-view="transaction">⇄ <span>Catat transaksi</span></button>
+        <button class="nav-item" data-view="history">◷ <span>Riwayat transaksi</span></button>
+        <button class="nav-item" data-view="reports">▧ <span>Laporan</span></button>
+      </aside>
+      <div class="content-area">
+        <section class="view active" id="view-overview">
+          <div class="section-head"><div><h2>Persediaan barang</h2><p>Stok berjalan berdasarkan seluruh transaksi.</p></div><button class="btn btn-primary" data-goto="items">+ Tambah barang</button></div>
+          <div class="filter-row"><input id="stockSearch" type="search" placeholder="Cari nama atau kode barang..."><select id="stockFilter"><option value="all">Semua stok</option><option value="low">Stok menipis</option><option value="zero">Stok kosong</option></select></div>
+          <div class="table-wrap"><table><thead><tr><th>Kode</th><th>Nama barang</th><th>Kategori</th><th>Stok tersedia</th><th>Batas minimum</th><th>Status</th></tr></thead><tbody id="stockRows"><tr><td colspan="6" class="empty">Belum ada data barang.</td></tr></tbody></table></div>
+        </section>
+        <section class="view" id="view-items">
+          <div class="section-head"><div><h2>Data barang</h2><p>Daftarkan barang dan tentukan stok awal.</p></div></div>
+          <form id="itemForm" class="form-grid">
+            <label>Kode barang<input id="itemSku" required maxlength="50" placeholder="BRG-001"></label>
+            <label>Nama barang<input id="itemName" required maxlength="150" placeholder="Nama barang"></label>
+            <label>Kategori<input id="itemCategory" maxlength="100" placeholder="Bahan / produk / perlengkapan"></label>
+            <label>Satuan<input id="itemUnit" required maxlength="30" value="pcs" placeholder="pcs, dus, kg, meter"></label>
+            <label>Stok awal<input id="itemOpening" type="number" min="0" step="0.001" value="0" required></label>
+            <label>Batas minimum stok<input id="itemMinimum" type="number" min="0" step="0.001" value="0"></label>
+            <label class="span-all">Catatan<input id="itemNotes" maxlength="500" placeholder="Catatan opsional"></label>
+            <div class="span-all form-actions"><button class="btn btn-primary">Simpan barang</button><button class="btn btn-light" type="reset">Kosongkan</button></div>
+          </form>
+          <div class="section-head subhead"><div><h3>Daftar barang</h3></div></div><div class="table-wrap"><table><thead><tr><th>Kode</th><th>Nama</th><th>Satuan</th><th>Stok sekarang</th><th></th></tr></thead><tbody id="itemRows"></tbody></table></div>
+        </section>
+        <section class="view" id="view-transaction">
+          <div class="section-head"><div><h2>Catat transaksi barang</h2><p>Setiap transaksi akan masuk ke riwayat dan memperbarui stok.</p></div></div>
+          <form id="transactionForm" class="form-grid">
+            <label>Jenis transaksi<select id="txType" required><option value="masuk">Barang masuk</option><option value="keluar">Barang keluar</option><option value="diambil">Barang diambil</option><option value="rusak">Barang rusak</option><option value="koreksi_tambah">Koreksi stok (+)</option><option value="koreksi_kurang">Koreksi stok (−)</option></select></label>
+            <label>Barang<select id="txItem" required><option value="">Pilih barang</option></select></label>
+            <label>Jumlah<input id="txQuantity" type="number" min="0.001" step="0.001" required placeholder="0"></label>
+            <label>Tanggal transaksi<input id="txDate" type="date" required></label>
+            <label>Nama pengambil / asal / tujuan<input id="txPerson" maxlength="150" placeholder="Nama orang, pemasok, atau tujuan"></label>
+            <label>Nomor referensi<input id="txReference" maxlength="100" placeholder="Nomor surat jalan / bukti"></label>
+            <label class="span-all">Keterangan<input id="txNotes" maxlength="500" placeholder="Keterangan tambahan"></label>
+            <div class="span-all form-actions"><button class="btn btn-primary">Simpan transaksi</button><span class="muted">Transaksi tidak dihapus dari riwayat; koreksi dicatat sebagai transaksi baru.</span></div>
+          </form>
+        </section>
+        <section class="view" id="view-history">
+          <div class="section-head"><div><h2>Riwayat transaksi</h2><p>Jejak barang masuk, keluar, diambil, rusak, dan koreksi.</p></div></div>
+          <div class="filter-row"><input id="historySearch" type="search" placeholder="Cari barang, kode, orang, atau referensi..."><select id="historyType"><option value="all">Semua transaksi</option><option value="masuk">Masuk</option><option value="keluar">Keluar</option><option value="diambil">Diambil</option><option value="rusak">Rusak</option><option value="koreksi_tambah">Koreksi tambah</option><option value="koreksi_kurang">Koreksi kurang</option></select><input id="historyFrom" type="date" aria-label="Dari tanggal"><input id="historyTo" type="date" aria-label="Sampai tanggal"></div>
+          <div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Kode / Barang</th><th>Jenis</th><th>Jumlah</th><th>Orang / Asal / Tujuan</th><th>Referensi / Keterangan</th></tr></thead><tbody id="historyRows"></tbody></table></div>
+        </section>
+        <section class="view" id="view-reports">
+          <div class="section-head"><div><h2>Laporan inventaris</h2><p>Atur periode dan jenis laporan, lalu pratinjau sebelum dicetak.</p></div></div>
+          <div class="form-grid report-controls">
+            <label>Jenis laporan<select id="reportType"><option value="stock">Posisi stok saat ini</option><option value="all">Semua pergerakan barang</option><option value="masuk">Barang masuk</option><option value="keluar">Barang keluar</option><option value="diambil">Barang diambil</option><option value="rusak">Barang rusak</option></select></label>
+            <label>Dari tanggal<input id="reportFrom" type="date"></label><label>Sampai tanggal<input id="reportTo" type="date"></label>
+            <label>Filter barang<select id="reportItem"><option value="all">Semua barang</option></select></label>
+          </div>
+          <div class="form-actions report-actions"><button class="btn btn-primary" id="previewReport">Buat pratinjau</button><button class="btn btn-light" id="printReport">Cetak / Simpan PDF</button></div>
+          <div class="report-paper" id="reportPaper"><div class="report-placeholder">Atur filter lalu tekan “Buat pratinjau”.</div></div>
+        </section>
+      </div>
+    </div>
+    <p class="footer-note">AZX INVENTORY · Data tersimpan pada database online dan dipisahkan berdasarkan akun.</p>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="inventory.js?v=azx-inventory-1"></script>
+</body></html>
