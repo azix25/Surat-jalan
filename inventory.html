@@ -9,18 +9,10 @@
 <body>
 <header class="topbar">
   <a class="brand" href="index.html"><span class="brand-mark">AZX</span><span><b>AZX INVENTORY</b><small>Warehouse & Stock Management</small></span></a>
-  <nav><a href="index.html">Beranda AZX</a><a href="dokumen.html">AZX Office</a></nav>
+  <nav><a href="index.html">Index.html</a><a href="dokumen.html">AZX Office</a></nav>
   <div class="account" id="accountArea" hidden><span id="userEmail"></span><button class="btn btn-light" id="logoutBtn">Keluar</button></div>
 </header>
 <main class="container">
-  <section class="auth-card" id="authPanel">
-    <div class="auth-intro"><span class="eyebrow">AZX CORPORATE SUITE</span><h1>Kelola stok dengan lebih teratur.</h1><p>Masuk ke ruang inventaris perusahaan untuk mencatat barang, memantau persediaan, dan membuat laporan.</p><div class="auth-points"><span>✓ Riwayat transaksi tersimpan</span><span>✓ Stok dihitung otomatis</span><span>✓ Laporan siap cetak</span></div></div>
-    <div class="auth-form"><div class="tabs"><button class="tab active" data-auth="login">Masuk</button><button class="tab" data-auth="signup">Buat akun</button></div>
-      <form id="authForm"><label>Email<input id="authEmail" type="email" autocomplete="email" required placeholder="nama@perusahaan.com"></label><label>Kata sandi<input id="authPassword" type="password" minlength="8" autocomplete="current-password" required placeholder="Minimal 8 karakter"></label><button class="btn btn-primary full" id="authSubmit">Masuk ke Inventory</button></form>
-      <p class="notice" id="authMessage" aria-live="polite">Gunakan akun inventaris perusahaan. Data setiap akun dipisahkan.</p>
-    </div>
-  </section>
-
   <section id="appPanel" hidden>
     <div class="page-heading"><div><span class="eyebrow">WAREHOUSE OVERVIEW</span><h1>Dashboard Inventaris</h1><p>Ringkasan persediaan dan aktivitas barang perusahaan.</p></div><button class="btn btn-primary" id="refreshBtn">↻ Perbarui data</button></div>
     <div class="stats">
