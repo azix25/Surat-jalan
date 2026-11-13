@@ -392,3 +392,28 @@
 .paper-format2,.paper{position:relative}
 @media(max-width:480px){.azx-tool-buttons{grid-template-columns:1fr}.azx-dashboard strong{font-size:17px}}
 @media print{.azx-watermark-layer,.azx-stamp-layer{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+
+/* AZX Office — Modern Corporate Office visual system (presentation only). */
+:root{--azx-navy:#142b4a;--azx-blue:#2463a6;--azx-blue-dark:#194f86;--azx-ink:#1d2939;--azx-muted:#66758a;--azx-line:#e3eaf2;--azx-canvas:#f3f6fa;--azx-soft:#f7f9fc}
+html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-ink);font-family:Inter,"Segoe UI",Arial,sans-serif}
+.topbar{position:relative;z-index:5;min-height:76px;padding:13px clamp(14px,3vw,34px);gap:20px;background:linear-gradient(110deg,#142b4a,#1c416b);box-shadow:0 4px 18px rgba(20,43,74,.14)}
+.topbar>div{display:flex;flex-direction:column;gap:4px}.topbar>div strong{font-size:18px;letter-spacing:.45px}.topbar>div strong:before{content:"AZX";display:inline-grid;place-items:center;width:34px;height:30px;margin-right:10px;border:1px solid #ffffff45;border-radius:8px;background:#ffffff16;color:#fff;font-size:11px;letter-spacing:.5px;vertical-align:middle}
+.topbar small{font-size:11px;letter-spacing:.2px;color:#d1deed}.topbar .back{display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border:1px solid #ffffff35;border-radius:8px;background:#ffffff10;color:#f3f7fc;font-weight:600;transition:background .2s}.topbar .back:hover{background:#ffffff20}
+.layout{max-width:1580px;margin:24px auto;padding:0 clamp(10px,2vw,24px);gap:22px;grid-template-columns:minmax(320px,410px) minmax(0,1fr)}
+.panel{padding:22px;border:1px solid var(--azx-line);border-radius:14px;background:#fff;box-shadow:0 8px 28px rgba(20,43,74,.055)}.panel h2{color:var(--azx-navy);font-size:20px;letter-spacing:-.35px}
+.panel h3{margin-top:23px;padding-bottom:9px;border-bottom:1px solid var(--azx-line);color:#28496d;font-size:12px;font-weight:800;letter-spacing:.65px;text-transform:uppercase}
+.panel label{color:#45566d;font-size:12px;line-height:1.45}.panel input,.panel select,.panel textarea{min-height:38px;padding:10px 11px;border:1px solid #d5deea;border-radius:8px;background:#fbfcfe;color:#26364b;font:13px Inter,"Segoe UI",Arial,sans-serif;transition:border-color .18s,box-shadow .18s,background .18s}
+.panel textarea{min-height:unset;line-height:1.55}.panel input:focus,.panel select:focus,.panel textarea:focus{outline:none;border-color:#6c9bc9;background:#fff;box-shadow:0 0 0 3px rgba(36,99,166,.12)}.panel input::placeholder,.panel textarea::placeholder{color:#9aa6b5}
+.actions{gap:9px}.actions button,#tambahItem,.ai-button,.voice-button{min-height:41px;border-radius:8px;font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:12px;font-weight:700;transition:transform .16s,box-shadow .16s,background .16s}
+.actions button,#tambahItem{background:var(--azx-blue);box-shadow:0 3px 9px rgba(36,99,166,.14)}.actions button:hover,#tambahItem:hover,.ai-button:hover,.voice-button:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(20,43,74,.14)}
+.actions #baru,.secondary{border:1px solid #dbe3ed!important;background:#f1f4f8!important;color:#33465e!important;box-shadow:none!important}.actions #baru:hover,.secondary:hover{background:#e8eef5!important}
+.ai-button{background:#315f91}.voice-button{background:#187b78}.f2-align-toolbar{border-color:#e0e7ef!important;border-radius:9px!important;background:#f7f9fc!important}.f2-align-toolbar button{border-radius:7px!important}.f2-align-toolbar button.active{background:#e7f0fa!important;border-color:#6e9ac5!important;color:#174f86!important}
+.azx-extra-tools{padding:16px;border:1px solid #dce5ef;border-radius:12px;background:#f8fafd}.azx-extra-tools h3{margin-top:12px}.azx-dashboard>div{padding:13px 8px;border:1px solid #e1e8f0;border-radius:9px;background:#fff}.azx-dashboard strong{color:var(--azx-blue);font-size:22px}
+.azx-tool-buttons button,.azx-file-button{border-radius:8px!important}.history-row{align-items:center;padding:10px 2px;border-bottom:1px solid #edf1f5}.history-row button{border:1px solid #dce4ee;border-radius:7px;background:#f2f5f9;color:#33465e}
+.preview-heading{align-items:center;margin:0 0 11px;color:#617187;font-weight:700;letter-spacing:.2px}.paper{border:1px solid #e5eaf0;border-radius:3px;box-shadow:0 10px 32px rgba(20,43,74,.09)}.paper-format2{border:1px solid #e5eaf0;box-shadow:0 10px 32px rgba(20,43,74,.09)}
+.logo{border-color:#244e79;color:#244e79}.doc-meta h2{color:#244e79}.rule{background:#244e79}.doc-table th{background:#edf3f9;color:#203c5b}
+@media(max-width:850px){.topbar{flex-wrap:wrap}.layout{margin:14px auto;gap:14px}.panel{padding:17px}.preview-wrap{border-radius:10px}}
+@media(max-width:480px){.topbar{align-items:flex-start;gap:9px}.topbar .back{font-size:11px;padding:8px 9px}.topbar>div strong{font-size:16px}.topbar small{font-size:10px;line-height:1.4}.layout{padding:0 9px}.panel{border-radius:11px;padding:15px}.panel h2{font-size:18px}.azx-dashboard{gap:5px}.azx-dashboard>div{padding:10px 4px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.actions button,#tambahItem,.ai-button,.voice-button,.topbar .back{transition:none}}
+@media print{body{background:#fff}.paper,.paper-format2{border:0;border-radius:0;box-shadow:none}}
