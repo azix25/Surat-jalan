@@ -24,6 +24,7 @@
     <section class="ai-panel">
       <div class="ai-title"><span class="ai-icon">✦</span><div><b>AZX AI Search</b><small>Tanyakan stok dengan bahasa sehari-hari</small></div><span class="ai-chip">AI ASSISTANT</span></div>
       <div class="ai-search"><input id="aiQuestion" placeholder="Contoh: barang apa yang stoknya hampir habis?"><button class="btn btn-primary" id="aiSearchBtn">Cari dengan AI</button></div>
+      <div class="ai-search" style="margin-top:8px"><input id="aiAccessCode" type="password" autocomplete="off" placeholder="Masukkan kode akses AI yang sama dengan AZX Office" aria-label="Kode akses AI"></div>
       <div class="quick-asks"><button data-ask="Tampilkan barang yang stoknya hampir habis">Stok hampir habis</button><button data-ask="Barang apa saja yang stoknya kosong?">Stok kosong</button><button data-ask="Tampilkan ringkasan barang masuk dan keluar bulan ini">Aktivitas bulan ini</button></div>
       <div class="ai-answer" id="aiAnswer" hidden></div>
     </section>
@@ -114,5 +115,5 @@
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="inventory.js?v=azx-inventory-6"></script>
+<script src="inventory.js?v=azx-inventory-ai-code-1"></script>
 </body></html>
