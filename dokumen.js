@@ -131,12 +131,12 @@ function history(){
   const meta=document.createElement("small");meta.textContent=(d.nomorDokumen||"Tanpa nomor")+" · "+(d.pihak||"Belum ada penerima");
   info.append(title,meta);
   const actions=document.createElement("div");actions.className="history-actions";
+  const view=document.createElement("button");view.type="button";view.textContent="Lihat";
+  view.setAttribute("aria-label","Lihat "+(d.nomorDokumen||"dokumen"));
+  view.onclick=()=>{setData(d);const preview=document.querySelector(".preview-wrap");preview?.scrollIntoView({behavior:"smooth",block:"start"});};
   const edit=document.createElement("button");edit.type="button";edit.textContent="Edit";edit.className="history-edit";
   edit.setAttribute("aria-label","Edit "+(d.nomorDokumen||"dokumen"));
-  edit.onclick=()=>{setData(d);window.scrollTo({top:0,behavior:"smooth"});};
-  const print=document.createElement("button");print.type="button";print.textContent="Cetak";
-  print.setAttribute("aria-label","Cetak "+(d.nomorDokumen||"dokumen"));
-  print.onclick=()=>{setData(d);window.scrollTo({top:0,behavior:"smooth"});requestAnimationFrame(()=> $("cetak").click());};
+  edit.onclick=()=>{setData(d);document.querySelector(".panel")?.scrollIntoView({behavior:"smooth",block:"start"});};
   const del=document.createElement("button");del.type="button";del.textContent="Hapus";del.className="history-delete";
   del.setAttribute("aria-label","Hapus "+(d.nomorDokumen||"dokumen"));
   del.onclick=()=>{
@@ -144,7 +144,7 @@ function history(){
    const current=JSON.parse(localStorage.getItem("dokumenBisnis")||"[]");
    current.splice(index,1);localStorage.setItem("dokumenBisnis",JSON.stringify(current));history();
   };
-  actions.append(edit,print,del);row.append(info,actions);$("riwayat").append(row);
+  actions.append(view,edit,del);row.append(info,actions);$("riwayat").append(row);
  });
 }
 function save(){const d=readData();if(!d.nomorDokumen.trim()){alert("Isi nomor dokumen terlebih dahulu.");$("nomorDokumen").focus();return}const list=JSON.parse(localStorage.getItem("dokumenBisnis")||"[]");const i=list.findIndex(x=>x.jenis===d.jenis&&x.nomorDokumen===d.nomorDokumen);if(i>=0)list[i]=d;else list.push(d);localStorage.setItem("dokumenBisnis",JSON.stringify(list));history();alert("Dokumen berhasil disimpan di perangkat ini.")}
