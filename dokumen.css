@@ -242,3 +242,11 @@
 .paper.layout-no-table .plain-items .plain-item{margin:4px 0;padding:3px 0;border-bottom:1px dotted #d9e0e8}
 .paper.layout-no-table .totals{display:block}
 .layout-no-table .panel #pajak,.layout-no-table .panel #diskon{display:block}
+
+/* Format 2: rincian bebas seperti mengetik di Word, tanpa baris/tabel item. */
+#editorRincianBebas{display:none}
+.layout-no-table .panel #editorRincianBebas{display:block}
+.layout-no-table .panel .table-scroll,.layout-no-table .panel #tambahItem{display:none!important}
+.paper.layout-no-table .totals{display:none!important}
+.paper.layout-no-table .plain-items{font-size:11px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+.paper.layout-no-table .plain-items .plain-item{border:0;padding:0;margin:0}
