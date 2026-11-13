@@ -249,3 +249,13 @@
 .paper.layout-no-table .totals{display:none!important}
 .paper.layout-no-table .plain-items{font-size:11px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
 .paper.layout-no-table .plain-items .plain-item{border:0;padding:0;margin:0}
+
+/* Format 2: area isi dokumen langsung dapat diketik pada kertas seperti Word. */
+.paper .word-content{display:none;min-height:560px;margin:0 0 18px;padding:2px 0;font-size:11px;line-height:1.8;white-space:normal;overflow-wrap:anywhere;outline:none;}
+.paper.layout-no-table .word-content{display:block;}
+.paper.layout-no-table .word-content:empty:before{content:attr(data-placeholder);color:#9aa4b2;pointer-events:none;}
+.paper.layout-no-table #pKeterangan,.paper.layout-no-table .notes{display:none!important;}
+.paper.layout-no-table .party{margin-bottom:22px;}
+.paper.layout-no-table .word-content p{margin:0 0 10px;}
+.paper.layout-no-table .word-content:focus{outline:none;}
+@media print{.paper.layout-no-table .word-content{min-height:0;}}
