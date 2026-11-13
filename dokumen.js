@@ -10,15 +10,16 @@ function defaultColumnLabels(type){const detail=["suratjalan","deliveryorder","t
 function applyDefaultColumnLabels(){const defaults=defaultColumnLabels($("jenis").value);Object.entries(defaults).forEach(([id,value])=>{if($(id))$(id).value=value;});}
 function addItem(item={}){
  const tr=document.createElement("tr");
- tr.innerHTML='<td><input class="item-name" type="text" placeholder="Nama barang / jasa" autocomplete="off"></td><td><input class="item-qty" type="text" inputmode="decimal" autocomplete="off" value="1" aria-label="Jumlah"></td><td><input class="item-price" type="number" min="0" value="0"></td><td><button type="button" aria-label="Hapus item">×</button></td>';
+ tr.innerHTML='<td><div class="item-input-wrap"><input class="item-name" type="text" placeholder="Nama barang / jasa" autocomplete="off"><button class="clear-field" type="button" aria-label="Kosongkan deskripsi" title="Kosongkan">×</button></div></td><td><div class="item-input-wrap"><input class="item-qty" type="text" inputmode="decimal" autocomplete="off" value="1" aria-label="Jumlah"><button class="clear-field" type="button" aria-label="Kosongkan jumlah" title="Kosongkan">×</button></div></td><td><input class="item-price" type="number" min="0" value="0"></td><td><button class="delete-item" type="button" aria-label="Hapus baris item">×</button></td>';
  tr.querySelector(".item-name").value=item.nama??"";
  tr.querySelector(".item-qty").value=item.qty??1;
  tr.querySelector(".item-price").value=item.harga??0;
  tr.querySelectorAll("input").forEach(el=>{
-  el.addEventListener("focus",()=>{requestAnimationFrame(()=>el.select());});
+  el.addEventListener("focus",()=>{requestAnimationFrame(()=>{try{el.setSelectionRange(0,el.value.length);}catch(_){el.select();}});});
   el.addEventListener("input",render);
  });
- tr.querySelector("button").onclick=()=>{tr.remove();render()};
+ tr.querySelectorAll(".clear-field").forEach(btn=>{btn.addEventListener("click",()=>{const input=btn.parentElement.querySelector("input");input.value="";input.dispatchEvent(new Event("input",{bubbles:true}));input.focus();});});
+ tr.querySelector(".delete-item").onclick=()=>{tr.remove();render()};
  $("barisItem").append(tr);
  syncItemEditorFields();
  render();
