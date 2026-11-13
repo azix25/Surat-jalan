@@ -191,28 +191,16 @@ $("fileTemplateCanva").addEventListener("change",e=>importCanvaTemplate(e.target
  }).from(clone);
  await worker.save();
 }
-$("cetak").onclick=async()=>{
+$("cetak").onclick=()=>{
  const p=numberParts(),n=(Number(localStorage.getItem(p.key))||0)+1;
  $("nomorDokumen").value=nextDocumentNumber(n);
  render();
- if($("layoutMode").value==="no-table"){
-  const el=$("lembarFormat2");
-  const safeName=String($("nomorDokumen").value||"Dokumen").replace(/[^a-z0-9_-]+/gi,"-")+".pdf";
-  try{
-   await exportFormat2PDF(el,safeName);
-   localStorage.setItem(p.key,String(n));
-   $("nomorDokumen").value=nextDocumentNumber(n+1);
-   render();
-  }catch(err){
-   console.error("PDF Format 2 gagal dibuat:",err);
-   alert("PDF gagal dibuat secara utuh. Periksa koneksi internet lalu coba lagi. Dokumen dan nomor dokumen tidak dihapus.");
-  }
- }else{
-  localStorage.setItem(p.key,String(n));
-  window.print();
-  $("nomorDokumen").value=nextDocumentNumber(n+1);
-  render();
- }
+ // Format 1 dan Format 2 sama-sama membuka dialog pratinjau cetak browser.
+ // Pengguna dapat memeriksa dokumen dahulu lalu memilih printer atau Simpan sebagai PDF.
+ localStorage.setItem(p.key,String(n));
+ window.print();
+ $("nomorDokumen").value=nextDocumentNumber(n+1);
+ render();
 };$("baru").onclick=newDoc;$("jenis").onchange=()=>{if(!$("nomorDokumen").value||$("nomorDokumen").value.includes("/"))$("nomorDokumen").value=makeNumber();applyDefaultColumnLabels();render()};$("template").onchange=render;$("templateFormat2").onchange=render;function syncFormatMode(){const f2=$("layoutMode").value==="no-table";if($("previewTitle"))$("previewTitle").textContent=f2?"Pratinjau Format 2":"Pratinjau Format 1";$("templateBuiltInWrap").querySelector("select").hidden=f2;$("templateFormat2").hidden=!f2;$("templateBuiltInWrap").querySelector("label").firstChild.textContent=f2?"Template Format 2":"Template bawaan";document.body.classList.toggle("format2-editor",f2);}fieldIds.forEach(id=>$(id).addEventListener("input",render));$("layoutMode").addEventListener("change",()=>{syncFormatMode();render()});syncFormatMode();applyDefaultColumnLabels();$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber();$("perusahaan").addEventListener("input",()=>{$("nomorDokumen").value=makeNumber();render();});$("tanggalDokumen").addEventListener("change",()=>{$("nomorDokumen").value=makeNumber();render();});addItem();history();
 async function generateWithAI(){
  const prompt=$("aiPrompt").value.trim(),accessCode=$("aiAccessCode").value.trim(),btn=$("aiGenerate"),status=$("aiStatus");
