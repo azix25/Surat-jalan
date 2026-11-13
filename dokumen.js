@@ -284,9 +284,9 @@ async function generateWithAI(){
  }catch(error){
   const message=String(error.message||error);
   if(/RESOURCE_EXHAUSTED|quota|limit/i.test(message)){
-   status.textContent="Kuota Gemini sedang habis atau mencapai batas. Tunggu hingga kuota pulih atau periksa paket dan batas API Gemini.";
+   status.textContent="Batas penggunaan Cloudflare Workers AI tercapai. Periksa kuota atau coba lagi nanti.";
   }else if(/503|UNAVAILABLE|overloaded|busy/i.test(message)){
-   status.textContent="Server Gemini sedang penuh. Sudah dicoba ulang otomatis 3 kali. Silakan tunggu sebentar lalu coba lagi.";
+   status.textContent="Layanan Cloudflare Workers AI sedang sibuk. Silakan coba lagi sebentar.";
   }else{
    status.textContent="Belum berhasil: "+message;
   }
