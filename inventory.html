@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#142b4a">
 <title>AZX Inventory | Manajemen Persediaan</title>
-<link rel="stylesheet" href="inventory.css?v=azx-inventory-5">
+<link rel="stylesheet" href="inventory.css?v=azx-inventory-6">
 </head>
 <body>
 <header class="topbar">
@@ -47,7 +47,7 @@
           <form id="itemForm" class="form-grid">
             <label>Kode barang<input id="itemSku" required maxlength="50" placeholder="BRG-001"></label>
             <label>Nama barang<input id="itemName" required maxlength="150" placeholder="Nama barang"></label>
-            <label class="span-all">Varian (opsional, satu warna/jenis per baris; format Nama=Stok)<textarea id="itemVariants" rows="4" placeholder="Merah=20&#10;Biru=15&#10;Hitam=12&#10;Putih=8&#10;Kuning=10"></textarea><small class="muted">Kode otomatis dibuat, contoh M-300-MERAH. Isi stok awal per varian dengan format Merah=20. Jika tanpa angka, stok awalnya 0. Kosongkan jika barang hanya satu jenis.</small></label>
+            <label class="span-all">Varian (opsional; pisahkan dengan baris baru atau koma)<textarea id="itemVariants" rows="4" placeholder="Merah=20, Biru=15, Hitam=12&#10;Putih=8&#10;Kuning=10"></textarea><small class="muted">Bisa ditulis per baris atau dipisahkan koma/titik koma. Contoh: Merah=20, Biru=15, Hitam=12. Kode otomatis menjadi M-300-MERAH, M-300-BIRU, dan seterusnya. Tanpa angka stok, stok awal varian = 0.</small></label>
             <label>Kategori<input id="itemCategory" maxlength="100" placeholder="Bahan / produk / perlengkapan"></label>
             <label>Satuan<input id="itemUnit" required maxlength="30" value="pcs" placeholder="pcs, dus, kg, meter"></label>
             <label>Stok awal (jika tanpa varian)<input id="itemOpening" type="number" min="0" step="0.001" value="0" required></label>
@@ -114,5 +114,5 @@
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="inventory.js?v=azx-inventory-5"></script>
+<script src="inventory.js?v=azx-inventory-6"></script>
 </body></html>
