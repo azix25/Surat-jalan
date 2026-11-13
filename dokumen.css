@@ -223,3 +223,6 @@
  .paper .doc-table th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
  .paper .signatures,.paper .party,.paper .totals,.paper .notes{break-inside:avoid}
 }
+
+/* Tombol kosongkan deskripsi dan jumlah */
+.item-input-wrap{display:flex;align-items:center;gap:3px;min-width:0}.item-input-wrap input{flex:1 1 auto;width:100%;min-width:0}.input-table .clear-field{flex:0 0 23px;width:23px;height:28px;padding:0!important;border:0;border-radius:4px;background:#eef2f6;color:#526174;font-size:16px;line-height:1;cursor:pointer}.input-table .clear-field:active{background:#dbe4ee}.input-table .delete-item{min-width:24px;cursor:pointer}
