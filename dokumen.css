@@ -866,7 +866,7 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
  align-items:center!important;overflow:visible!important;visibility:visible!important;
 }
 .paper:not(.layout-no-table):not(.format2-paper) .signatures .signature-owner .signature-stamp-slot{
- position:absolute!important;top:10px!important;left:50%!important;right:auto!important;
+ position:absolute!important;top:0px!important;left:50%!important;right:auto!important;
  transform:translateX(-50%)!important;width:128px!important;height:105px!important;
  min-height:0!important;overflow:visible!important;display:block!important;
  z-index:1000!important;pointer-events:none!important;visibility:visible!important;
