@@ -84,6 +84,7 @@ function addMultiOutRow(selectedId=""){
 function updateMultiOutTotal(){const rows=[...$("multiOutRows").querySelectorAll("tr")],total=rows.reduce((sum,row)=>sum+(Number(row.querySelector(".out-qty").value)||0),0);$("multiOutTotal").textContent=rows.length+" jenis barang · "+fmt(total)+" total satuan";}
 function updateTransactionMode(){const multi=$("txType").value==="keluar";$("multiOutWrap").hidden=!multi;$("singleTxItemLabel").hidden=multi;$("singleTxQuantityLabel").hidden=multi;$("txItem").required=!multi;$("txQuantity").required=!multi;if(multi&&!$("multiOutRows").children.length)addMultiOutRow();}
 $("addOutRow").addEventListener("click",()=>addMultiOutRow());
+$("quickMultiOut").addEventListener("click",()=>{$("txType").value="keluar";$("txType").dispatchEvent(new Event("change"));$("multiOutWrap").scrollIntoView({behavior:"smooth",block:"center"});$("multiOutRows").querySelector(".out-item")?.focus();});
 $("txType").addEventListener("change",updateTransactionMode);updateTransactionMode();
 $("transactionForm").addEventListener("submit",async e=>{
  e.preventDefault();const type=$("txType").value;
