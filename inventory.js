@@ -62,12 +62,21 @@ $("reduceForm").addEventListener("submit",async e=>{e.preventDefault();if(!reduc
 function renderSelects(){const opts=items.map(i=>`<option value="${i.id}">${esc(i.sku)} — ${esc(i.name)}${i.variant_name?" · "+esc(i.variant_name):""} (${fmt(stockOf(i))} ${esc(i.unit)})</option>`).join("");$("txItem").innerHTML='<option value="">Pilih barang</option>'+opts;$("reportItem").innerHTML='<option value="all">Semua barang</option>'+opts;document.querySelectorAll(".out-item").forEach(select=>{const current=select.value;select.innerHTML='<option value="">Pilih kode / warna</option>'+items.map(i=>`<option value="${esc(i.id)}">${esc(i.sku)} — ${esc(i.name)}${i.variant_name?" · "+esc(i.variant_name):""}</option>`).join("");select.value=current;const row=select.closest("tr"),item=items.find(i=>i.id===select.value),stock=row?.querySelector(".out-stock");if(stock)stock.textContent=item?fmt(stockOf(item))+" "+item.unit:"Pilih barang";});}
 function renderHistory(){const q=$("historySearch").value.toLowerCase().trim(),type=$("historyType").value,from=$("historyFrom").value,to=$("historyTo").value;const rows=transactions.filter(t=>{const i=items.find(x=>x.id===t.item_id)||{};const hay=[i.sku,i.parent_sku,i.name,i.variant_name,t.person_or_destination,t.reference_no,t.notes].join(" ").toLowerCase();return(!q||hay.includes(q))&&(type==="all"||movementType(t.transaction_type)===type)&&(!from||t.transaction_date>=from)&&(!to||t.transaction_date<=to)});$("historyRows").innerHTML=rows.length?rows.map(t=>{const i=items.find(x=>x.id===t.item_id)||{};return `<tr><td>${esc(movementTime(t))}</td><td><b>${esc(i.parent_sku||i.sku||"—")}</b>${i.parent_sku?`<br><small>${esc(i.sku)}</small>`:""}<br>${esc(i.name||"Barang")}${i.variant_name?" · "+esc(i.variant_name):""}</td><td>${esc(typeNames[t.transaction_type]||"Barang keluar")}</td><td>${fmt(t.quantity)} ${esc(i.unit||"")}</td><td>${esc(t.person_or_destination||"—")}</td><td>${esc([t.reference_no,t.notes].filter(Boolean).join(" · ")||"—")}</td></tr>`}).join(""):'<tr><td colspan="6" class="empty">Belum ada transaksi yang cocok.</td></tr>'}
 const SURAT_JALAN_KEY="azx_inventory_surat_jalan_docs";
-function getSuratJalanDocs(){try{return JSON.parse(localStorage.getItem(SURAT_JALAN_KEY)||"[]")}catch(e){return []}}
+let suratJalanMemory=[];
+function getSuratJalanDocs(){
+ try{const stored=JSON.parse(localStorage.getItem(SURAT_JALAN_KEY)||"[]");return Array.isArray(stored)?stored:suratJalanMemory.slice()}
+ catch(e){return suratJalanMemory.slice()}
+}
+function saveSuratJalanDoc(doc){
+ const current=getSuratJalanDocs().filter(x=>x.id!==doc.id);
+ suratJalanMemory=[doc,...current];
+ try{localStorage.setItem(SURAT_JALAN_KEY,JSON.stringify(suratJalanMemory));return true}
+ catch(e){toast("Surat Jalan dibuat, tetapi arsip browser tidak dapat disimpan. Periksa ruang penyimpanan browser.",true);return false}
+}
 function renderSuratJalanArchive(){
  const rows=$("suratJalanRows"),docs=getSuratJalanDocs();
  if(!rows)return;
  rows.innerHTML=docs.length?docs.map(d=>`<tr><td><b>${esc(d.number||d.id)}</b></td><td>${esc(d.date||"—")}</td><td>${esc(d.person||"—")}</td><td>${(d.items||[]).length} jenis</td><td><button type="button" class="btn btn-light" data-open-sj="${esc(d.id)}">Lihat</button></td></tr>`).join(""):'<tr><td colspan="5" class="empty">Belum ada Surat Jalan.</td></tr>';
- rows.querySelectorAll("[data-open-sj]").forEach(b=>b.addEventListener("click",()=>showSuratJalan(b.dataset.openSj)));
 }
 function showSuratJalan(id){
  const d=getSuratJalanDocs().find(x=>x.id===id);if(!d)return;
@@ -83,6 +92,13 @@ function showSuratJalan(id){
 }
 $("printSuratJalan")?.addEventListener("click",()=>window.print());
 $("suratJalanRows")?.addEventListener("click",e=>{const b=e.target.closest("[data-open-sj]");if(b)showSuratJalan(b.dataset.openSj)});
+$("createSuratJalan")?.addEventListener("click",()=>{
+ $("txType").value="keluar";
+ $("txType").dispatchEvent(new Event("change"));
+ switchView("transaction");
+ $("txPerson").focus();
+ toast("Isi penerima, pilih beberapa barang, lalu Simpan transaksi untuk membuat Surat Jalan.");
+});
 renderSuratJalanArchive();
 function switchView(name){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+name));document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.view===name));if(name==="reports")buildReport()}
 $("logoutBtn").addEventListener("click",async()=>{await supabase.auth.signOut();session=null;location.replace("index.html")});
@@ -122,23 +138,16 @@ $("transactionForm").addEventListener("submit",async e=>{
   const payload=selected.map(x=>({user_id:session.user.id,item_id:x.item.id,transaction_type:"keluar",quantity:x.qty,transaction_date:date,person_or_destination:person,reference_no:batchId,notes}));
   const button=$("transactionForm").querySelector('button[type="submit"]');button.disabled=true;button.textContent="Menyimpan semua barang…";
   const suratJalan={id:batchId,number:batchId,date,person,notes,createdAt:now.toISOString(),items:selected.map(x=>({itemId:x.item.id,sku:x.item.sku,name:x.item.name,variant:x.item.variant_name||"",unit:x.item.unit,qty:x.qty}))};
-  const archiveKey="azx_inventory_surat_jalan_docs";
-  let savedArchive=[];
   try{
-   savedArchive=JSON.parse(localStorage.getItem(archiveKey)||"[]");
-   savedArchive.unshift(suratJalan);
-   localStorage.setItem(archiveKey,JSON.stringify(savedArchive));
+   if(!date||Number.isNaN(Date.parse(date+"T00:00:00")))throw new Error("Tanggal transaksi tidak valid.");
    const {error}=await supabase.from("inventory_transactions").insert(payload);
-   if(error){
-    const rollback=JSON.parse(localStorage.getItem(archiveKey)||"[]").filter(x=>x.id!==batchId);
-    localStorage.setItem(archiveKey,JSON.stringify(rollback));
-    throw error;
-   }
+   if(error)throw error;
+   saveSuratJalanDoc(suratJalan);
    $("transactionForm").reset();$("txDate").value=today();$("multiOutRows").innerHTML="";updateTransactionMode();
    renderSuratJalanArchive();showSuratJalan(suratJalan.id);switchView("delivery");
    await loadAll();
-   toast("Barang keluar tersimpan dan Surat Jalan dibuat di Inventory.");
-  }catch(err){toast("Gagal menyimpan barang keluar: "+err.message,true)}
+   toast("Berhasil: barang keluar dicatat dan Surat Jalan dibuat.");
+  }catch(err){toast("Gagal membuat Surat Jalan / menyimpan barang keluar: "+(err.message||"Periksa koneksi."),true)}
   finally{button.disabled=false;button.textContent="Simpan transaksi"}
   return;
  }
