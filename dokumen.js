@@ -30,13 +30,13 @@ let extraColumnSequence=0;
 function defaultColumnLabels(){return {kolomNamaLabel:"Nama Barang",kolomJumlahLabel:"Qty/Vol",kolomHargaLabel:"Harga Satuan"};}
 function applyDefaultColumnLabels(){const defaults=defaultColumnLabels();Object.entries(defaults).forEach(([id,value])=>{if($(id)&&!$(id).value)$(id).value=value;});}
 function safeColumnId(){extraColumnSequence++;return "kolom_"+Date.now().toString(36)+"_"+extraColumnSequence;}
+function splitQuantityUnit(value){const raw=String(value??"").trim();const match=raw.match(/^([-+]?(?:\\d+(?:[.,]\\d*)?|[.,]\\d+))\\s*(.*)$/);return match?{number:match[1],unit:match[2].trim()}:{number:raw,unit:""};}
 function quantityNumber(value){const match=String(value??"").trim().match(/^[-+]?(?:\\d+(?:[.,]\\d*)?|[.,]\\d+)/);return match?Number(match[0].replace(",","."))||0:0;}
 function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
 function getEditorColumns(){return [{id:"nama",label:$("kolomNamaLabel").value||"Nama Barang",kind:"name"},{id:"qty",label:$("kolomJumlahLabel").value||"Qty/Vol",kind:"qty"},{id:"harga",label:$("kolomHargaLabel").value||"Harga",kind:"harga"},...extraItemColumns.map(col=>({...col,kind:"extra"})),{id:"total",label:"Total",kind:"total"}];}
 function renderExtraColumnManager(){const wrap=$("daftarKolomTambahan");if(!wrap)return;wrap.innerHTML="";extraItemColumns.forEach(col=>{const row=document.createElement("div");row.className="custom-column-row";const input=document.createElement("input");input.type="text";input.value=col.label;input.setAttribute("aria-label","Nama kolom tambahan");input.addEventListener("input",()=>{col.label=input.value;render();});const del=document.createElement("button");del.type="button";del.className="secondary";del.textContent="Hapus";del.addEventListener("click",()=>{extraItemColumns=extraItemColumns.filter(x=>x.id!==col.id);$("barisItem").querySelectorAll("tr").forEach(tr=>tr.querySelector('[data-extra="'+col.id+'"]')?.closest("td")?.remove());renderExtraColumnManager();render();});row.append(input,del);wrap.append(row);});}
 function bindItemInput(input){input.addEventListener("focus",()=>{requestAnimationFrame(()=>{try{input.setSelectionRange(0,input.value.length);}catch(_){input.select();}});});input.addEventListener("input",render);}
 function addItem(item={}){
- let unitOptions=$("qtyUnitOptions");if(!unitOptions){unitOptions=document.createElement("datalist");unitOptions.id="qtyUnitOptions";["m","m²","m³","kg","ton","pcs","dus","unit","batang","sak"].forEach(value=>{const option=document.createElement("option");option.value=value;unitOptions.append(option);});document.body.append(unitOptions);}
  const tr=document.createElement("tr");
  const columns=getEditorColumns();
  columns.forEach(col=>{
@@ -46,9 +46,12 @@ function addItem(item={}){
   else{
    const wrap=document.createElement("div");wrap.className="item-input-wrap";
    const input=document.createElement("input");input.type="text";input.autocomplete="off";
-   input.className=col.kind==="name"?"item-name":col.kind==="qty"?"item-qty":"item-price";if(col.kind==="qty")input.setAttribute("list","qtyUnitOptions");
-   input.value=col.kind==="name"?(item.nama??""):col.kind==="qty"?(item.qty??1):(item.harga??0);
-   input.placeholder=col.kind==="qty"?"Contoh: 12 m² / 3 m³ / 5 m":col.label;input.setAttribute("aria-label",col.label);bindItemInput(input);wrap.append(input);
+   input.className=col.kind==="name"?"item-name":col.kind==="qty"?"item-qty":"item-price";
+   const parsedQty=col.kind==="qty"?splitQuantityUnit(item.qty??1):null;
+   input.value=col.kind==="name"?(item.nama??""):col.kind==="qty"?parsedQty.number:(item.harga??0);
+   input.placeholder=col.kind==="qty"?"Contoh: 30":col.label;input.setAttribute("aria-label",col.kind==="qty"?"Jumlah":col.label);if(col.kind==="qty")input.inputMode="decimal";bindItemInput(input);wrap.append(input);
+   if(col.kind==="qty"){const unit=document.createElement("select");unit.className="item-unit-select";unit.setAttribute("aria-label","Pilih satuan");const blank=document.createElement("option");blank.value="";blank.textContent="Satuan";unit.append(blank);["m","m²","m³","kg","ton","pcs","dus","unit","batang","sak"].forEach(value=>{const option=document.createElement("option");option.value=value;option.textContent=value;unit.append(option);});if(parsedQty.unit&&!Array.from(unit.options).some(option=>option.value===parsedQty.unit)){const option=document.createElement("option");option.value=parsedQty.unit;option.textContent=parsedQty.unit;unit.append(option);}unit.value=parsedQty.unit;unit.addEventListener("change",render);wrap.append(unit);}
+   if(col.kind==="name"||col.kind==="qty"){const clear=document.createElement("button");clear.type="button";clear.className="clear-field";clear.textContent="×";clear.title="Kosongkan";clear.addEventListener("click",()=>{input.value="";const unit=wrap.querySelector(".item-unit-select");if(unit)unit.value="";input.dispatchEvent(new Event("input",{bubbles:true}));input.focus();});wrap.append(clear);}
    if(col.kind==="name"||col.kind==="qty"){const clear=document.createElement("button");clear.type="button";clear.className="clear-field";clear.textContent="×";clear.title="Kosongkan";clear.addEventListener("click",()=>{input.value="";input.dispatchEvent(new Event("input",{bubbles:true}));input.focus();});wrap.append(clear);}
    td.append(wrap);
   }
@@ -63,7 +66,7 @@ function syncItemEditorFields(){
  const action=document.createElement("th");action.textContent="";head.append(action);
  $("barisItem").querySelectorAll("tr").forEach(tr=>{const expected=columns.length+1;while(tr.cells.length<expected){const td=document.createElement("td");const col=columns[tr.cells.length];if(col?.kind==="extra"){const input=document.createElement("input");input.className="item-extra";input.dataset.extra=col.id;input.type="text";input.addEventListener("input",render);td.append(input);}tr.insertBefore(td,tr.lastElementChild);}while(tr.cells.length>expected)tr.deleteCell(tr.cells.length-2);});
 }
-function getItems(){return [...$("barisItem").rows].map(r=>({nama:r.querySelector(".item-name")?.value??"",qty:r.querySelector(".item-qty")?.value??"1",harga:r.querySelector(".item-price")?.value??"0",custom:Object.fromEntries([...r.querySelectorAll(".item-extra")].map(input=>[input.dataset.extra,input.value]))}));}
+ function getItems(){return [...$("barisItem").rows].map(r=>{const amount=r.querySelector(".item-qty")?.value??"1";const unit=r.querySelector(".item-unit-select")?.value??"";return {nama:r.querySelector(".item-name")?.value??"",qty:[amount.trim(),unit].filter(Boolean).join(" "),harga:r.querySelector(".item-price")?.value??"0",custom:Object.fromEntries([...r.querySelectorAll(".item-extra")].map(input=>[input.dataset.extra,input.value]))};});}
 function readData(){const d={jenis:$("jenis").value,template:$("template").value,templateFormat2:$("templateFormat2")?.value||"f2-polos"};fieldIds.forEach(id=>d[id]=$(id).value);d.rincianBebas=$("pWordContent")?.innerHTML??$("rincianBebas").value??"";const f2Body=$("f2WordContent");d.rincianFormat2=f2Body?(f2Body.textContent.trim()?f2Body.innerHTML:""):"";d.items=getItems();d.itemColumns=extraItemColumns.map(x=>({...x}));return d;}
 function setData(d){
  $("jenis").value=d.jenis||"invoice";$("template").value=d.template||"standar";if($("templateFormat2"))$("templateFormat2").value=d.templateFormat2||"f2-polos";applyCustomTemplate();
