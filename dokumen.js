@@ -179,7 +179,7 @@ async function importCompanyStamp(file){
   if(!saved)throw new Error("Gambar terlalu besar untuk penyimpanan perangkat. Pilih gambar stempel yang lebih kecil.");
   useReferenceStamp=false;
   const preview=$("pStampImage");
-  if(preview){preview.onerror=()=>{preview.hidden=true;const status=$("statusStempel");if(status)status.textContent="Stempel tersimpan, tetapi gagal ditampilkan. Coba gambar lain.";};preview.hidden=false;preview.src=companyStamp;}
+  if(preview){preview.onerror=()=>{preview.hidden=true;preview.removeAttribute("style");const status=$("statusStempel");if(status)status.textContent="Stempel tersimpan, tetapi gagal ditampilkan. Coba gambar lain.";};preview.onload=()=>{preview.hidden=false;const status=$("statusStempel");if(status)status.textContent="Stempel berhasil diunggah dan tampil di pratinjau Format 1.";};preview.hidden=false;preview.removeAttribute("hidden");preview.src=companyStamp;}
   $("statusStempel").textContent="Stempel berhasil diunggah dan disimpan";
   render();
  }catch(error){alert("Gagal mengunggah stempel: "+error.message);}
