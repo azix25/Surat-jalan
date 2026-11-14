@@ -67,7 +67,7 @@ function setData(d){
  $("jenis").value=d.jenis||"invoice";$("template").value=d.template||"standar";if($("templateFormat2"))$("templateFormat2").value=d.templateFormat2||"f2-polos";applyCustomTemplate();
  fieldIds.forEach(id=>{if($(id))$(id).value=d[id]??"";});
  if($("pWordContent"))$("pWordContent").innerHTML=d.rincianBebas??"";if($("f2WordContent"))$("f2WordContent").innerHTML=d.rincianFormat2??(d.layoutMode==="no-table"?(d.rincianBebas??""):"");
- const defaults=defaultColumnLabels();Object.entries(defaults).forEach(([id,value])=>{if($(id)&&!d[id])$(id).value=value;});
+ const defaults=defaultColumnLabels();Object.entries(defaults).forEach(([id,value])=>{if($(id)&&!d[id])$(id).value=value;});if(d.kolomDetailLabel){if(noMoneyTypes.includes(d.jenis)&&!d.kolomSatuanLabel)$("kolomSatuanLabel").value=d.kolomDetailLabel;else if(!d.kolomHargaLabel)$("kolomHargaLabel").value=d.kolomDetailLabel;}
  extraItemColumns=Array.isArray(d.itemColumns)?d.itemColumns.filter(x=>x&&x.id).map(x=>({id:String(x.id),label:String(x.label||"Kolom")})):[];
  renderExtraColumnManager();$("barisItem").innerHTML="";
  (d.items||[]).forEach(item=>{
