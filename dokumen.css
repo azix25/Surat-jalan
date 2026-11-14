@@ -705,8 +705,8 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
 .paper:not(.layout-no-table):not(.format2-paper) .signature-owner .signature-stamp{
   width:auto!important;
   height:auto!important;
-  max-width:140px!important;
-  max-height:54px!important;
+  max-width:190px!important;
+  max-height:75px!important;
   object-fit:contain!important;
   margin:0!important;
   opacity:.88;
