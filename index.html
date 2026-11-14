@@ -92,40 +92,6 @@ h1{letter-spacing:-2px;line-height:1.06}
  .workspace-links .continue{flex:1;min-width:0;padding:0 14px;gap:10px;font-size:13px}
 }
 
-
-/* Spreadsheet-inspired AZX workspace illustration */
-.sheet-visual{position:relative;isolation:isolate;padding:clamp(20px,4vw,48px);background:radial-gradient(ellipse at 55% 42%,#2c6392 0,transparent 55%),linear-gradient(145deg,#173b63,#091d34)}
-.sheet-glow{position:absolute;z-index:-1;width:75%;height:50%;border-radius:50%;background:#2b91d8;filter:blur(75px);opacity:.22}
-.sheet-window{position:relative;width:min(100%,480px);overflow:hidden;border:1px solid #ffffff60;border-radius:15px;background:#f8fbff;box-shadow:0 30px 75px #020b1acc;transform:perspective(1100px) rotateY(-5deg) rotateX(2deg);color:#26364a}
-.sheet-titlebar{height:43px;padding:0 14px;display:flex;align-items:center;gap:9px;background:linear-gradient(100deg,#126b50,#16845f);color:#fff;font-size:11px;letter-spacing:.2px}
-.sheet-app-icon{width:22px;height:22px;display:grid;place-items:center;border-radius:5px;background:#ffffff24;font-size:15px}
-.sheet-window-dots{margin-left:auto;color:#d7f4e8;font-size:12px}
-.sheet-toolbar{height:35px;padding:0 14px;display:flex;align-items:center;gap:clamp(10px,2vw,22px);background:#fff;border-bottom:1px solid #e3e9ef;color:#627187;font-size:9px}
-.sheet-toolbar span:nth-child(2){color:#137653;font-weight:800}
-.sheet-save{margin-left:auto;color:#16815d!important;font-size:8px}
-.sheet-formula{height:34px;padding:0 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e3e9ef;background:#f9fbfd;font-size:9px}
-.sheet-cell-name{padding:5px 9px;border:1px solid #d8e1e9;border-radius:4px;background:#fff;color:#4c5e72}
-.sheet-fx{font-weight:800;color:#8392a4;font-style:italic}
-.sheet-formula-value{color:#42546a}
-.sheet-scroll{padding:13px 12px 10px;overflow:hidden}
-.sheet-grid{width:100%;border-collapse:collapse;table-layout:fixed;background:#fff;font-size:clamp(7px,1.05vw,10px);color:#526176}
-.sheet-grid th,.sheet-grid td{height:31px;padding:5px 6px;border:1px solid #e1e8ef;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sheet-grid thead th{height:22px;background:#edf2f6;text-align:center;color:#8795a5;font-size:8px;font-weight:700}
-.sheet-grid tbody th{width:25px;background:#f1f5f8;text-align:center;color:#94a0ad;font-weight:600}
-.sheet-grid td:nth-child(2){width:23%}
-.sheet-heading{background:#eaf5ef;color:#176b4e;font-size:10px;font-weight:850;letter-spacing:1px}
-.sheet-subhead{background:#eaf0f6;color:#33475d;font-weight:800}
-.sheet-number{text-align:right!important;font-variant-numeric:tabular-nums}
-.sheet-status{padding:4px 6px;border-radius:20px;background:#e5f5ed;color:#168052;font-size:8px;font-weight:800}
-.sheet-low{background:#fff2d9;color:#a76a13}
-.sheet-tabs{height:34px;padding:0 12px;display:flex;align-items:center;gap:5px;border-top:1px solid #e0e7ee;background:#f1f5f8}
-.sheet-tabs span{padding:7px 9px;color:#738196;font-size:8px}
-.sheet-tabs .sheet-tab-active{border-bottom:2px solid #16845f;background:#fff;color:#176b4e;font-weight:850}
-.sheet-tabs .sheet-plus{font-size:13px;color:#16845f}
-.sheet-footer{height:27px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;background:#fff;color:#8794a3;font-size:8px}
-.sheet-footer i{display:inline-block;width:6px;height:6px;margin-right:5px;border-radius:50%;background:#24ad78}
-@media(max-width:760px){.sheet-visual{min-height:310px;padding:20px}.sheet-window{transform:perspective(900px) rotateY(-2deg);border-radius:12px}.sheet-grid th,.sheet-grid td{height:27px;padding:4px}.sheet-toolbar{gap:12px}.sheet-scroll{padding:9px 7px}}
-@media(prefers-reduced-motion:no-preference){.sheet-window{animation:sheet-arrive .8s cubic-bezier(.2,.8,.2,1) both}@keyframes sheet-arrive{from{opacity:0;transform:perspective(1100px) translateY(16px) rotateY(-8deg)}to{opacity:1;transform:perspective(1100px) rotateY(-5deg) rotateX(2deg)}}}
 </style></head>
 <body><main class="welcome">
 <section class="intro">
@@ -153,29 +119,12 @@ h1{letter-spacing:-2px;line-height:1.06}
 </div>
 <div class="footnote">AZX OFFICE <span aria-hidden="true">·</span> ADMINISTRASI BISNIS</div>
 </section>
-<section class="visual sheet-visual" aria-label="Ilustrasi lembar kerja spreadsheet AZX Office">
-<div class="sheet-window">
-  <div class="sheet-titlebar"><span class="sheet-app-icon">▦</span><strong>AZX · Lembar Kerja</strong><span class="sheet-window-dots">—　□　×</span></div>
-  <div class="sheet-toolbar"><span>File</span><span>Beranda</span><span>Sisipkan</span><span>Data</span><span class="sheet-save">● Tersimpan</span></div>
-  <div class="sheet-formula"><span class="sheet-cell-name">B4</span><span class="sheet-fx">fx</span><span class="sheet-formula-value">Rekap Persediaan Barang</span></div>
-  <div class="sheet-scroll">
-    <table class="sheet-grid" aria-label="Contoh tabel persediaan">
-      <thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead>
-      <tbody>
-        <tr><th>1</th><td class="sheet-heading" colspan="4">REKAP INVENTORY AZX</td></tr>
-        <tr><th>2</th><td class="sheet-subhead">Kode Barang</td><td class="sheet-subhead">Nama Barang</td><td class="sheet-subhead">Stok</td><td class="sheet-subhead">Status</td></tr>
-        <tr><th>3</th><td>BRG-001</td><td>Kertas A4</td><td class="sheet-number">240</td><td><span class="sheet-status">Tersedia</span></td></tr>
-        <tr><th>4</th><td>BRG-002</td><td>Tinta Printer</td><td class="sheet-number">86</td><td><span class="sheet-status">Tersedia</span></td></tr>
-        <tr><th>5</th><td>BRG-003</td><td>Map Plastik</td><td class="sheet-number">32</td><td><span class="sheet-status sheet-low">Terbatas</span></td></tr>
-        <tr><th>6</th><td>BRG-004</td><td>Ordner Arsip</td><td class="sheet-number">115</td><td><span class="sheet-status">Tersedia</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="sheet-tabs"><span class="sheet-tab-active">Persediaan</span><span>Dokumen</span><span>Rekap Bulanan</span><span class="sheet-plus">＋</span></div>
-  <div class="sheet-footer"><span><i></i> Semua data tersusun rapi</span><span>4 baris · Pratinjau</span></div>
-</div>
-<div class="sheet-glow" aria-hidden="true"></div>
-</section></main>
+<section class="visual" aria-label="Ilustrasi dashboard AZX Office"><div class="mock">
+<div class="mock-top"><span>Ringkasan Workspace</span><span class="mock-pill">OVERVIEW</span></div>
+<div class="mock-grid"><div class="mock-card"><small>Total dokumen</small><strong>128</strong></div><div class="mock-card"><small>Diproses bulan ini</small><strong>24</strong></div></div>
+<div class="mock-wide"><small>Aktivitas dokumen</small><div class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+<div class="mock-row"><span class="dot"></span><span>Workspace siap digunakan</span></div>
+</div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (() => {
