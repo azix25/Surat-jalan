@@ -81,13 +81,17 @@ const URL="https://nqwqlhcwiwprsbcdadhy.supabase.co";
 const KEY="sb_publishable_HSLy26SUHWwpow0smZrB2Q_sNchYRDx";
 const $=id=>document.getElementById(id);
 const next=new URLSearchParams(location.search).get("next");
-const loginRequired=["dokumen.html","inventory.html"].includes(next);
+const loginRequired=["dokumen.html","inventory.html","kontrol.html"].includes(next);
 if(!loginRequired) return;
 $("publicLinks").hidden=true;
 $("loginBox").hidden=false;
 const client=window.supabase?.createClient(URL,KEY);
 if(!client){$("indexAuthMessage").textContent="Layanan autentikasi belum termuat. Periksa koneksi internet.";return;}
 function showSignedIn(user){
+ if(next==="kontrol.html"){
+  if(user?.id==="8fed10ae-89f1-468f-8263-1b8d2dae99af"&&String(user.email||"").toLowerCase()==="chobonk2505@gmail.com"){location.replace("kontrol.html");return;}
+  $("indexAuthMessage").textContent="Akses Kontrol hanya untuk akun pemilik.";return;
+ }
  if(next==="inventory.html"){location.replace("inventory.html");return;}
  if(next==="dokumen.html"){location.replace("dokumen.html");return;}
  $("loginBox").hidden=true;$("workspaceLinks").hidden=false;
