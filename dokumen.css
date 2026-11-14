@@ -719,36 +719,36 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
 }
 
 
-/* Ukuran stempel besar: lepas dari batas lebar kolom tanda tangan. */
+/* Stempel ekstra besar, melampaui teks dan lebar kolom tanda tangan. */
 .paper:not(.layout-no-table):not(.format2-paper) .signatures,
 .paper:not(.layout-no-table):not(.format2-paper) .signature-owner{
   overflow:visible!important;
 }
 .paper:not(.layout-no-table):not(.format2-paper) .signature-owner .signature-stamp-slot{
   position:absolute!important;
-  top:22px!important;
+  top:14px!important;
   left:50%!important;
   right:auto!important;
   transform:translateX(-50%)!important;
-  width:300px!important;
+  width:360px!important;
   height:0!important;
   min-height:0!important;
   overflow:visible!important;
   display:flex!important;
   align-items:center!important;
   justify-content:center!important;
-  z-index:5!important;
+  z-index:20!important;
   pointer-events:none!important;
 }
 .paper:not(.layout-no-table):not(.format2-paper) .signature-owner .signature-stamp{
   display:block!important;
-  width:300px!important;
-  height:130px!important;
+  width:340px!important;
+  height:190px!important;
   max-width:none!important;
   max-height:none!important;
   min-width:0!important;
   object-fit:contain!important;
   margin:0!important;
-  opacity:.9!important;
+  opacity:.92!important;
   mix-blend-mode:multiply;
 }
