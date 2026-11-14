@@ -898,3 +898,10 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
  display:none!important;
  visibility:hidden!important;
 }
+
+
+/* FINAL: slot stempel Format 1 hanya tampil jika gambar hasil upload tervalidasi tersedia. */
+.paper:not(.layout-no-table):not(.format2-paper) .signature-stamp-slot[hidden],
+.paper:not(.layout-no-table):not(.format2-paper) #pStampImage[hidden]{
+ display:none!important;visibility:hidden!important;opacity:0!important;
+}
