@@ -766,7 +766,7 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
 }
 .paper .signatures .signature-owner .signature-stamp-slot{
   position:absolute!important;
-  top:76px!important;
+  top:96px!important;
   left:50%!important;
   right:auto!important;
   transform:translateX(-50%)!important;
