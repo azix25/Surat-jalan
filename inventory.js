@@ -67,6 +67,15 @@ function getSuratJalanDocs(){
  try{const stored=JSON.parse(localStorage.getItem(SURAT_JALAN_KEY)||"[]");return Array.isArray(stored)?stored:suratJalanMemory.slice()}
  catch(e){return suratJalanMemory.slice()}
 }
+function publishSuratJalanOutbox(doc){
+ const key="azx_inventory_surat_jalan_outbox";
+ let batches=[];
+ try{const saved=JSON.parse(localStorage.getItem(key)||"[]");if(Array.isArray(saved))batches=saved;}catch(error){console.warn("Outbox Surat Jalan tidak valid; membuat arsip baru.",error);}
+ batches=batches.filter(item=>item&&item.id!==doc.id);
+ batches.push(doc);
+ if(batches.length>200)batches=batches.slice(-200);
+ localStorage.setItem(key,JSON.stringify(batches));
+}
 function saveSuratJalanDoc(doc){
  const current=getSuratJalanDocs().filter(x=>x.id!==doc.id);
  suratJalanMemory=[doc,...current];
@@ -142,11 +151,14 @@ $("transactionForm").addEventListener("submit",async e=>{
    if(!date||Number.isNaN(Date.parse(date+"T00:00:00")))throw new Error("Tanggal transaksi tidak valid.");
    const {error}=await supabase.from("inventory_transactions").insert(payload);
    if(error)throw error;
-   saveSuratJalanDoc(suratJalan);
+   const archiveSaved=saveSuratJalanDoc(suratJalan);
+   let outboxSaved=true;
+   try{publishSuratJalanOutbox(suratJalan);}catch(storageError){outboxSaved=false;console.error("Gagal mengirim Surat Jalan ke arsip Dokumen:",storageError);}
    $("transactionForm").reset();$("txDate").value=today();$("multiOutRows").innerHTML="";updateTransactionMode();
    renderSuratJalanArchive();showSuratJalan(suratJalan.id);switchView("delivery");
    await loadAll();
-   toast("Berhasil: barang keluar dicatat dan Surat Jalan dibuat.");
+   if(archiveSaved&&outboxSaved)toast("Berhasil: barang keluar dicatat dan Surat Jalan dibuat.");
+   else toast("Transaksi tersimpan di database, tetapi arsip lokal atau sinkronisasi Surat Jalan perlu diperiksa.",true);
   }catch(err){toast("Gagal membuat Surat Jalan / menyimpan barang keluar: "+(err.message||"Periksa koneksi."),true)}
   finally{button.disabled=false;button.textContent="Simpan transaksi"}
   return;
