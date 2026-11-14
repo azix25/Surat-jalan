@@ -79,7 +79,7 @@ const client=window.supabase?.createClient(URL,KEY);
 const $=id=>document.getElementById(id);
 function showSignedIn(user){
  const next=new URLSearchParams(location.search).get("next");
- if(next==="inventory.html"){location.replace("inventory.html");return;}
+ if(next==="inventory.html"){location.replace("inventory.html");return;}\n if(next==="kontrol.html"){location.replace("kontrol.html");return;}
  if(next==="dokumen.html"){location.replace("dokumen.html");return;}
  $("loginBox").hidden=true;$("workspaceLinks").hidden=false;
  $("indexAuthMessage").textContent="Masuk sebagai "+(user?.email||"pengguna AZX Office")+".";
