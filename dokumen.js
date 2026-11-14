@@ -448,7 +448,7 @@ $("voiceStop").addEventListener("click",()=>{if(voiceRecorder&&voiceRecorder.sta
    let count=0;const docs=JSON.parse(localStorage.getItem("dokumenBisnis")||"[]");
    batches.forEach(batch=>{
     if(!batch?.id||!Array.isArray(batch.items)||!batch.items.length||imported.includes(batch.id)||docs.some(d=>d.sourceInventoryBatchId===batch.id))return;
-    const date=batch.date||today(),number="SJ-"+date.replace(/-/g,"")+"-"+String(batch.id).slice(-5);
+    const date=batch.date||today(),number="SJ-"+date.replace(/-/g,"")+"-"+String(batch.id).slice(-8);
     docs.push({jenis:"suratjalan",template:"standar",templateFormat2:"f2-polos",perusahaan:"NAMA PERUSAHAAN",alamatPerusahaan:"",teleponPerusahaan:"",emailPerusahaan:"",penanggungJawab:"",jabatan:"Direktur",pihak:batch.person||"",alamatPihak:"",nomorDokumen:number,tanggalDokumen:date,jatuhTempo:"",keterangan:"Dibuat otomatis dari transaksi Inventory "+batch.id,pajak:"0",diskon:"0",catatan:batch.notes||"",kolomNamaLabel:"Kode / Nama Barang",kolomJumlahLabel:"Jumlah",kolomDetailLabel:"Satuan / Warna",layoutMode:"table",rincianBebas:"",teksPenutupKiri:"Hormat kami,",teksPenutupKanan:"Penerima,",items:batch.items.map(x=>({nama:[x.sku,x.name,x.variant].filter(Boolean).join(" — "),qty:String(x.qty),harga:[x.unit,x.variant].filter(Boolean).join(" · ")||"—"})),sourceInventoryBatchId:batch.id,inventoryCreatedAt:batch.createdAt||new Date().toISOString()});
     imported.push(batch.id);count++;
    });
