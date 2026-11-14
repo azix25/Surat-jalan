@@ -161,12 +161,37 @@ async function importCompanyStamp(file){
  try{
   const url=URL.createObjectURL(file),img=new Image();
   await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url;});
-  const scale=Math.min(1,700/img.naturalWidth,450/img.naturalHeight),canvas=document.createElement("canvas");
-  canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
-  canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);
+  const source=document.createElement("canvas");
+  const sourceScale=Math.min(1,1200/img.naturalWidth,900/img.naturalHeight);
+  source.width=Math.max(1,Math.round(img.naturalWidth*sourceScale));
+  source.height=Math.max(1,Math.round(img.naturalHeight*sourceScale));
+  const sourceCtx=source.getContext("2d",{willReadFrequently:true});
+  sourceCtx.drawImage(img,0,0,source.width,source.height);
+  URL.revokeObjectURL(url);
+
+  /* Pangkas ruang kosong transparan/putih agar cap yang terlihat benar-benar membesar. */
+  const pixels=sourceCtx.getImageData(0,0,source.width,source.height).data;
+  let minX=source.width,minY=source.height,maxX=-1,maxY=-1;
+  for(let y=0;y<source.height;y++){
+   for(let x=0;x<source.width;x++){
+    const i=(y*source.width+x)*4,a=pixels[i+3];
+    const r=pixels[i],g=pixels[i+1],b=pixels[i+2];
+    const visible=a>24 && (a<238 || r<242 || g<242 || b<242);
+    if(visible){if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;}
+   }
+  }
+  if(maxX<minX||maxY<minY){minX=0;minY=0;maxX=source.width-1;maxY=source.height-1;}
+  const padX=Math.max(4,Math.round((maxX-minX+1)*.055));
+  const padY=Math.max(4,Math.round((maxY-minY+1)*.055));
+  const sx=Math.max(0,minX-padX),sy=Math.max(0,minY-padY);
+  const sw=Math.min(source.width-sx,maxX-minX+1+padX*2);
+  const sh=Math.min(source.height-sy,maxY-minY+1+padY*2);
+  const scale=Math.min(1,900/sw,600/sh),canvas=document.createElement("canvas");
+  canvas.width=Math.max(1,Math.round(sw*scale));canvas.height=Math.max(1,Math.round(sh*scale));
+  canvas.getContext("2d").drawImage(source,sx,sy,sw,sh,0,0,canvas.width,canvas.height);
   companyStamp=canvas.toDataURL("image/png");
   try{localStorage.setItem("stempelPerusahaanBisnis",companyStamp);}catch(e){throw new Error("Penyimpanan perangkat penuh. Gunakan gambar stempel yang lebih kecil.");}
-  $("statusStempel").textContent="Stempel berhasil diunggah";render();
+  $("statusStempel").textContent="Stempel berhasil diunggah dan ruang kosong gambar telah dipangkas";render();
  }catch(error){alert("Gagal mengunggah stempel: "+error.message);}
  $("fileStempel").value="";
 }
