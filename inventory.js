@@ -179,7 +179,7 @@ $("transactionForm").addEventListener("submit",async e=>{
   const now=new Date(),batchId="AZX-SJ-"+now.getFullYear()+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0")+"-"+now.getTime().toString(36).toUpperCase();
   const person=$("txPerson").value.trim(),notes=$("txNotes").value.trim(),date=$("txDate").value;
   const payload=selected.map(x=>({user_id:session.user.id,item_id:x.item.id,transaction_type:"keluar",quantity:x.qty,transaction_date:date,person_or_destination:person,reference_no:batchId,notes}));
-  const button=$("transactionForm").querySelector('button[type="submit"]');button.disabled=true;button.textContent="Menyimpan semua barang…";
+  const button=$("transactionForm").querySelector('button[type="submit"],button:not([type])');if(!button)return toast("Tombol Simpan transaksi tidak ditemukan. Muat ulang halaman Inventory.",true);button.disabled=true;button.textContent="Menyimpan semua barang…";
   const suratJalan={id:batchId,number:batchId,date,person,notes,createdAt:now.toISOString(),items:selected.map(x=>({itemId:x.item.id,sku:x.item.sku,name:x.item.name,variant:x.item.variant_name||"",unit:x.item.unit,qty:x.qty}))};
   try{
    if(!date||Number.isNaN(Date.parse(date+"T00:00:00")))throw new Error("Tanggal transaksi tidak valid.");
@@ -189,8 +189,8 @@ $("transactionForm").addEventListener("submit",async e=>{
    let outboxSaved=true;
    try{publishSuratJalanOutbox(suratJalan);}catch(storageError){outboxSaved=false;console.error("Gagal mengirim Surat Jalan ke arsip Dokumen:",storageError);}
    $("transactionForm").reset();$("txDate").value=today();$("multiOutRows").innerHTML="";updateTransactionMode();
-   renderSuratJalanArchive();showSuratJalan(suratJalan.id);switchView("delivery");
    await loadAll();
+   renderSuratJalanArchive();showSuratJalan(suratJalan.id);switchView("delivery");
    if(archiveSaved&&outboxSaved)toast("Berhasil: barang keluar dicatat dan Surat Jalan dibuat.");
    else toast("Transaksi tersimpan di database, tetapi arsip lokal atau sinkronisasi Surat Jalan perlu diperiksa.",true);
   }catch(err){toast("Gagal membuat Surat Jalan / menyimpan barang keluar: "+(err.message||"Periksa koneksi."),true)}
