@@ -59,7 +59,7 @@
           <div class="section-head subhead"><div><h3>Daftar barang</h3></div></div><div class="table-wrap"><table><thead><tr><th>Kode utama / SKU</th><th>Nama / Varian</th><th>Satuan</th><th>Stok sekarang</th><th></th></tr></thead><tbody id="itemRows"></tbody></table></div>
         </section>
         <section class="view" id="view-transaction">
-          <div class="section-head"><div><h2>Catat transaksi barang</h2><p>Setiap transaksi akan masuk ke riwayat dan memperbarui stok.</p></div></div>
+          <div class="section-head"><div><h2>Catat transaksi barang</h2><p>Setiap transaksi akan masuk ke riwayat dan memperbarui stok.</p></div><button type="button" class="btn btn-primary" id="quickMultiOut">＋ Barang keluar · Banyak kode</button></div>
           <form id="transactionForm" class="form-grid">
             <label>Jenis transaksi<select id="txType" required><option value="masuk">Barang masuk</option><option value="keluar">Barang keluar</option><option value="diambil">Barang diambil</option><option value="rusak">Barang rusak</option></select></label>
             <label id="singleTxItemLabel">Barang<select id="txItem" required><option value="">Pilih barang</option></select></label>
@@ -116,5 +116,5 @@
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="inventory.js?v=azx-inventory-fix-20261114-3"></script>
+<script src="inventory.js?v=azx-inventory-multi-button-20261114-4"></script>
 </body></html>
