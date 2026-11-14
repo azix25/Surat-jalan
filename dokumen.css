@@ -847,3 +847,9 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
 .paper-format2 .f2-stamp-image[hidden]{display:none!important;}
 @media(max-width:800px){.paper-format2 .f2-stamp-image{right:20px;bottom:20px;max-width:112px;max-height:88px;}}
 @media print{.paper-format2 .f2-stamp-image{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+
+/* Format 1: pastikan slot stempel berada di atas area tanda tangan dan tidak terpotong. */
+.paper:not(.layout-no-table):not(.format2-paper) .signature-owner{position:relative!important;overflow:visible!important;}
+.paper:not(.layout-no-table):not(.format2-paper) .signature-owner .signature-stamp-slot{position:absolute!important;top:42px!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:160px!important;height:0!important;min-height:0!important;overflow:visible!important;display:flex!important;align-items:center!important;justify-content:center!important;z-index:100!important;pointer-events:none!important;}
+.paper:not(.layout-no-table):not(.format2-paper) .signature-owner .signature-stamp{display:block!important;width:128px!important;height:138px!important;min-width:0!important;max-width:128px!important;min-height:0!important;max-height:138px!important;object-fit:contain!important;visibility:visible!important;opacity:.94!important;mix-blend-mode:multiply!important;}
+.paper:not(.layout-no-table):not(.format2-paper) .signature-owner .signature-stamp[hidden]{display:none!important;}
