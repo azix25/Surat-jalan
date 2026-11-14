@@ -92,6 +92,54 @@ h1{letter-spacing:-2px;line-height:1.06}
  .workspace-links .continue{flex:1;min-width:0;padding:0 14px;gap:10px;font-size:13px}
 }
 
+
+/* AZX OFFICE — refined landing and account login */
+:root{--navy:#102844;--blue:#176bb4;--muted:#718198}
+body{padding:clamp(14px,3vw,42px);background:radial-gradient(ellipse at 8% 8%,#244e78 0,transparent 36%),radial-gradient(ellipse at 94% 90%,#1b4269 0,transparent 36%),linear-gradient(135deg,#07182b,#102b48);background-attachment:fixed}
+.welcome{width:min(100%,1120px);min-height:620px;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);border:1px solid #ffffff55;border-radius:28px;box-shadow:0 34px 100px #020b18a8}
+.intro{padding:clamp(30px,5.2vw,68px);background:linear-gradient(155deg,#fff,#f7faff)}
+.brand{margin-bottom:clamp(38px,6vw,70px)}.brand-mark{width:54px;height:54px;border-radius:17px;background:linear-gradient(145deg,#38a3e8,#174b83);box-shadow:0 10px 24px #1769b244}
+.brand-name{font-size:17px;letter-spacing:1.2px}.brand-sub{font-size:9px;letter-spacing:1.55px}
+.eyebrow{padding:8px 13px;border:1px solid #d7e8f8;border-radius:30px;background:#eff7ff;color:#1769b2;font-size:10px;letter-spacing:1.6px}
+h1{font-size:clamp(34px,4.3vw,50px);line-height:1.08;letter-spacing:-1.9px}
+.lead{margin:19px 0 29px;font-size:14px;line-height:1.85}
+.continue{min-height:52px;border-radius:12px;background:linear-gradient(110deg,#1b79c6,#174e86);box-shadow:0 10px 24px #1769b233}
+.continue:hover,.continue:focus-visible{background:linear-gradient(110deg,#278cda,#1a5c9c)}
+.footnote{margin-top:36px;font-size:10px;font-weight:750;letter-spacing:1.5px;color:#8797aa}
+.visual{min-height:620px;padding:clamp(24px,4vw,54px);background:radial-gradient(ellipse at 72% 18%,#2b5e8c 0,transparent 44%),linear-gradient(145deg,#183c64,#091d34)}
+.visual:before{width:560px;height:560px;right:-230px;top:-220px;border-color:#b9dcff25;box-shadow:0 0 0 36px #ffffff05,0 0 0 78px #ffffff03}
+.visual:after{width:420px;height:420px;left:-220px;bottom:-230px;border-color:#b9dcff20}
+.mock{width:min(100%,440px);padding:22px;border:1px solid #ffffff42;border-radius:21px;background:linear-gradient(145deg,#ffffff22,#ffffff0b);box-shadow:0 30px 80px #020b1c88;backdrop-filter:blur(18px)}
+.mock-top{font-size:13px}.mock-pill{padding:6px 10px;border:1px solid #b7dcff38;background:#b7dcff18;letter-spacing:1px}
+.mock-card,.mock-wide{border:1px solid #ffffff2b;border-radius:14px;background:linear-gradient(145deg,#ffffff20,#ffffff0a)}
+.mock-card{min-height:108px;padding:17px}.mock-card strong{font-size:27px}.mock-wide{padding:17px}
+.bars{height:86px;gap:9px}.bars i{background:linear-gradient(180deg,#c2e6ff,#4b94d1);box-shadow:0 0 17px #75c5ff20}
+.mock-row{font-size:11px}.dot{background:#65dfad;box-shadow:0 0 0 4px #65dfad20}
+.auth-box{width:min(100%,440px);padding:23px;border:1px solid #dfe9f3;border-radius:17px;background:linear-gradient(145deg,#fff,#f4f8fc);box-shadow:0 14px 34px #163b6010}
+.auth-box h2{font-size:20px;letter-spacing:-.45px}.auth-box label{color:#40536b}
+.auth-box input{height:49px;padding:0 14px;border:1px solid #d7e1ec;border-radius:10px;transition:border-color .18s,box-shadow .18s}
+.auth-box input:focus{outline:none;border-color:#3994d7;box-shadow:0 0 0 4px #3994d71b}
+.auth-box button{min-height:49px;border-radius:11px;background:linear-gradient(110deg,#1b79c6,#174e86);box-shadow:0 9px 20px #1769b22b}
+.auth-box button:disabled{opacity:.65;cursor:wait}.auth-switch{font-size:11px;line-height:1.65}
+.welcome:has(#loginBox:not([hidden])) .brand{margin-bottom:clamp(25px,4vw,42px)}
+.welcome:has(#loginBox:not([hidden])) h1{font-size:clamp(29px,3.6vw,42px)}
+.welcome:has(#loginBox:not([hidden])) .lead{margin:13px 0 17px;font-size:13px}
+.welcome:has(#loginBox:not([hidden])) .footnote{margin-top:23px}
+@media(max-width:760px){
+ body{padding:12px;background:radial-gradient(ellipse at 50% 0%,#234d78 0,transparent 42%),#08182b}
+ .welcome{grid-template-columns:1fr;min-height:0;border-radius:22px}
+ .intro{padding:27px 22px 29px}.brand{margin-bottom:31px}
+ h1{font-size:clamp(32px,8.7vw,43px)}.lead{font-size:13px;margin:15px 0 23px}
+ .visual{min-height:310px;padding:22px}.mock{padding:16px;border-radius:16px}
+ .mock-card{min-height:91px;padding:13px}.mock-card strong{font-size:24px}
+ .footnote{margin-top:25px}.welcome:has(#loginBox:not([hidden])) .intro{padding-top:24px}
+ .welcome:has(#loginBox:not([hidden])) .brand{margin-bottom:25px}
+ .welcome:has(#loginBox:not([hidden])) h1{font-size:clamp(29px,8vw,39px)}
+ .auth-box{padding:18px;margin-top:8px}.welcome:has(#loginBox:not([hidden])) .visual{min-height:255px}
+ .workspace-links{width:100%}.workspace-links .continue{flex:1;min-width:0;padding:0 13px;gap:9px;font-size:12px}
+}
+@media(prefers-reduced-motion:no-preference){.mock{animation:azx-card-in .75s cubic-bezier(.2,.8,.2,1) both}@keyframes azx-card-in{from{opacity:0;transform:translateY(13px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}}
+
 </style></head>
 <body><main class="welcome">
 <section class="intro">
