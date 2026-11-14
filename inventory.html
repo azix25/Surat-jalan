@@ -34,6 +34,7 @@
         <button class="nav-item active" data-view="overview">▦ <span>Ringkasan stok</span></button>
         <button class="nav-item" data-view="items">▤ <span>Data barang</span></button>
         <button class="nav-item" data-view="transaction">⇄ <span>Catat transaksi</span></button>
+        <button class="nav-item" data-view="delivery">▣ <span>Surat Jalan</span></button>
         <button class="nav-item" data-view="history">◷ <span>Riwayat transaksi</span></button>
         <button class="nav-item" data-view="reports">▧ <span>Laporan</span></button>
       </aside>
@@ -71,6 +72,12 @@
             <label class="span-all">Keterangan<input id="txNotes" maxlength="500" placeholder="Keterangan tambahan"></label>
             <div class="span-all form-actions"><button class="btn btn-primary">Simpan transaksi</button><span class="muted">Transaksi tidak dihapus dari riwayat; koreksi dicatat sebagai transaksi baru.</span></div>
           </form>
+        </section>
+        <section class="view" id="view-delivery">
+          <div class="section-head"><div><h2>Surat Jalan Inventory</h2><p>Surat Jalan dibuat dan disimpan langsung dari Inventory.</p></div><button type="button" class="btn btn-primary" id="printSuratJalan" disabled>⌑ Cetak Surat Jalan</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Nomor Surat Jalan</th><th>Tanggal</th><th>Penerima / Tujuan</th><th>Jumlah jenis</th><th></th></tr></thead><tbody id="suratJalanRows"><tr><td colspan="5" class="empty">Belum ada Surat Jalan.</td></tr></tbody></table></div>
+          <div class="section-head subhead"><div><h3>Pratinjau Surat Jalan</h3><p>Gunakan tombol cetak untuk mencetak atau menyimpan sebagai PDF.</p></div></div>
+          <div id="suratJalanPaper" class="report-paper"><div class="report-placeholder">Pilih Surat Jalan dari daftar untuk melihat pratinjau.</div></div>
         </section>
         <section class="view" id="view-history">
           <div class="section-head"><div><h2>Riwayat transaksi</h2><p>Semua barang masuk dan keluar tersimpan otomatis lengkap dengan tanggal dan jam.</p></div></div>
@@ -116,5 +123,5 @@
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="inventory.js?v=azx-auto-dokumen-20261114-5"></script>
+<script src="inventory.js?v=azx-inventory-suratjalan-native-20261114-1"></script>
 </body></html>
