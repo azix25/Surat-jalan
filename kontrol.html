@@ -59,15 +59,26 @@ async function unlockControl(session){
  };
 }
 async function startControl(){
- const {data,error}=await db.auth.getSession();
- if(error){$("gateInfo").textContent="Gagal memeriksa sesi: "+error.message;return;}
- if(!data.session){location.replace("index.html?next=kontrol.html");return;}
- user=data.session.user;
- if(user.id!==CONTROL_USER_ID||String(user.email||"").toLowerCase()!==CONTROL_EMAIL){
-  $("gateInfo").textContent="Akses ditolak. Hanya akun pemilik "+CONTROL_EMAIL+" yang diizinkan.";return;
+ const info=$("gateInfo");
+ info.textContent="Memeriksa sesi login…";
+ try{
+  const result=await Promise.race([
+   db.auth.getSession(),
+   new Promise((_,reject)=>setTimeout(()=>reject(new Error("Pemeriksaan sesi melewati batas waktu 15 detik. Muat ulang halaman. Jika berulang, sesi browser atau koneksi Supabase perlu diperiksa.")),15000))
+  ]);
+  const {data,error}=result;
+  if(error)throw error;
+  if(!data||!data.session){info.textContent="Sesi login tidak ditemukan. Silakan login kembali melalui halaman utama.";setTimeout(()=>location.replace("index.html?next=kontrol.html"),1800);return;}
+  user=data.session.user;
+  if(user.id!==CONTROL_USER_ID||String(user.email||"").toLowerCase()!==CONTROL_EMAIL){
+   info.textContent="Akses ditolak. Hanya akun pemilik "+CONTROL_EMAIL+" yang diizinkan.";return;
+  }
+  await unlockControl(data.session);
+ }catch(err){
+  info.textContent="Gagal memeriksa izin akun: "+(err&&err.message?err.message:String(err))+" — muat ulang halaman untuk mencoba lagi.";
  }
- await unlockControl(data.session);
 }
-startControl();db.auth.onAuthStateChange((_e,s)=>{if(!s)location.replace("index.html?next=kontrol.html")});
+startControl().catch(err=>{$("gateInfo").textContent="Kesalahan saat memulai kontrol: "+(err&&err.message?err.message:String(err));});
+db.auth.onAuthStateChange((_e,s)=>{if(!s)location.replace("index.html?next=kontrol.html")});
 })();
 </script></body></html>
