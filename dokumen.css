@@ -631,3 +631,6 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
 .input-table td:last-child{width:34px;min-width:34px}
 .input-table td:last-child .delete-item{width:28px;height:30px;padding:0}
 .input-table td .item-extra{min-width:110px}
+
+/* Qty/Vol: angka terpisah dengan dropdown satuan */
+.input-table .item-input-wrap .item-qty{min-width:42px;flex:1 1 42px}.input-table .item-unit-select{flex:0 0 66px;width:66px;min-width:66px;margin:0!important;padding:7px 3px;border:1px solid #ccd4df;border-radius:5px;background:#fff;color:#26384d;font:11px Arial;cursor:pointer}.input-table .item-input-wrap .clear-field{flex:0 0 22px;width:22px}
