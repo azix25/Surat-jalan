@@ -27,15 +27,16 @@ document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{document.query
 function cleanArchive(refs){["azx_inventory_surat_jalan_docs","azx_inventory_surat_jalan_outbox"].forEach(k=>{try{const a=JSON.parse(localStorage.getItem(k)||"[]");if(Array.isArray(a))localStorage.setItem(k,JSON.stringify(a.filter(d=>!refs.includes(d.id)&&!refs.includes(d.number))))}catch(e){}})}
 $("dh").onclick=async()=>{const ids=chosen("hck");if(!ids.length||!confirm("Hapus permanen "+ids.length+" riwayat transaksi dari Supabase?"))return;$("dh").disabled=true;try{const refs=[...new Set(tx.filter(t=>ids.includes(t.id)&&String(t.reference_no||"").startsWith("AZX-SJ-")).map(t=>t.reference_no))];const r=await db.from("inventory_transactions").delete().eq("user_id",user.id).in("id",ids);if(r.error)throw r.error;cleanArchive(refs);msg("Riwayat berhasil dihapus dari Supabase.");await load()}catch(e){msg("Gagal menghapus: "+e.message,true)}finally{buttons()}};
 $("di").onclick=async()=>{const ids=chosen("ick"),linked=tx.filter(t=>ids.includes(t.item_id));if(!ids.length||!confirm("Hapus "+ids.length+" barang beserta "+linked.length+" riwayat terkait dari Supabase?"))return;$("di").disabled=true;try{const txIds=linked.map(t=>t.id),refs=[...new Set(linked.filter(t=>String(t.reference_no||"").startsWith("AZX-SJ-")).map(t=>t.reference_no))];if(txIds.length){const r=await db.from("inventory_transactions").delete().eq("user_id",user.id).in("id",txIds);if(r.error)throw r.error}const r=await db.from("inventory_items").delete().eq("user_id",user.id).in("id",ids);if(r.error)throw r.error;cleanArchive(refs);msg("Barang dan riwayat terkait berhasil dihapus.");await load()}catch(e){msg("Gagal menghapus: "+e.message,true);await load()}finally{buttons()}};
-$("refresh").onclick=load;$("logout").onclick=async()=>{await db.auth.signOut();location.replace("index.html")};
-const CONTROL_USER_ID="8fed10ae-89f1-468f-8263-1b8d2dae99af",CONTROL_EMAIL="chobonk2505@gmail.com";
+$("refresh").onclick=load;$("logout").onclick=async()=>{localStorage.removeItem(UNLOCK_KEY);await db.auth.signOut();location.replace("index.html")};
+const CONTROL_USER_ID="8fed10ae-89f1-468f-8263-1b8d2dae99af",CONTROL_EMAIL="chobonk2505@gmail.com",UNLOCK_KEY="azx_kontrol_unlocked_"+CONTROL_USER_ID;
 async function startControl(){const {data,error}=await db.auth.getSession();if(error||!data.session){location.replace("index.html?next=kontrol.html");return}
 user=data.session.user;if(user.id!==CONTROL_USER_ID||String(user.email||"").toLowerCase()!==CONTROL_EMAIL){$("gateInfo").textContent="Akses ditolak. Akun ini tidak memiliki izin membuka Kontrol.";return}
+if(localStorage.getItem(UNLOCK_KEY)==="1"){ $("gate").remove();$("account").textContent="Akun: "+CONTROL_EMAIL;await load();return;}
 $("gateInfo").textContent="Akun diizinkan: "+CONTROL_EMAIL+". Masukkan password akun untuk melanjutkan.";
 $("gateForm").classList.remove("hidden");$("gateForm").onsubmit=async e=>{e.preventDefault();const b=$("gateForm").querySelector("button");b.disabled=true;$("gateError").textContent="";
 const r=await db.auth.signInWithPassword({email:CONTROL_EMAIL,password:$("gatePassword").value});
 if(r.error||!r.data.user||r.data.user.id!==CONTROL_USER_ID){$("gateError").textContent="Password salah atau akun tidak cocok.";b.disabled=false;return}
-user=r.data.user;$("gate").remove();$("account").textContent="Akun: "+CONTROL_EMAIL;await load();};}
+user=r.data.user;localStorage.setItem(UNLOCK_KEY,"1");$("gate").remove();$("account").textContent="Akun: "+CONTROL_EMAIL;await load();};}
 startControl();db.auth.onAuthStateChange((_e,s)=>{if(!s)location.replace("index.html?next=kontrol.html")});
 })();
 </script></body></html>
