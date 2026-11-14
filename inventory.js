@@ -98,12 +98,17 @@ $("transactionForm").addEventListener("submit",async e=>{
   const person=$("txPerson").value.trim(),notes=$("txNotes").value.trim(),date=$("txDate").value;
   const payload=selected.map(x=>({user_id:session.user.id,item_id:x.item.id,transaction_type:"keluar",quantity:x.qty,transaction_date:date,person_or_destination:person,reference_no:batchId,notes}));
   const button=$("transactionForm").querySelector('button[type="submit"]');button.disabled=true;button.textContent="Menyimpan semua barang…";
+  const key="azx_inventory_surat_jalan_outbox";
   try{
-   const {error}=await supabase.from("inventory_transactions").insert(payload);if(error)throw error;
-   const key="azx_inventory_surat_jalan_outbox",outbox=JSON.parse(localStorage.getItem(key)||"[]");
+   const outbox=JSON.parse(localStorage.getItem(key)||"[]");
    outbox.push({id:batchId,number:batchId,date,person,notes,createdAt:now.toISOString(),items:selected.map(x=>({itemId:x.item.id,sku:x.item.sku,name:x.item.name,variant:x.item.variant_name||"",unit:x.item.unit,qty:x.qty}))});
    localStorage.setItem(key,JSON.stringify(outbox));
-   $("transactionForm").reset();$("txDate").value=today();$("multiOutRows").innerHTML="";updateTransactionMode();await loadAll();
+   const {error}=await supabase.from("inventory_transactions").insert(payload);
+   if(error){
+    try{const pending=JSON.parse(localStorage.getItem(key)||"[]").filter(x=>x.id!==batchId);localStorage.setItem(key,JSON.stringify(pending));}catch(cleanupError){console.warn("Gagal membersihkan antrean Surat Jalan:",cleanupError);}
+    throw error;
+   }
+   $("transactionForm").reset();$("txDate").value=today();$("multiOutRows").innerHTML="";updateTransactionMode();
    toast("Barang keluar tersimpan. Surat jalan dibuat otomatis.");
    location.href="dokumen.html?fromInventory="+encodeURIComponent(batchId);
   }catch(err){toast("Gagal menyimpan barang keluar: "+err.message,true)}
