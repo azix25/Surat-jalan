@@ -40,6 +40,58 @@ h1{max-width:520px;margin:0;color:var(--navy);font-size:clamp(32px,4.5vw,51px);l
 @media(max-width:760px){.auth-box{padding:17px}}
 @media(max-width:760px){body{padding:14px}.welcome{grid-template-columns:1fr;min-height:0;border-radius:19px}.intro{padding:30px 25px}.brand{margin-bottom:38px}h1{font-size:clamp(32px,9vw,44px)}.lead{font-size:14px;margin:16px 0 24px}.visual{min-height:340px;padding:28px}.mock{max-width:390px}.footnote{margin-top:30px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* AZX premium visual refresh — presentation only */
+:root{--navy:#102746;--blue:#1769b2;--ink:#172b43;--muted:#718198}
+body{background:radial-gradient(ellipse at 12% 12%,#234d78 0,transparent 34%),radial-gradient(ellipse at 88% 88%,#163e65 0,transparent 38%),#08182b}
+.welcome{position:relative;border:1px solid #ffffff55;border-radius:30px;box-shadow:0 32px 90px #020b18a6}
+.intro{position:relative;background:linear-gradient(155deg,#fff 0%,#f7faff 100%)}
+.brand{gap:14px}
+.brand-mark{width:52px;height:52px;border-radius:16px;background:linear-gradient(145deg,#38a3e8,#174b83 72%);font-size:15px;box-shadow:0 10px 24px #1769b244}
+.brand-name{font-size:17px;letter-spacing:1px}
+.brand-sub{letter-spacing:1.5px;font-size:9px}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid #d6e8fa;border-radius:30px;background:#edf6ff;color:#1769b2;letter-spacing:1.5px}
+.eyebrow:before{content:"";width:7px;height:7px;border-radius:50%;background:#24a0e8;box-shadow:0 0 0 4px #24a0e81c}
+h1{letter-spacing:-2px;line-height:1.06}
+.lead{color:#667990;line-height:1.85}
+.continue{border-radius:12px;background:linear-gradient(110deg,#1976c8,#15518e);box-shadow:0 10px 22px #1769b238;transition:transform .2s,filter .2s,box-shadow .2s}
+.continue:hover,.continue:focus-visible{background:linear-gradient(110deg,#2389dc,#1761a5);filter:saturate(1.12);transform:translateY(-3px);box-shadow:0 15px 28px #1769b24a}
+.workspace-links{gap:12px}
+.footnote{font-weight:700;letter-spacing:1.5px;color:#98a7b9}
+.visual{isolation:isolate;background:radial-gradient(ellipse at 72% 22%,#2b5d8b 0,transparent 45%),linear-gradient(145deg,#173b63,#091d34)}
+.visual:before{width:570px;height:570px;right:-210px;top:-210px;border-color:#a9d7ff24;box-shadow:0 0 0 35px #ffffff05,0 0 0 75px #ffffff03}
+.visual:after{width:420px;height:420px;left:-220px;bottom:-220px;border-color:#a9d7ff20}
+.mock{width:min(100%,430px);padding:21px;border:1px solid #ffffff3b;border-radius:20px;background:linear-gradient(145deg,#ffffff20,#ffffff0b);box-shadow:0 28px 70px #020d1d80;backdrop-filter:blur(16px)}
+.mock-top{font-size:13px}
+.mock-pill{border:1px solid #b7dcff38;background:#b7dcff18;letter-spacing:1px}
+.mock-card,.mock-wide{border-color:#ffffff2b;border-radius:14px;background:linear-gradient(145deg,#ffffff1c,#ffffff0b)}
+.mock-card{min-height:108px;padding:17px}
+.mock-card strong{font-size:27px;letter-spacing:-1px}
+.mock-wide{padding:17px}
+.bars{height:84px;gap:9px}
+.bars i{background:linear-gradient(180deg,#b9e4ff,#4e9bd8);box-shadow:0 0 16px #75c5ff20}
+.mock-row{font-size:11px;color:#e9f4ff}
+.dot{background:#62e0ad;box-shadow:0 0 0 4px #62e0ad20}
+.auth-box{border-color:#dce8f5;border-radius:16px;background:linear-gradient(145deg,#fafdff,#f0f6fc);box-shadow:0 12px 28px #183b6010}
+.auth-box input{height:48px;border-radius:10px;transition:border-color .2s,box-shadow .2s}
+.auth-box input:focus{outline:none;border-color:#3994d7;box-shadow:0 0 0 4px #3994d71b}
+.auth-box button{border-radius:10px;background:linear-gradient(110deg,#1976c8,#15518e)}
+.auth-box button:disabled{opacity:.65;cursor:wait}
+@media(max-width:760px){
+ body{padding:12px;background:radial-gradient(ellipse at 50% 0%,#234d78 0,transparent 42%),#08182b}
+ .welcome{border-radius:23px;box-shadow:0 20px 55px #020b1880}
+ .intro{padding:28px 23px 30px}
+ .brand{margin-bottom:32px}
+ h1{letter-spacing:-1.5px}
+ .visual{min-height:315px;padding:22px}
+ .mock{padding:16px;border-radius:16px}
+ .mock-card{min-height:92px;padding:13px}
+ .mock-card strong{font-size:24px}
+ .footnote{margin-top:26px;font-size:10px}
+ .workspace-links{width:100%}
+ .workspace-links .continue{flex:1;min-width:0;padding:0 14px;gap:10px;font-size:13px}
+}
+
 </style></head>
 <body><main class="welcome">
 <section class="intro">
