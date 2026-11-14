@@ -752,3 +752,53 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
   opacity:.92!important;
   mix-blend-mode:multiply;
 }
+
+
+/* FIX FINAL: stempel harus mengambang di atas area penutup dan tanda tangan.
+   Selector langsung ke struktur HTML agar tidak bergantung pada kelas layout. */
+.paper .signatures,
+.paper .signatures .signature-owner{
+  overflow:visible!important;
+}
+.paper .signatures .signature-owner{
+  position:relative!important;
+  isolation:isolate;
+}
+.paper .signatures .signature-owner .signature-stamp-slot{
+  position:absolute!important;
+  top:8px!important;
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(-50%)!important;
+  width:440px!important;
+  height:0!important;
+  min-height:0!important;
+  overflow:visible!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  z-index:100!important;
+  pointer-events:none!important;
+}
+.paper .signatures .signature-owner .signature-stamp{
+  display:block!important;
+  width:420px!important;
+  height:230px!important;
+  min-width:420px!important;
+  max-width:none!important;
+  min-height:230px!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  margin:0!important;
+  opacity:.94!important;
+  mix-blend-mode:multiply;
+}
+.paper .signatures .signature-owner .signature-stamp[hidden]{
+  display:none!important;
+}
+@media print{
+  .paper .signatures .signature-owner .signature-stamp{
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+}
