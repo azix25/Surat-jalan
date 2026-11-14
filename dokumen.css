@@ -636,8 +636,8 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
 .input-table .item-input-wrap .item-qty{min-width:42px;flex:1 1 42px}.input-table .item-unit-select{flex:0 0 66px;width:66px;min-width:66px;margin:0!important;padding:7px 3px;border:1px solid #ccd4df;border-radius:5px;background:#fff;color:#26384d;font:11px Arial;cursor:pointer}.input-table .item-input-wrap .clear-field{flex:0 0 22px;width:22px}
 
 /* Stempel gambar di tengah kolom tanda tangan pemilik */
-.signature-owner{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:150px;}
-.signature-stamp{display:block;width:auto;height:auto;max-width:150px;max-height:95px;object-fit:contain;margin:5px auto 2px;mix-blend-mode:multiply;}
+.signature-owner{display:flex;flex-direction:column;align-items:center;text-align:center;width:190px;min-width:190px;flex:0 0 190px;}\n.signature-owner .signature-stamp-slot{height:61px;min-height:61px;width:100%;display:flex;align-items:center;justify-content:center;}\n.signature-owner #pNamaTtd{margin-top:0;}
+.signature-stamp{display:block;width:auto;height:auto;max-width:150px;max-height:58px;object-fit:contain;margin:0 auto;mix-blend-mode:multiply;}
 .signature-stamp[hidden]{display:none!important;}
 .stamp-upload-label{display:block;margin:8px 0;}
 @media print{.signature-stamp{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
