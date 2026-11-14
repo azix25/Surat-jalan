@@ -770,7 +770,7 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
   left:50%!important;
   right:auto!important;
   transform:translateX(-50%)!important;
-  width:230px!important;
+  width:170px!important;
   height:0!important;
   min-height:0!important;
   overflow:visible!important;
@@ -782,11 +782,11 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
 }
 .paper .signatures .signature-owner .signature-stamp{
   display:block!important;
-  width:210px!important;
-  height:116px!important;
-  min-width:210px!important;
+  width:150px!important;
+  height:83px!important;
+  min-width:150px!important;
   max-width:none!important;
-  min-height:116px!important;
+  min-height:83px!important;
   max-height:none!important;
   object-fit:contain!important;
   margin:0!important;
