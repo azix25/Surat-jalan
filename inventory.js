@@ -105,7 +105,7 @@ $("transactionForm").addEventListener("submit",async e=>{
    localStorage.setItem(key,JSON.stringify(outbox));
    $("transactionForm").reset();$("txDate").value=today();$("multiOutRows").innerHTML="";updateTransactionMode();await loadAll();
    toast("Barang keluar tersimpan. Surat jalan dibuat otomatis.");
-   if(confirm("Transaksi berhasil. Buka Dokumen untuk melihat surat jalan "+batchId+"?"))location.href="dokumen.html";
+   location.href="dokumen.html?fromInventory="+encodeURIComponent(batchId);
   }catch(err){toast("Gagal menyimpan barang keluar: "+err.message,true)}
   finally{button.disabled=false;button.textContent="Simpan transaksi"}
   return;
