@@ -2,4 +2,21 @@
 [hidden]{display:none!important}.item-actions{display:flex;align-items:center;gap:6px}.btn-reduce{background:#fff0ed;color:#b43e45;border:1px solid #f4d2ce}.btn-reduce:hover{background:#ffe3df}.modal-backdrop{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:#10264199;backdrop-filter:blur(3px)}.reduce-dialog{width:min(460px,100%);max-height:calc(100vh - 32px);overflow:auto;background:white;border-radius:16px;padding:22px;box-shadow:0 24px 70px #10264155}.reduce-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:18px}.reduce-head h2{margin:5px 0 2px;color:var(--navy);font-size:22px}.reduce-head p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}.modal-close{width:34px;height:34px;border:0;border-radius:8px;background:#edf2f7;color:#40516a;font-size:23px;cursor:pointer}.reduce-form{display:grid;gap:13px}.reduce-form label{display:grid;gap:6px}.reduce-form textarea{resize:vertical}.reduce-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:5px}.reduce-actions .btn{min-height:44px}@media(max-width:600px){.reduce-dialog{padding:18px}.item-actions{min-width:150px}}
 .btn-add{background:#e9f8ef;color:#187447;border:1px solid #c5ead3}.btn-add:hover{background:#d8f2e2}
 
-#view-delivery .sj-meta{display:flex;justify-content:space-between;gap:12px;margin:18px 0;font-size:12px}#view-delivery .sj-sign{display:flex;justify-content:space-between;gap:35px;margin:55px 5px 20px;text-align:center;font-size:12px}#view-delivery .sj-foot{text-align:center;color:#8a96a5;font-size:10px;margin-top:28px}@media(max-width:600px){#view-delivery .sj-meta{flex-direction:column}#view-delivery .sj-sign{gap:12px;font-size:10px}}@media print{body *{visibility:hidden!important}#view-delivery.active,#view-delivery.active *{visibility:visible!important}#view-delivery.active{display:block!important;position:absolute!important;inset:0!important;width:100%!important;padding:0!important;margin:0!important}#view-delivery.active>.section-head,#view-delivery.active>table,#view-delivery.active>.table-wrap,#view-delivery.active>.section-head.subhead{display:none!important}#suratJalanPaper{display:block!important;position:absolute!important;inset:0!important;width:100%!important;border:0!important;padding:18mm!important;margin:0!important;box-shadow:none!important}#suratJalanPaper .table-wrap{overflow:visible!important}#suratJalanPaper table{white-space:normal!important}#suratJalanPaper th,#suratJalanPaper td{border:1px solid #ccd3dc!important}}
+#view-delivery .sj-meta{display:flex;justify-content:space-between;gap:12px;margin:18px 0;font-size:12px}#view-delivery .sj-sign{display:flex;justify-content:space-between;gap:35px;margin:55px 5px 20px;text-align:center;font-size:12px}#view-delivery .sj-foot{text-align:center;color:#8a96a5;font-size:10px;margin-top:28px}@media(max-width:600px){#view-delivery .sj-meta{flex-direction:column}#view-delivery .sj-sign{gap:12px;font-size:10px}}@media print{
+ body[data-print-target="delivery"] *{visibility:hidden!important}
+ body[data-print-target="delivery"] #view-delivery,
+ body[data-print-target="delivery"] #view-delivery #suratJalanPaper,
+ body[data-print-target="delivery"] #view-delivery #suratJalanPaper *{visibility:visible!important}
+ body[data-print-target="delivery"] #appPanel,
+ body[data-print-target="delivery"] #appPanel .workspace,
+ body[data-print-target="delivery"] #appPanel .content-area,
+ body[data-print-target="delivery"] #view-delivery{display:block!important}
+ body[data-print-target="delivery"] #view-delivery{position:absolute!important;inset:0!important;width:100%!important;padding:0!important;margin:0!important}
+ body[data-print-target="delivery"] #view-delivery>.section-head,
+ body[data-print-target="delivery"] #view-delivery>.table-wrap{display:none!important}
+ body[data-print-target="delivery"] #suratJalanPaper{display:block!important;position:relative!important;width:100%!important;border:0!important;padding:12mm!important;margin:0!important;box-shadow:none!important}
+ body[data-print-target="delivery"] #suratJalanPaper .table-wrap{overflow:visible!important}
+ body[data-print-target="delivery"] #suratJalanPaper table{width:100%!important;white-space:normal!important;border-collapse:collapse!important}
+ body[data-print-target="delivery"] #suratJalanPaper th,
+ body[data-print-target="delivery"] #suratJalanPaper td{border:1px solid #ccd3dc!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
