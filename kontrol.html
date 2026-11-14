@@ -79,6 +79,6 @@ async function startControl(){
  }
 }
 startControl().catch(err=>{$("gateInfo").textContent="Kesalahan saat memulai kontrol: "+(err&&err.message?err.message:String(err));});
-db.auth.onAuthStateChange((_e,s)=>{if(!s)location.replace("index.html?next=kontrol.html")});
+db.auth.onAuthStateChange((event,session)=>{if(event==="SIGNED_OUT"&&!session)location.replace("index.html?next=kontrol.html")});
 })();
 </script></body></html>
