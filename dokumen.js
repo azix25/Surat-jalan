@@ -161,40 +161,27 @@ async function importCompanyStamp(file){
  if(!["image/png","image/jpeg","image/webp"].includes(file.type)){alert("Stempel harus berupa PNG, JPG, atau WEBP.");$("fileStempel").value="";return;}
  if(file.size>5*1024*1024){alert("Ukuran gambar stempel maksimal 5 MB.");$("fileStempel").value="";return;}
  try{
-  const url=URL.createObjectURL(file),img=new Image();
-  await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error("File gambar tidak dapat dibaca."));img.src=url;});
-  const source=document.createElement("canvas");
-  const sourceScale=Math.min(1,1200/img.naturalWidth,900/img.naturalHeight);
-  source.width=Math.max(1,Math.round(img.naturalWidth*sourceScale));
-  source.height=Math.max(1,Math.round(img.naturalHeight*sourceScale));
-  const sourceCtx=source.getContext("2d",{willReadFrequently:true});
-  sourceCtx.drawImage(img,0,0,source.width,source.height);
-  URL.revokeObjectURL(url);
-
-  /* Pangkas ruang kosong transparan/putih agar cap yang terlihat benar-benar membesar. */
-  const pixels=sourceCtx.getImageData(0,0,source.width,source.height).data;
-  let minX=source.width,minY=source.height,maxX=-1,maxY=-1;
-  for(let y=0;y<source.height;y++){
-   for(let x=0;x<source.width;x++){
-    const i=(y*source.width+x)*4,a=pixels[i+3];
-    const r=pixels[i],g=pixels[i+1],b=pixels[i+2];
-    const visible=a>24 && (a<238 || r<242 || g<242 || b<242);
-    if(visible){if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;}
-   }
+  const objectUrl=URL.createObjectURL(file),img=new Image();
+  try{await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error("File gambar tidak dapat dibaca."));img.src=objectUrl;});}
+  finally{URL.revokeObjectURL(objectUrl);}
+  let scale=Math.min(1,900/img.naturalWidth,650/img.naturalHeight),saved=false,lastError=null;
+  while(scale>=.12&&!saved){
+   const canvas=document.createElement("canvas");
+   canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+   canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+   const ctx=canvas.getContext("2d");
+   if(!ctx)throw new Error("Browser tidak dapat memproses gambar stempel.");
+   ctx.drawImage(img,0,0,canvas.width,canvas.height);
+   const encoded=canvas.toDataURL("image/png");
+   try{localStorage.setItem("stempelPerusahaanBisnis",encoded);companyStamp=encoded;saved=true;}
+   catch(error){lastError=error;scale*=.72;}
   }
-  if(maxX<minX||maxY<minY){minX=0;minY=0;maxX=source.width-1;maxY=source.height-1;}
-  const padX=Math.max(4,Math.round((maxX-minX+1)*.055));
-  const padY=Math.max(4,Math.round((maxY-minY+1)*.055));
-  const sx=Math.max(0,minX-padX),sy=Math.max(0,minY-padY);
-  const sw=Math.min(source.width-sx,maxX-minX+1+padX*2);
-  const sh=Math.min(source.height-sy,maxY-minY+1+padY*2);
-  const scale=Math.min(1,900/sw,600/sh),canvas=document.createElement("canvas");
-  canvas.width=Math.max(1,Math.round(sw*scale));canvas.height=Math.max(1,Math.round(sh*scale));
-  canvas.getContext("2d").drawImage(source,sx,sy,sw,sh,0,0,canvas.width,canvas.height);
-  companyStamp=canvas.toDataURL("image/png");
+  if(!saved)throw new Error("Gambar terlalu besar untuk penyimpanan perangkat. Pilih gambar stempel yang lebih kecil.");
   useReferenceStamp=false;
-  try{localStorage.setItem("stempelPerusahaanBisnis",companyStamp);}catch(e){throw new Error("Penyimpanan perangkat penuh. Gunakan gambar stempel yang lebih kecil.");}
-  $("statusStempel").textContent="Stempel berhasil diunggah dan ruang kosong gambar telah dipangkas";render();
+  const preview=$("pStampImage");
+  if(preview){preview.onerror=()=>{preview.hidden=true;const status=$("statusStempel");if(status)status.textContent="Stempel tersimpan, tetapi gagal ditampilkan. Coba gambar lain.";};preview.hidden=false;preview.src=companyStamp;}
+  $("statusStempel").textContent="Stempel berhasil diunggah dan disimpan";
+  render();
  }catch(error){alert("Gagal mengunggah stempel: "+error.message);}
  $("fileStempel").value="";
 }
