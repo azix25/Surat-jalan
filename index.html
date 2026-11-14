@@ -158,6 +158,12 @@ h1{font-size:clamp(34px,4.3vw,50px);line-height:1.08;letter-spacing:-1.9px}
 .scene-index span{padding:0 5px;color:#6f9dc6}
 @media(max-width:760px){.visual{min-height:280px;padding:18px}.brand-scene{height:250px}.scene-monogram{font-size:clamp(82px,22vw,116px)}.orbit-one{width:270px;height:130px}.orbit-two{width:210px;height:270px}.scene-glow{width:210px;height:210px}.scene-rule{top:calc(50% + 62px);width:58px}.scene-caption{left:5%;bottom:5%;gap:5px;font-size:10px}.scene-caption small{font-size:7px;letter-spacing:1px}.scene-index{right:5%;bottom:5%;font-size:9px}}
 
+
+/* Explicit panel placement: white content left, navy AZX artwork right */
+.welcome{direction:ltr;grid-template-areas:"intro visual";grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr)}
+.welcome>.intro{grid-area:intro;min-width:0}
+.welcome>.visual{grid-area:visual;min-width:0}
+@media(max-width:760px){.welcome{grid-template-areas:"intro" "visual";grid-template-columns:minmax(0,1fr)}.welcome>.intro{grid-area:intro}.welcome>.visual{grid-area:visual}}
 </style></head>
 <body><main class="welcome">
 <section class="intro">
