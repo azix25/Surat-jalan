@@ -151,6 +151,7 @@
         <button type="button" class="secondary" id="azxRestoreDraft">Pulihkan draf otomatis</button>
       </div>
       <p id="azxAutosaveStatus" class="help-text" aria-live="polite">Autosave siap.</p>
+      <label class="stamp-upload-label">Upload gambar stempel dari galeri<input id="fileStempel" type="file" accept="image/png,image/jpeg,image/webp"></label><div class="logo-upload-actions"><button type="button" class="secondary" id="hapusStempel">Hapus stempel</button><span id="statusStempel" class="help-text">Belum ada stempel diunggah</span></div>
       <h3>Stempel & Watermark</h3>
       <label>Teks watermark<input id="azxWatermarkText" type="text" maxlength="40" placeholder="Contoh: DRAFT / RAHASIA"></label>
       <label>Stempel dokumen<input id="azxStampText" type="text" maxlength="40" placeholder="Contoh: LUNAS / DITERIMA"></label>
@@ -170,7 +171,7 @@
       <table class="doc-table"><thead id="pHeadTabel"><tr><th>No.</th><th>Deskripsi</th><th>Qty</th><th>Harga</th><th>Jumlah</th></tr></thead><tbody id="pItems"></tbody></table><div id="pItemsPlain" class="plain-items"></div>
       <div class="totals" id="pTotals"></div>
       <div class="notes"><strong id="pCatatanLabel">Catatan / Ketentuan</strong><p id="pCatatan"></p></div>
-      <div id="pPenutupTanpaTabel" class="plain-closings"><span id="pTeksPenutupKiri">Hormat kami,</span><span id="pTeksPenutupKanan">Mengetahui,</span></div><div class="signatures"><div><span id="pTtdKiri">Hormat kami,</span><b id="pNamaTtd"></b><span id="pJabatanTtd"></span></div><div><span id="pTtdKanan">Penerima,</span><b></b><span>(................................)</span></div></div>
+      <div id="pPenutupTanpaTabel" class="plain-closings"><span id="pTeksPenutupKiri">Hormat kami,</span><span id="pTeksPenutupKanan">Mengetahui,</span></div><div class="signatures"><div class="signature-owner"><span id="pTtdKiri">Hormat kami,</span><img id="pStampImage" class="signature-stamp" alt="Stempel perusahaan" hidden><b id="pNamaTtd"></b><span id="pJabatanTtd"></span></div><div><span id="pTtdKanan">Penerima,</span><b></b><span>(................................)</span></div></div>
       <footer id="pFooter"></footer>
     </article>
   </section>
