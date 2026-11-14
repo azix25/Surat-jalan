@@ -439,21 +439,55 @@ $("voiceStart").addEventListener("click",startRecordedVoiceCommand);
 $("voiceStop").addEventListener("click",()=>{if(voiceRecorder&&voiceRecorder.state!=="inactive"){voiceRecorder.stop();return;}voiceShouldSubmit=true;if(voiceRecognition)voiceRecognition.stop();});
 
 
-/* AZX Inventory → Surat Jalan: satu batch barang keluar menjadi satu arsip surat jalan. */
+/* AZX Inventory → Surat Jalan: impor batch secara otomatis ke arsip dan pratinjau. */
 (function(){
  const OUTBOX_KEY="azx_inventory_surat_jalan_outbox",IMPORTED_KEY="azx_inventory_surat_jalan_imported";
  function syncOutbox(){
   try{
-   const batches=JSON.parse(localStorage.getItem(OUTBOX_KEY)||"[]"),imported=JSON.parse(localStorage.getItem(IMPORTED_KEY)||"[]");
-   let count=0;const docs=JSON.parse(localStorage.getItem("dokumenBisnis")||"[]");
+   const batches=JSON.parse(localStorage.getItem(OUTBOX_KEY)||"[]");
+   const imported=JSON.parse(localStorage.getItem(IMPORTED_KEY)||"[]");
+   const docs=JSON.parse(localStorage.getItem("dokumenBisnis")||"[]");
+   const profile=[...docs].reverse().find(d=>d&&d.perusahaan&&d.perusahaan!=="NAMA PERUSAHAAN")||{};
+   const created=[];
    batches.forEach(batch=>{
     if(!batch?.id||!Array.isArray(batch.items)||!batch.items.length||imported.includes(batch.id)||docs.some(d=>d.sourceInventoryBatchId===batch.id))return;
-    const date=batch.date||today(),number="SJ-"+date.replace(/-/g,"")+"-"+String(batch.id).slice(-8);
-    docs.push({jenis:"suratjalan",template:"standar",templateFormat2:"f2-polos",perusahaan:"NAMA PERUSAHAAN",alamatPerusahaan:"",teleponPerusahaan:"",emailPerusahaan:"",penanggungJawab:"",jabatan:"Direktur",pihak:batch.person||"",alamatPihak:"",nomorDokumen:number,tanggalDokumen:date,jatuhTempo:"",keterangan:"Dibuat otomatis dari transaksi Inventory "+batch.id,pajak:"0",diskon:"0",catatan:batch.notes||"",kolomNamaLabel:"Kode / Nama Barang",kolomJumlahLabel:"Jumlah",kolomDetailLabel:"Satuan / Warna",layoutMode:"table",rincianBebas:"",teksPenutupKiri:"Hormat kami,",teksPenutupKanan:"Penerima,",items:batch.items.map(x=>({nama:[x.sku,x.name,x.variant].filter(Boolean).join(" — "),qty:String(x.qty),harga:[x.unit,x.variant].filter(Boolean).join(" · ")||"—"})),sourceInventoryBatchId:batch.id,inventoryCreatedAt:batch.createdAt||new Date().toISOString()});
-    imported.push(batch.id);count++;
+    const date=batch.date||today();
+    const number=batch.number||("SJ-"+date.replace(/-/g,"")+"-"+String(batch.id).slice(-8));
+    const d={
+     jenis:"suratjalan",template:profile.template||"standar",templateFormat2:profile.templateFormat2||"f2-polos",
+     perusahaan:profile.perusahaan||"NAMA PERUSAHAAN",alamatPerusahaan:profile.alamatPerusahaan||"",
+     teleponPerusahaan:profile.teleponPerusahaan||"",emailPerusahaan:profile.emailPerusahaan||"",
+     penanggungJawab:profile.penanggungJawab||"",jabatan:profile.jabatan||"Direktur",
+     pihak:batch.person||"",alamatPihak:"",nomorDokumen:number,tanggalDokumen:date,jatuhTempo:"",
+     keterangan:"Dibuat otomatis dari transaksi Inventory "+batch.id,pajak:"0",diskon:"0",
+     catatan:batch.notes||"",kolomNamaLabel:"Kode / Nama Barang",kolomJumlahLabel:"Jumlah",
+     kolomDetailLabel:"Satuan / Warna",layoutMode:"table",rincianBebas:"",
+     teksPenutupKiri:"Hormat kami,",teksPenutupKanan:"Penerima,",
+     items:batch.items.map(x=>({nama:[x.sku,x.name,x.variant].filter(Boolean).join(" — "),qty:String(x.qty),harga:[x.unit,x.variant].filter(Boolean).join(" · ")||"—"})),
+     sourceInventoryBatchId:batch.id,inventoryCreatedAt:batch.createdAt||new Date().toISOString()
+    };
+    docs.push(d);created.push(d);imported.push(batch.id);
    });
-   if(count){localStorage.setItem("dokumenBisnis",JSON.stringify(docs));localStorage.setItem(IMPORTED_KEY,JSON.stringify(imported));if(typeof history==="function")history();const notice=document.createElement("div");notice.className="inventory-sync-notice";notice.textContent=count+" surat jalan otomatis dibuat dari Inventory. Lihat Arsip dan Riwayat Dokumen.";document.querySelector(".panel")?.prepend(notice);}
-  }catch(error){console.warn("Sinkronisasi surat jalan Inventory gagal:",error);}
+   if(created.length){
+    localStorage.setItem("dokumenBisnis",JSON.stringify(docs));
+    localStorage.setItem(IMPORTED_KEY,JSON.stringify(imported));
+    history();
+    const latest=created[created.length-1];
+    setData(latest);
+    const notice=document.createElement("div");
+    notice.className="inventory-sync-notice";
+    notice.textContent=created.length+" Surat Jalan dari Inventory berhasil masuk ke Arsip dan ditampilkan pada pratinjau.";
+    document.querySelector(".panel")?.prepend(notice);
+    if(new URLSearchParams(location.search).has("fromInventory")){
+     setTimeout(()=>document.querySelector(".preview-wrap")?.scrollIntoView({behavior:"smooth",block:"start"}),150);
+    }
+   }
+  }catch(error){
+   console.error("Sinkronisasi Surat Jalan Inventory gagal:",error);
+   const notice=document.createElement("div");notice.className="inventory-sync-notice";
+   notice.textContent="Surat Jalan belum berhasil disinkronkan: "+(error.message||"Periksa ruang penyimpanan browser.");
+   document.querySelector(".panel")?.prepend(notice);
+  }
  }
  window.addEventListener("storage",e=>{if(e.key===OUTBOX_KEY)syncOutbox();});
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",syncOutbox);else syncOutbox();
