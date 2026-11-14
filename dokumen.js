@@ -158,13 +158,17 @@ async function importCanvaTemplate(file){
 }
 async function importCompanyStamp(file){
  if(!file)return;
- if(!["image/png","image/jpeg","image/webp"].includes(file.type)){alert("Stempel harus berupa PNG, JPG, atau WEBP.");$("fileStempel").value="";return;}
+ const fileName=String(file.name||"").toLowerCase();
+ const allowedType=["image/png","image/jpeg","image/webp"].includes(file.type);
+ const allowedExtension=/\\.(png|jpe?g|webp)$/.test(fileName);
+ if(!allowedType&&!allowedExtension){alert("Stempel harus berupa PNG, JPG, atau WEBP.");$("fileStempel").value="";return;}
  if(file.size>5*1024*1024){alert("Ukuran gambar stempel maksimal 5 MB.");$("fileStempel").value="";return;}
  try{
   const objectUrl=URL.createObjectURL(file),img=new Image();
-  try{await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error("File gambar tidak dapat dibaca."));img.src=objectUrl;});}
+  try{await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error("File gambar tidak dapat dibaca sebagai gambar. Coba simpan ulang sebagai PNG atau JPG."));img.src=objectUrl;});}
   finally{URL.revokeObjectURL(objectUrl);}
-  let scale=Math.min(1,900/img.naturalWidth,650/img.naturalHeight),saved=false,lastError=null;
+  if(!img.naturalWidth||!img.naturalHeight)throw new Error("Ukuran gambar tidak valid.");
+  let scale=Math.min(1,900/img.naturalWidth,650/img.naturalHeight),saved=false;
   while(scale>=.12&&!saved){
    const canvas=document.createElement("canvas");
    canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
@@ -174,15 +178,22 @@ async function importCompanyStamp(file){
    ctx.drawImage(img,0,0,canvas.width,canvas.height);
    const encoded=canvas.toDataURL("image/png");
    try{localStorage.setItem("stempelPerusahaanBisnis",encoded);companyStamp=encoded;saved=true;}
-   catch(error){lastError=error;scale*=.72;}
+   catch(error){scale*=.72;}
   }
-  if(!saved)throw new Error("Gambar terlalu besar untuk penyimpanan perangkat. Pilih gambar stempel yang lebih kecil.");
+  if(!saved)throw new Error("Gambar terlalu besar untuk penyimpanan perangkat. Pilih gambar yang lebih kecil.");
   useReferenceStamp=false;
-  const preview=$("pStampImage");
-  if(preview){preview.onerror=()=>{preview.hidden=true;preview.removeAttribute("style");const status=$("statusStempel");if(status)status.textContent="Stempel tersimpan, tetapi gagal ditampilkan. Coba gambar lain.";};preview.onload=()=>{preview.hidden=false;const status=$("statusStempel");if(status)status.textContent="Stempel berhasil diunggah dan tampil di pratinjau Format 1.";};preview.hidden=false;preview.removeAttribute("hidden");preview.src=companyStamp;}
-  $("statusStempel").textContent="Stempel berhasil diunggah dan disimpan";
+  const preview=$("pStampImage"),slot=preview?.closest(".signature-stamp-slot");
+  if(slot){slot.style.display="block";slot.style.visibility="visible";}
+  if(preview){
+   preview.onerror=()=>{preview.hidden=true;const status=$("statusStempel");if(status)status.textContent="Stempel tersimpan, tetapi gagal dimuat pada pratinjau. Coba unggah ulang sebagai PNG."};
+   preview.onload=()=>{preview.hidden=false;const status=$("statusStempel");if(status)status.textContent="Stempel berhasil diunggah dan tampil di pratinjau Format 1."};
+   preview.hidden=false;preview.removeAttribute("hidden");preview.src=companyStamp;
+  }
   render();
- }catch(error){alert("Gagal mengunggah stempel: "+error.message);}
+  const status=$("statusStempel");
+  if(status&&preview&&!preview.complete)status.textContent="Stempel disimpan, sedang dimuat ke pratinjau Format 1...";
+  else if(status&&preview&&preview.complete&&preview.naturalWidth)status.textContent="Stempel berhasil diunggah dan tampil di pratinjau Format 1.";
+ }catch(error){alert("Gagal mengunggah stempel: "+error.message);const status=$("statusStempel");if(status)status.textContent="Upload gagal: "+error.message;}
  $("fileStempel").value="";
 }
 async function importCompanyLogo(file){
