@@ -36,6 +36,7 @@ function getEditorColumns(){return [{id:"nama",label:$("kolomNamaLabel").value||
 function renderExtraColumnManager(){const wrap=$("daftarKolomTambahan");if(!wrap)return;wrap.innerHTML="";extraItemColumns.forEach(col=>{const row=document.createElement("div");row.className="custom-column-row";const input=document.createElement("input");input.type="text";input.value=col.label;input.setAttribute("aria-label","Nama kolom tambahan");input.addEventListener("input",()=>{col.label=input.value;render();});const del=document.createElement("button");del.type="button";del.className="secondary";del.textContent="Hapus";del.addEventListener("click",()=>{extraItemColumns=extraItemColumns.filter(x=>x.id!==col.id);$("barisItem").querySelectorAll("tr").forEach(tr=>tr.querySelector('[data-extra="'+col.id+'"]')?.closest("td")?.remove());renderExtraColumnManager();render();});row.append(input,del);wrap.append(row);});}
 function bindItemInput(input){input.addEventListener("focus",()=>{requestAnimationFrame(()=>{try{input.setSelectionRange(0,input.value.length);}catch(_){input.select();}});});input.addEventListener("input",render);}
 function addItem(item={}){
+ let satuanList=$("satuanOptions");if(!satuanList){satuanList=document.createElement("datalist");satuanList.id="satuanOptions";["pcs","dus"].forEach(value=>{const option=document.createElement("option");option.value=value;satuanList.append(option);});document.body.append(satuanList);}
  const tr=document.createElement("tr");
  const columns=getEditorColumns();
  columns.forEach(col=>{
@@ -45,7 +46,7 @@ function addItem(item={}){
   else{
    const wrap=document.createElement("div");wrap.className="item-input-wrap";
    const input=document.createElement("input");input.type="text";input.autocomplete="off";
-   input.className=col.kind==="name"?"item-name":col.kind==="qty"?"item-qty":col.kind==="satuan"?"item-satuan":"item-price";
+   input.className=col.kind==="name"?"item-name":col.kind==="qty"?"item-qty":col.kind==="satuan"?"item-satuan":"item-price";if(col.kind==="satuan")input.setAttribute("list","satuanOptions");
    input.value=col.kind==="name"?(item.nama??""):col.kind==="qty"?(item.qty??1):col.kind==="satuan"?(item.satuan??""):(item.harga??0);
    input.placeholder=col.kind==="qty"?"Contoh: 12 m² / 3 m³ / 5 m":col.label;input.setAttribute("aria-label",col.label);bindItemInput(input);wrap.append(input);
    if(col.kind==="name"||col.kind==="qty"){const clear=document.createElement("button");clear.type="button";clear.className="clear-field";clear.textContent="×";clear.title="Kosongkan";clear.addEventListener("click",()=>{input.value="";input.dispatchEvent(new Event("input",{bubbles:true}));input.focus();});wrap.append(clear);}
