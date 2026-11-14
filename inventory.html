@@ -5,7 +5,19 @@
 <meta name="theme-color" content="#142b4a">
 <title>AZX Inventory | Manajemen Persediaan</title>
 <link rel="stylesheet" href="inventory.css?v=azx-inventory-save-download-fix-20261114-1">
-<style>.multi-out-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0}.multi-out-head small{display:block;color:#64748b;margin-top:4px}.multi-out-table{margin-top:10px}.multi-out-table select,.multi-out-table input{width:100%;min-width:120px;padding:10px;border:1px solid #d7dfeb;border-radius:9px;background:#fff}.multi-out-table td:last-child{width:54px}.multi-out-table .out-stock{white-space:nowrap;color:#64748b;font-size:12px}.multi-out-total{font-weight:700;text-align:right;padding:12px;color:#174a35;background:#eef8f1;border-radius:10px;margin-top:10px}.multi-out-remove{border:0;background:#fff0f0;color:#b42318;border-radius:8px;padding:9px 12px;font-weight:700}@media(max-width:640px){.multi-out-head{align-items:flex-start;flex-direction:column}.multi-out-table{overflow-x:auto}.multi-out-table table{min-width:540px}}</style></head>
+<style>.multi-out-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0}.multi-out-head small{display:block;color:#64748b;margin-top:4px}.multi-out-table{margin-top:10px}.multi-out-table select,.multi-out-table input{width:100%;min-width:120px;padding:10px;border:1px solid #d7dfeb;border-radius:9px;background:#fff}.multi-out-table td:last-child{width:54px}.multi-out-table .out-stock{white-space:nowrap;color:#64748b;font-size:12px}.multi-out-total{font-weight:700;text-align:right;padding:12px;color:#174a35;background:#eef8f1;border-radius:10px;margin-top:10px}.multi-out-remove{border:0;background:#fff0f0;color:#b42318;border-radius:8px;padding:9px 12px;font-weight:700}@media(max-width:640px){.multi-out-head{align-items:flex-start;flex-direction:column}.multi-out-table{overflow-x:auto}.multi-out-table table{min-width:540px}}<style>
+#inventoryDetailPanel{position:fixed;inset:0;z-index:9999;background:rgba(12,27,46,.62);display:flex;align-items:center;justify-content:center;padding:16px}
+#inventoryDetailPanel[hidden]{display:none}
+.inventory-detail-card{width:min(1100px,100%);max-height:90vh;overflow:hidden;background:#fff;border-radius:16px;box-shadow:0 18px 60px #0003;display:flex;flex-direction:column;color:#172b45}
+.inventory-detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px;border-bottom:1px solid #e5eaf1}
+.inventory-detail-head h2{margin:0 0 5px;font-size:21px}.inventory-detail-head p{margin:0;color:#64748b}
+#inventoryDetailClose{border:0;border-radius:9px;background:#eef2f7;color:#24364b;font-size:26px;line-height:1;padding:5px 12px;cursor:pointer}
+.inventory-detail-body{padding:16px 20px 22px;overflow:auto;min-height:100px}
+.inventory-detail-table{overflow:auto}.inventory-detail-table table{width:100%;border-collapse:collapse;min-width:620px}
+.inventory-detail-table th,.inventory-detail-table td{padding:11px;text-align:left;border-bottom:1px solid #e5eaf1;font-size:13px}
+.inventory-detail-table th{background:#f0f4f8;color:#334155;position:sticky;top:0}
+@media(max-width:600px){#inventoryDetailPanel{padding:8px}.inventory-detail-card{max-height:94vh;border-radius:12px}.inventory-detail-head{padding:14px}.inventory-detail-body{padding:12px}.inventory-detail-head h2{font-size:18px}}
+</style></head>
 <body>
 <header class="topbar">
   <a class="brand" href="index.html"><span class="brand-mark">AZX</span><span><b>AZX INVENTORY</b><small>Warehouse & Stock Management</small></span></a>
@@ -125,6 +137,9 @@
 .stat-clickable{cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;position:relative}
 .stat-clickable:hover,.stat-clickable:focus-visible{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,43,74,.14);outline:2px solid #8bb7e8;outline-offset:2px}
 </style>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (()=>{
  if(!window.supabase)return;
@@ -134,13 +149,19 @@
  const monthStart=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-01"};
  const movementType=t=>t==="masuk"||t==="koreksi_tambah"?"masuk":"keluar";
  async function openDetail(kind){
-   // Buka tab langsung dari sentuhan pengguna agar tidak diblokir browser.
-   const tab=window.open("about:blank","_blank");
-   if(!tab){alert("Tab baru diblokir browser. Izinkan pop-up untuk membuka rincian Inventory.");return}
    const titles={kinds:["Jenis barang","Daftar seluruh barang yang terdaftar."],stock:["Total stok tersedia","Rincian stok berjalan setiap barang."],in:["Barang masuk","Transaksi barang masuk pada bulan ini."],out:["Barang keluar","Transaksi barang keluar pada bulan ini, termasuk diambil dan rusak."]};
    const title=titles[kind]?.[0]||"Rincian Inventory",subtitle=titles[kind]?.[1]||"";
-   const shell=(body)=>'<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+' | AZX Inventory</title><style>*{box-sizing:border-box}body{margin:0;padding:20px;background:#f3f6fa;color:#172b45;font-family:Arial,sans-serif}.wrap{max-width:1200px;margin:auto;background:#fff;padding:22px;border-radius:14px;box-shadow:0 5px 24px #142b4a12}h1{margin:0 0 8px;font-size:24px}.sub{color:#64748b;margin:0 0 20px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}button{border:0;border-radius:8px;padding:10px 16px;background:#174a78;color:white;font-weight:700;cursor:pointer}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:620px}th,td{padding:12px;text-align:left;border-bottom:1px solid #e5eaf1;font-size:14px}th{background:#f0f4f8;color:#334155;position:sticky;top:0}.empty{text-align:center;color:#64748b;padding:24px}@media(max-width:600px){body{padding:10px}.wrap{padding:14px}h1{font-size:20px}.top{align-items:flex-start;flex-direction:column}}</style></head><body><main class="wrap"><div class="top"><div><h1>'+esc(title)+'</h1><p class="sub">'+esc(subtitle)+'</p></div><button onclick="window.print()">Cetak</button></div><div class="table-wrap">'+body+'</div></main></body></html>';
-   tab.document.open();tab.document.write(shell('<p class="empty">Memuat data…</p>'));tab.document.close();
+   let panel=document.getElementById("inventoryDetailPanel");
+   if(!panel){
+     panel=document.createElement("section");panel.id="inventoryDetailPanel";panel.setAttribute("role","dialog");panel.setAttribute("aria-modal","true");
+     panel.innerHTML='<div class="inventory-detail-card"><div class="inventory-detail-head"><div><h2 id="inventoryDetailTitle"></h2><p id="inventoryDetailSubtitle"></p></div><button type="button" id="inventoryDetailClose" aria-label="Tutup">×</button></div><div id="inventoryDetailBody" class="inventory-detail-body">Memuat data…</div></div>';
+     document.body.appendChild(panel);
+     panel.querySelector("#inventoryDetailClose").addEventListener("click",()=>panel.remove());
+     panel.addEventListener("click",e=>{if(e.target===panel)panel.remove()});
+   }
+   panel.querySelector("#inventoryDetailTitle").textContent=title;
+   panel.querySelector("#inventoryDetailSubtitle").textContent=subtitle;
+   const body=panel.querySelector("#inventoryDetailBody");body.textContent="Memuat data…";panel.hidden=false;
    try{
      const {data:{session},error:authError}=await client.auth.getSession();if(authError)throw authError;if(!session)throw new Error("Sesi login tidak ditemukan. Silakan masuk kembali.");
      const uid=session.user.id;
@@ -160,11 +181,8 @@
        head="<tr><th>Tanggal</th><th>Kode / Nama barang</th><th>Jenis transaksi</th><th>Jumlah</th><th>Orang / Asal / Tujuan</th><th>Referensi / Catatan</th></tr>";
        rows=selected.map(t=>{const i=byId.get(t.item_id)||{};const date=t.created_at?new Date(t.created_at).toLocaleString("id-ID"):(t.transaction_date||"—");return "<tr><td>"+esc(date)+"</td><td><b>"+esc(i.parent_sku||i.sku||"—")+"</b><br>"+esc(i.name||"Barang")+(i.variant_name?" · "+esc(i.variant_name):"")+"</td><td>"+esc(({masuk:"Barang masuk",keluar:"Barang keluar",diambil:"Barang diambil",rusak:"Barang rusak",koreksi_tambah:"Koreksi tambah",koreksi_kurang:"Koreksi kurang"})[t.transaction_type]||"Barang keluar")+"</td><td>"+fmt(t.quantity)+" "+esc(i.unit||"")+"</td><td>"+esc(t.person_or_destination||"—")+"</td><td>"+esc([t.reference_no,t.notes].filter(Boolean).join(" · ")||"—")+"</td></tr>"}).join("");
      }
-     const table="<table><thead>"+head+"</thead><tbody>"+(rows||'<tr><td colspan="6" class="empty">Belum ada data untuk kategori ini.</td></tr>')+"</tbody></table>";
-     if(!tab.closed){tab.document.open();tab.document.write(shell(table));tab.document.close()}
-   }catch(err){
-     if(!tab.closed){tab.document.open();tab.document.write(shell('<p class="empty">'+esc(err.message||"Gagal memuat data.")+'</p>'));tab.document.close()}
-   }
+     body.innerHTML="<div class='inventory-detail-table'><table><thead>"+head+"</thead><tbody>"+(rows||'<tr><td colspan="6" class="empty">Belum ada data untuk kategori ini.</td></tr>')+"</tbody></table></div>";
+   }catch(err){body.textContent=err.message||"Gagal memuat data."}
  }
  document.querySelectorAll("[data-stat-detail]").forEach(card=>{
    const run=()=>openDetail(card.dataset.statDetail);
@@ -173,7 +191,5 @@
  });
 })();
 </script>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="inventory.js?v=azx-inventory-surat-jalan-submit-fix-20261114-2"></script>
 </body></html>
