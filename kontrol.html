@@ -12,6 +12,18 @@
 <section class="panel hidden" id="itemsPanel"><div class="bar"><input id="is" type="search" placeholder="Cari kode utama, kode varian, atau nama barang…"></div><div class="table-wrap"><table><thead><tr><th>Kode utama</th><th>Nama barang</th><th>Varian / stok</th><th>Aksi</th></tr></thead><tbody id="ir"></tbody></table></div><p class="muted">Menghapus kode utama akan menghapus semua varian dan riwayat transaksi yang terhubung. Untuk menghapus satu kode varian saja, gunakan tombol Hapus varian.</p></section>
 </main><div id="toast"></div>
 <script>
+(function(){
+ const info=document.getElementById("gateInfo");
+ if(info)info.textContent="Skrip halaman berjalan; menyiapkan pemeriksaan…";
+ window.addEventListener("error",function(e){
+  if(info)info.textContent="Kesalahan JavaScript: "+(e.message||"tidak diketahui")+" (baris "+(e.lineno||"?")+")";
+ });
+ window.addEventListener("unhandledrejection",function(e){
+  const r=e.reason; if(info)info.textContent="Kesalahan proses: "+(r&&r.message?r.message:String(r));
+ });
+})();
+</script>
+<script>
 (function bootControl(){ "use strict";
 if(!window.supabase){const loader=document.createElement("script");loader.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";loader.async=true;loader.onload=bootControl;loader.onerror=()=>{const info=document.getElementById("gateInfo");if(info)info.textContent="Gagal memuat koneksi Supabase. Periksa internet atau izinkan cdn.jsdelivr.net, lalu muat ulang halaman."};document.head.appendChild(loader);return;}
 const $=id=>document.getElementById(id);if(!window.supabase){$("gateInfo").textContent="Library koneksi Supabase tidak berhasil dimuat. Periksa internet lalu muat ulang halaman.";return;}
