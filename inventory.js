@@ -82,6 +82,23 @@ function saveSuratJalanDoc(doc){
  try{localStorage.setItem(SURAT_JALAN_KEY,JSON.stringify(suratJalanMemory));return true}
  catch(e){toast("Surat Jalan dibuat, tetapi arsip browser tidak dapat disimpan. Periksa ruang penyimpanan browser.",true);return false}
 }
+function syncSuratJalanDocsFromTransactions(){
+ const groups=new Map();
+ transactions.filter(t=>t.transaction_type==="keluar"&&String(t.reference_no||"").startsWith("AZX-SJ-")).forEach(t=>{
+  const id=t.reference_no;if(!groups.has(id))groups.set(id,[]);
+  const item=items.find(x=>x.id===t.item_id)||{};
+  groups.get(id).push({itemId:t.item_id,sku:item.sku||"",name:item.name||"Barang",variant:item.variant_name||"",unit:item.unit||"",qty:Number(t.quantity)||0});
+ });
+ const existing=getSuratJalanDocs(),byId=new Map(existing.map(d=>[d.id,d]));
+ for(const [id,lines] of groups){
+  const tx=transactions.filter(t=>t.reference_no===id);
+  const first=tx[0]||{};
+  const doc={id,number:id,date:first.transaction_date||today(),person:first.person_or_destination||"",notes:first.notes||"",createdAt:first.created_at||"",items:lines};
+  byId.set(id,doc);
+ }
+ suratJalanMemory=[...byId.values()].sort((a,b)=>String(b.createdAt||b.date).localeCompare(String(a.createdAt||a.date)));
+ try{localStorage.setItem(SURAT_JALAN_KEY,JSON.stringify(suratJalanMemory));}catch(error){console.warn("Arsip lokal penuh; Surat Jalan tetap dapat dipulihkan dari database transaksi.",error);}
+}
 function renderSuratJalanArchive(){
  const rows=$("suratJalanRows"),docs=getSuratJalanDocs();
  if(!rows)return;
@@ -97,7 +114,7 @@ function showSuratJalan(id){
  ${d.notes?`<p><b>Keterangan:</b> ${esc(d.notes)}</p>`:""}
  <div class="sj-sign"><div>Petugas Gudang<br><br><br>(________________)</div><div>Penerima<br><br><br>(________________)</div></div>
  <p class="sj-foot">Dokumen dibuat otomatis oleh AZX Inventory.</p>`;
- $("printSuratJalan").disabled=false;
+ $("printSuratJalan").disabled=false;$("downloadSuratJalan").disabled=false;
 }
 $("printSuratJalan")?.addEventListener("click",()=>{
  const paper=$("suratJalanPaper");
