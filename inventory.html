@@ -121,38 +121,26 @@
     </form>
   </section>
 </div>
-<div class="modal-backdrop" id="statDetailModal" hidden>
-  <section class="reduce-dialog stat-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="statDetailTitle">
-    <div class="reduce-head"><div><span class="eyebrow">RINCIAN INVENTORY</span><h2 id="statDetailTitle">Data inventaris</h2><p id="statDetailSubtitle">Rincian sesuai kartu yang dipilih.</p></div><button type="button" class="modal-close" id="closeStatDetail" aria-label="Tutup">×</button></div>
-    <div class="table-wrap stat-detail-table"><table><thead id="statDetailHead"></thead><tbody id="statDetailRows"><tr><td class="empty">Memuat data…</td></tr></tbody></table></div>
-  </section>
-</div>
 <style>
 .stat-clickable{cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;position:relative}
 .stat-clickable:hover,.stat-clickable:focus-visible{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,43,74,.14);outline:2px solid #8bb7e8;outline-offset:2px}
-.stat-detail-dialog{width:min(920px,calc(100vw - 28px));max-height:85vh;overflow:auto}
-.stat-detail-table{margin-top:16px;max-height:55vh;overflow:auto}
-.stat-detail-table table{width:100%;border-collapse:collapse}
-.stat-detail-table th,.stat-detail-table td{padding:10px;text-align:left;border-bottom:1px solid #e5eaf1;white-space:normal}
 </style>
 <script>
 (()=>{
- const modal=document.getElementById("statDetailModal");
- if(!modal||!window.supabase)return;
+ if(!window.supabase)return;
  const client=window.supabase.createClient("https://nqwqlhcwiwprsbcdadhy.supabase.co","sb_publishable_HSLy26SUHWwpow0smZrB2Q_sNchYRDx");
- const $=id=>document.getElementById(id);
  const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
  const fmt=v=>new Intl.NumberFormat("id-ID",{maximumFractionDigits:3}).format(Number(v)||0);
  const monthStart=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-01"};
  const movementType=t=>t==="masuk"||t==="koreksi_tambah"?"masuk":"keluar";
- const close=()=>{modal.hidden=true};
- $("closeStatDetail").addEventListener("click",close);
- modal.addEventListener("click",e=>{if(e.target===modal)close()});
  async function openDetail(kind){
-   modal.hidden=false;
-   $("statDetailRows").innerHTML='<tr><td class="empty">Memuat data…</td></tr>';
+   // Buka tab langsung dari sentuhan pengguna agar tidak diblokir browser.
+   const tab=window.open("about:blank","_blank");
+   if(!tab){alert("Tab baru diblokir browser. Izinkan pop-up untuk membuka rincian Inventory.");return}
    const titles={kinds:["Jenis barang","Daftar seluruh barang yang terdaftar."],stock:["Total stok tersedia","Rincian stok berjalan setiap barang."],in:["Barang masuk","Transaksi barang masuk pada bulan ini."],out:["Barang keluar","Transaksi barang keluar pada bulan ini, termasuk diambil dan rusak."]};
-   $("statDetailTitle").textContent=titles[kind][0];$("statDetailSubtitle").textContent=titles[kind][1];
+   const title=titles[kind]?.[0]||"Rincian Inventory",subtitle=titles[kind]?.[1]||"";
+   const shell=(body)=>'<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+' | AZX Inventory</title><style>*{box-sizing:border-box}body{margin:0;padding:20px;background:#f3f6fa;color:#172b45;font-family:Arial,sans-serif}.wrap{max-width:1200px;margin:auto;background:#fff;padding:22px;border-radius:14px;box-shadow:0 5px 24px #142b4a12}h1{margin:0 0 8px;font-size:24px}.sub{color:#64748b;margin:0 0 20px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}button{border:0;border-radius:8px;padding:10px 16px;background:#174a78;color:white;font-weight:700;cursor:pointer}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:620px}th,td{padding:12px;text-align:left;border-bottom:1px solid #e5eaf1;font-size:14px}th{background:#f0f4f8;color:#334155;position:sticky;top:0}.empty{text-align:center;color:#64748b;padding:24px}@media(max-width:600px){body{padding:10px}.wrap{padding:14px}h1{font-size:20px}.top{align-items:flex-start;flex-direction:column}}</style></head><body><main class="wrap"><div class="top"><div><h1>'+esc(title)+'</h1><p class="sub">'+esc(subtitle)+'</p></div><button onclick="window.print()">Cetak</button></div><div class="table-wrap">'+body+'</div></main></body></html>';
+   tab.document.open();tab.document.write(shell('<p class="empty">Memuat data…</p>'));tab.document.close();
    try{
      const {data:{session},error:authError}=await client.auth.getSession();if(authError)throw authError;if(!session)throw new Error("Sesi login tidak ditemukan. Silakan masuk kembali.");
      const uid=session.user.id;
@@ -168,21 +156,21 @@
        head="<tr><th>Kode barang</th><th>Nama / Varian</th><th>Kategori</th><th>"+(kind==="stock"?"Stok tersedia":"Satuan")+"</th><th>Batas minimum</th></tr>";
        rows=list.map(i=>{const stock=Number(i.opening_stock||0)+(totals.get(i.id)||0);return "<tr><td>"+esc(i.parent_sku||i.sku)+"</td><td><b>"+esc(i.name)+"</b>"+(i.variant_name?"<br><small>"+esc(i.variant_name)+"</small>":"")+"</td><td>"+esc(i.category||"—")+"</td><td>"+(kind==="stock"?fmt(stock)+" "+esc(i.unit):esc(i.unit))+"</td><td>"+fmt(i.minimum_stock)+" "+esc(i.unit)+"</td></tr>"}).join("");
      }else{
-       const selected=month.filter(t=>movementType(t.transaction_type)===kind);
-       const byId=new Map(list.map(i=>[i.id,i]));
+       const selected=month.filter(t=>movementType(t.transaction_type)===kind),byId=new Map(list.map(i=>[i.id,i]));
        head="<tr><th>Tanggal</th><th>Kode / Nama barang</th><th>Jenis transaksi</th><th>Jumlah</th><th>Orang / Asal / Tujuan</th><th>Referensi / Catatan</th></tr>";
        rows=selected.map(t=>{const i=byId.get(t.item_id)||{};const date=t.created_at?new Date(t.created_at).toLocaleString("id-ID"):(t.transaction_date||"—");return "<tr><td>"+esc(date)+"</td><td><b>"+esc(i.parent_sku||i.sku||"—")+"</b><br>"+esc(i.name||"Barang")+(i.variant_name?" · "+esc(i.variant_name):"")+"</td><td>"+esc(({masuk:"Barang masuk",keluar:"Barang keluar",diambil:"Barang diambil",rusak:"Barang rusak",koreksi_tambah:"Koreksi tambah",koreksi_kurang:"Koreksi kurang"})[t.transaction_type]||"Barang keluar")+"</td><td>"+fmt(t.quantity)+" "+esc(i.unit||"")+"</td><td>"+esc(t.person_or_destination||"—")+"</td><td>"+esc([t.reference_no,t.notes].filter(Boolean).join(" · ")||"—")+"</td></tr>"}).join("");
      }
-     $("statDetailHead").innerHTML=head;
-     $("statDetailRows").innerHTML=rows||'<tr><td colspan="6" class="empty">Belum ada data untuk kategori ini.</td></tr>';
-   }catch(err){$("statDetailRows").innerHTML='<tr><td class="empty">'+esc(err.message||"Gagal memuat data.")+'</td></tr>'}
+     const table="<table><thead>"+head+"</thead><tbody>"+(rows||'<tr><td colspan="6" class="empty">Belum ada data untuk kategori ini.</td></tr>')+"</tbody></table>";
+     if(!tab.closed){tab.document.open();tab.document.write(shell(table));tab.document.close()}
+   }catch(err){
+     if(!tab.closed){tab.document.open();tab.document.write(shell('<p class="empty">'+esc(err.message||"Gagal memuat data.")+'</p>'));tab.document.close()}
+   }
  }
  document.querySelectorAll("[data-stat-detail]").forEach(card=>{
    const run=()=>openDetail(card.dataset.statDetail);
    card.addEventListener("click",run);
    card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();run()}});
  });
- document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!modal.hidden)close()});
 })();
 </script>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
