@@ -835,3 +835,8 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
   mix-blend-mode:multiply;
 }
 @media print{.paper .signatures .signature-owner .signature-stamp{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}}
+
+
+/* Pastikan stempel referensi terlihat tanpa mengubah alur dan ukuran kolom tanda tangan. */
+.paper .signatures .signature-owner .signature-stamp-slot{display:block!important;visibility:visible!important;opacity:1!important;}
+.paper .signatures .signature-owner .signature-stamp{visibility:visible!important;opacity:1!important;}
