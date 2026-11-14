@@ -643,3 +643,33 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
 .signature-stamp[hidden]{display:none!important;}
 .stamp-upload-label{display:block;margin:8px 0;}
 @media print{.signature-stamp{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+
+/* Perbaikan posisi tanda tangan: stempel menjadi lapisan visual, bukan ruang layout. */
+.paper:not(.layout-no-table):not(.format2-paper) .signatures{
+  margin-top:32px!important;
+  padding-top:24px!important;
+  flex:0 0 auto;
+}
+.paper:not(.layout-no-table):not(.format2-paper) .signature-owner{
+  position:relative;
+}
+.paper:not(.layout-no-table):not(.format2-paper) .signature-owner .signature-stamp-slot{
+  position:absolute;
+  top:16px;
+  left:0;
+  right:0;
+  width:100%;
+  height:48px;
+  min-height:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+}
+.paper:not(.layout-no-table):not(.format2-paper) .signature-owner #pNamaTtd{
+  margin-top:55px!important;
+}
+.paper:not(.layout-no-table):not(.format2-paper) .signature-stamp{
+  max-width:140px;
+  max-height:46px;
+}
