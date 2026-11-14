@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#142b4a">
 <title>AZX Inventory | Manajemen Persediaan</title>
 <link rel="stylesheet" href="inventory.css?v=azx-inventory-6">
-</head>
+<style>.multi-out-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0}.multi-out-head small{display:block;color:#64748b;margin-top:4px}.multi-out-table{margin-top:10px}.multi-out-table select,.multi-out-table input{width:100%;min-width:120px;padding:10px;border:1px solid #d7dfeb;border-radius:9px;background:#fff}.multi-out-table td:last-child{width:54px}.multi-out-table .out-stock{white-space:nowrap;color:#64748b;font-size:12px}.multi-out-total{font-weight:700;text-align:right;padding:12px;color:#174a35;background:#eef8f1;border-radius:10px;margin-top:10px}.multi-out-remove{border:0;background:#fff0f0;color:#b42318;border-radius:8px;padding:9px 12px;font-weight:700}@media(max-width:640px){.multi-out-head{align-items:flex-start;flex-direction:column}.multi-out-table{overflow-x:auto}.multi-out-table table{min-width:540px}}</style></head>
 <body>
 <header class="topbar">
   <a class="brand" href="index.html"><span class="brand-mark">AZX</span><span><b>AZX INVENTORY</b><small>Warehouse & Stock Management</small></span></a>
@@ -62,8 +62,9 @@
           <div class="section-head"><div><h2>Catat transaksi barang</h2><p>Setiap transaksi akan masuk ke riwayat dan memperbarui stok.</p></div></div>
           <form id="transactionForm" class="form-grid">
             <label>Jenis transaksi<select id="txType" required><option value="masuk">Barang masuk</option><option value="keluar">Barang keluar</option><option value="diambil">Barang diambil</option><option value="rusak">Barang rusak</option></select></label>
-            <label>Barang<select id="txItem" required><option value="">Pilih barang</option></select></label>
-            <label>Jumlah<input id="txQuantity" type="number" min="0.001" step="0.001" required placeholder="0"></label>
+            <label id="singleTxItemLabel">Barang<select id="txItem" required><option value="">Pilih barang</option></select></label>
+            <label id="singleTxQuantityLabel">Jumlah<input id="txQuantity" type="number" min="0.001" step="0.001" required placeholder="0"></label>
+            <div class="span-all" id="multiOutWrap" hidden><div class="multi-out-head"><div><b>Daftar barang keluar</b><small>Tambahkan beberapa kode dan warna dalam satu surat jalan.</small></div><button type="button" class="btn btn-light" id="addOutRow">＋ Tambah barang</button></div><div class="table-wrap multi-out-table"><table><thead><tr><th>Kode / Barang</th><th>Stok</th><th>Jumlah keluar</th><th></th></tr></thead><tbody id="multiOutRows"></tbody></table></div><div class="multi-out-total" id="multiOutTotal">0 jenis barang · 0 total</div></div>
             <label>Tanggal transaksi<input id="txDate" type="date" required></label>
             <label>Nama pengambil / asal / tujuan<input id="txPerson" maxlength="150" placeholder="Nama orang, pemasok, atau tujuan"></label>
             <label>Nomor referensi<input id="txReference" maxlength="100" placeholder="Nomor surat jalan / bukti"></label>
