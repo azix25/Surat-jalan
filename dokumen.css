@@ -481,7 +481,7 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
  .paper-format2{width:100%;min-width:0;min-height:0;padding:clamp(18px,5vw,34px)}
  .preview-heading{padding:0 3px}
  .table-scroll{max-width:100%;overscroll-behavior-x:contain}
- .input-table{min-width:490px}
+ .input-table{min-width:680px}
  .history-row{grid-template-columns:minmax(0,1fr);gap:9px}
  .history-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}
  .history-actions button{min-height:42px}
