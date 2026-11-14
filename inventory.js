@@ -116,6 +116,15 @@ function showSuratJalan(id){
  <p class="sj-foot">Dokumen dibuat otomatis oleh AZX Inventory.</p>`;
  $("printSuratJalan").disabled=false;$("downloadSuratJalan").disabled=false;
 }
+$("downloadSuratJalan")?.addEventListener("click",()=>{
+ const paper=$("suratJalanPaper");
+ if(!paper||!paper.querySelector(".sj-meta"))return toast("Pilih Surat Jalan terlebih dahulu sebelum mengunduh.",true);
+ const title=paper.querySelector(".sj-meta")?.textContent?.replace(/\\s+/g," ").trim()||"Surat-Jalan";
+ const standalone='<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title><style>body{font:14px Arial,sans-serif;color:#182230;margin:24px}h2{text-align:center;margin:0}.report-head{text-align:center;border-bottom:2px solid #142b4a;padding-bottom:12px;margin-bottom:18px}.report-head p{font-size:11px}.sj-meta{display:flex;justify-content:space-between;margin:18px 0}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #aab4c0;padding:9px;text-align:left;font-size:12px}th{background:#eef2f6}.sj-sign{display:flex;justify-content:space-between;text-align:center;margin:55px 5px 20px}.sj-foot{text-align:center;color:#687385;font-size:10px;margin-top:28px}@media print{body{margin:12mm}}</style></head><body>'+paper.innerHTML+'</body></html>';
+ const blob=new Blob([standalone],{type:"text/html;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download=(title.replace(/[^a-z0-9-]+/gi,"_")||"Surat-Jalan")+".html";document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);toast("File Surat Jalan berhasil diunduh.");
+});
 $("printSuratJalan")?.addEventListener("click",()=>{
  const paper=$("suratJalanPaper");
  if(!paper||!paper.querySelector(".sj-meta"))return toast("Pilih Surat Jalan terlebih dahulu sebelum mencetak.",true);
