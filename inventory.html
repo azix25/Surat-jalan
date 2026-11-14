@@ -177,7 +177,8 @@
        head="<tr><th>Kode barang</th><th>Nama / Varian</th><th>Kategori</th><th>"+(kind==="stock"?"Stok tersedia":"Satuan")+"</th><th>Batas minimum</th></tr>";
        rows=list.map(i=>{const stock=Number(i.opening_stock||0)+(totals.get(i.id)||0);return "<tr><td>"+esc(i.parent_sku||i.sku)+"</td><td><b>"+esc(i.name)+"</b>"+(i.variant_name?"<br><small>"+esc(i.variant_name)+"</small>":"")+"</td><td>"+esc(i.category||"—")+"</td><td>"+(kind==="stock"?fmt(stock)+" "+esc(i.unit):esc(i.unit))+"</td><td>"+fmt(i.minimum_stock)+" "+esc(i.unit)+"</td></tr>"}).join("");
      }else{
-       const selected=month.filter(t=>movementType(t.transaction_type)===kind),byId=new Map(list.map(i=>[i.id,i]));
+       const expectedType=kind==="in"?"masuk":"keluar";
+       const selected=month.filter(t=>movementType(t.transaction_type)===expectedType),byId=new Map(list.map(i=>[i.id,i]));
        head="<tr><th>Tanggal</th><th>Kode / Nama barang</th><th>Jenis transaksi</th><th>Jumlah</th><th>Orang / Asal / Tujuan</th><th>Referensi / Catatan</th></tr>";
        rows=selected.map(t=>{const i=byId.get(t.item_id)||{};const date=t.created_at?new Date(t.created_at).toLocaleString("id-ID"):(t.transaction_date||"—");return "<tr><td>"+esc(date)+"</td><td><b>"+esc(i.parent_sku||i.sku||"—")+"</b><br>"+esc(i.name||"Barang")+(i.variant_name?" · "+esc(i.variant_name):"")+"</td><td>"+esc(({masuk:"Barang masuk",keluar:"Barang keluar",diambil:"Barang diambil",rusak:"Barang rusak",koreksi_tambah:"Koreksi tambah",koreksi_kurang:"Koreksi kurang"})[t.transaction_type]||"Barang keluar")+"</td><td>"+fmt(t.quantity)+" "+esc(i.unit||"")+"</td><td>"+esc(t.person_or_destination||"—")+"</td><td>"+esc([t.reference_no,t.notes].filter(Boolean).join(" · ")||"—")+"</td></tr>"}).join("");
      }
