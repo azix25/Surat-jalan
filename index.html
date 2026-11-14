@@ -46,7 +46,11 @@ h1{max-width:520px;margin:0;color:var(--navy);font-size:clamp(32px,4.5vw,51px);l
 <div class="brand"><div class="brand-mark" aria-hidden="true">AZX</div><div><div class="brand-name">AZX OFFICE</div><span class="brand-sub">Corporate Administration Suite</span></div></div>
 <p class="eyebrow">Modern Corporate Office</p><h1>Kelola dokumen bisnis dengan lebih profesional.</h1>
 <p class="lead">Satu ruang kerja untuk membuat dokumen, mengelola arsip, dan membantu aktivitas administrasi perusahaan dengan lebih teratur.</p>
-<section class="auth-box" id="loginBox">
+<div class="workspace-links public-links" id="publicLinks">
+<a class="continue" href="index.html?next=dokumen.html"><span>Masuk ke Dokumen</span><span class="arrow" aria-hidden="true">→</span></a>
+<a class="continue" href="index.html?next=inventory.html" style="background:#fff;color:#174f8c;border:1px solid #cbd9e8;box-shadow:none"><span>AZX Inventory</span><span class="arrow" aria-hidden="true">↗</span></a>
+</div>
+<div class="auth-box" id="loginBox" hidden>
 <h2 id="authTitle">Masuk ke AZX Office</h2>
 <form id="indexAuthForm">
 <label>Email<input id="indexEmail" type="email" autocomplete="email" required placeholder="nama@perusahaan.com"></label>
@@ -75,23 +79,20 @@ h1{max-width:520px;margin:0;color:var(--navy);font-size:clamp(32px,4.5vw,51px);l
 "use strict";
 const URL="https://nqwqlhcwiwprsbcdadhy.supabase.co";
 const KEY="sb_publishable_HSLy26SUHWwpow0smZrB2Q_sNchYRDx";
-const client=window.supabase?.createClient(URL,KEY);
 const $=id=>document.getElementById(id);
+const next=new URLSearchParams(location.search).get("next");
+const loginRequired=["dokumen.html","inventory.html"].includes(next);
+if(!loginRequired) return;
+$("publicLinks").hidden=true;
+$("loginBox").hidden=false;
+const client=window.supabase?.createClient(URL,KEY);
+if(!client){$("indexAuthMessage").textContent="Layanan autentikasi belum termuat. Periksa koneksi internet.";return;}
 function showSignedIn(user){
- const next=new URLSearchParams(location.search).get("next");
- const controlUserId="8fed10ae-89f1-468f-8263-1b8d2dae99af";
- const controlEmail="chobonk2505@gmail.com";
- if(user?.id===controlUserId&&String(user.email||"").toLowerCase()===controlEmail){
-  location.replace("kontrol.html");
-  return;
- }
  if(next==="inventory.html"){location.replace("inventory.html");return;}
- if(next==="kontrol.html"){location.replace("kontrol.html");return;}
  if(next==="dokumen.html"){location.replace("dokumen.html");return;}
  $("loginBox").hidden=true;$("workspaceLinks").hidden=false;
  $("indexAuthMessage").textContent="Masuk sebagai "+(user?.email||"pengguna AZX Office")+".";
 }
-if(!client){$("indexAuthMessage").textContent="Layanan autentikasi belum termuat. Periksa koneksi internet.";return;}
 $("indexAuthForm").addEventListener("submit",async e=>{
  e.preventDefault();const button=$("indexAuthSubmit");button.disabled=true;
  const email=$("indexEmail").value.trim(),password=$("indexPassword").value;
