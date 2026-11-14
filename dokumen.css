@@ -840,3 +840,10 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
 /* Pastikan stempel referensi terlihat tanpa mengubah alur dan ukuran kolom tanda tangan. */
 .paper .signatures .signature-owner .signature-stamp-slot{display:block!important;visibility:visible!important;opacity:1!important;}
 .paper .signatures .signature-owner .signature-stamp{visibility:visible!important;opacity:1!important;}
+
+/* Stempel unggahan pada Format 2: lapisan di atas kertas tanpa menggeser isi dokumen. */
+.paper-format2{position:relative;}
+.paper-format2 .f2-stamp-image{position:absolute;right:22mm;bottom:24mm;z-index:5;display:block;width:auto;height:auto;max-width:42mm;max-height:32mm;object-fit:contain;mix-blend-mode:multiply;pointer-events:none;}
+.paper-format2 .f2-stamp-image[hidden]{display:none!important;}
+@media(max-width:800px){.paper-format2 .f2-stamp-image{right:20px;bottom:20px;max-width:112px;max-height:88px;}}
+@media print{.paper-format2 .f2-stamp-image{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
