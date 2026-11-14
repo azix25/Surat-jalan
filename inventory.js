@@ -132,7 +132,7 @@ $("printSuratJalan")?.addEventListener("click",()=>{
  const cleanup=()=>{delete document.body.dataset.printTarget;window.removeEventListener("afterprint",cleanup);};
  window.addEventListener("afterprint",cleanup);
  window.print();
- setTimeout(()=>{if(document.body.dataset.printTarget==="delivery")cleanup();},1000);
+
 });
 $("suratJalanRows")?.addEventListener("click",e=>{const b=e.target.closest("[data-open-sj]");if(b)showSuratJalan(b.dataset.openSj)});
 $("createSuratJalan")?.addEventListener("click",()=>{
