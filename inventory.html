@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#142b4a">
 <title>AZX Inventory | Manajemen Persediaan</title>
-<link rel="stylesheet" href="inventory.css?v=azx-inventory-print-fix-20261114-1">
+<link rel="stylesheet" href="inventory.css?v=azx-inventory-save-download-fix-20261114-1">
 <style>.multi-out-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0}.multi-out-head small{display:block;color:#64748b;margin-top:4px}.multi-out-table{margin-top:10px}.multi-out-table select,.multi-out-table input{width:100%;min-width:120px;padding:10px;border:1px solid #d7dfeb;border-radius:9px;background:#fff}.multi-out-table td:last-child{width:54px}.multi-out-table .out-stock{white-space:nowrap;color:#64748b;font-size:12px}.multi-out-total{font-weight:700;text-align:right;padding:12px;color:#174a35;background:#eef8f1;border-radius:10px;margin-top:10px}.multi-out-remove{border:0;background:#fff0f0;color:#b42318;border-radius:8px;padding:9px 12px;font-weight:700}@media(max-width:640px){.multi-out-head{align-items:flex-start;flex-direction:column}.multi-out-table{overflow-x:auto}.multi-out-table table{min-width:540px}}</style></head>
 <body>
 <header class="topbar">
@@ -74,7 +74,7 @@
           </form>
         </section>
         <section class="view" id="view-delivery">
-          <div class="section-head"><div><h2>Surat Jalan Inventory</h2><p>Buat, buka, dan cetak Surat Jalan langsung dari Inventory.</p></div><div class="form-actions"><button type="button" class="btn btn-primary" id="createSuratJalan">＋ Buat Surat Jalan</button><button type="button" class="btn btn-light" id="printSuratJalan" disabled>⌑ Cetak / PDF</button></div></div>
+          <div class="section-head"><div><h2>Surat Jalan Inventory</h2><p>Buat, buka, dan cetak Surat Jalan langsung dari Inventory.</p></div><div class="form-actions"><button type="button" class="btn btn-primary" id="createSuratJalan">＋ Buat Surat Jalan</button><button type="button" class="btn btn-light" id="downloadSuratJalan" disabled>↓ Download</button><button type="button" class="btn btn-light" id="printSuratJalan" disabled>⌑ Cetak / PDF</button></div></div>
           <div class="table-wrap"><table><thead><tr><th>Nomor Surat Jalan</th><th>Tanggal</th><th>Penerima / Tujuan</th><th>Jumlah jenis</th><th></th></tr></thead><tbody id="suratJalanRows"><tr><td colspan="5" class="empty">Belum ada Surat Jalan.</td></tr></tbody></table></div>
           <div class="section-head subhead"><div><h3>Pratinjau Surat Jalan</h3><p>Gunakan tombol cetak untuk mencetak atau menyimpan sebagai PDF.</p></div></div>
           <div id="suratJalanPaper" class="report-paper"><div class="report-placeholder">Pilih Surat Jalan dari daftar untuk melihat pratinjau.</div></div>
@@ -123,5 +123,5 @@
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="inventory.js?v=azx-inventory-print-fix-20261114-1"></script>
+<script src="inventory.js?v=azx-inventory-save-download-fix-20261114-1"></script>
 </body></html>
