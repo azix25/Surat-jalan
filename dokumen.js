@@ -160,7 +160,7 @@ async function importCompanyStamp(file){
  if(!file)return;
  const fileName=String(file.name||"").toLowerCase();
  const allowedType=["image/png","image/jpeg","image/webp"].includes(file.type);
- const allowedExtension=/\\.(png|jpe?g|webp)$/.test(fileName);
+ const allowedExtension=/\.(png|jpe?g|webp)$/.test(fileName);
  if(!allowedType&&!allowedExtension){alert("Stempel harus berupa PNG, JPG, atau WEBP.");$("fileStempel").value="";return;}
  if(file.size>5*1024*1024){alert("Ukuran gambar stempel maksimal 5 MB.");$("fileStempel").value="";return;}
  try{
