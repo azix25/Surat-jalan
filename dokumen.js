@@ -119,7 +119,28 @@ const wordContent=$("pWordContent");if(wordContent&&!wordContent.dataset.bound){
  plainItems.style.display=noTable?"block":"none";
 $("pTotals").style.display=noTable||noMoneyTypes.includes(type)?"none":"block";$("pTotals").innerHTML='<div class="total-line"><span>Subtotal</span><b>'+money(total)+'</b></div><div class="total-line"><span>Pajak ('+(Number(d.pajak)||0)+'%)</span><b>'+money(tax)+'</b></div><div class="total-line"><span>Diskon</span><b>- '+money(disc)+'</b></div><div class="total-line grand"><span>Total</span><b>'+money(grand)+'</b></div>';
 $("labelPihak").firstChild.textContent=["suratjalan","deliveryorder","suratpengantar"].includes(type)?"Nama penerima":type==="penawaran"?"Nama pelanggan":["kuitansi","tandaterima","bast"].includes(type)?"Nama pemberi":["spk","rab","laporanprogress","laporanhari","laporanbiaya","checklistqc"].includes(type)?"Nama proyek / lokasi":type==="permintaanpembelian"?"Nama pemohon":type==="memointernal"?"Nama penerima memo":"Nama pelanggan / penerima";$("labelJatuhTempo").style.display=(["invoice","penagihan","invoicetermin"].includes(type))?"block":"none";renderFormat2Preview(d,L);alignStampTopToGreeting()}
-function alignStampTopToGreeting(){const paper=$("lembar"),owner=paper?.querySelector(".signature-owner"),greeting=$("pTtdKiri"),slot=$("pStampImage")?.closest(".signature-stamp-slot");if(!paper||paper.classList.contains("format2-paper")||!owner||!greeting||!slot)return;const ownerTop=owner.getBoundingClientRect().top,greetingTop=greeting.getBoundingClientRect().top;slot.style.setProperty("top",Math.max(0,greetingTop-ownerTop)+"px","important");}
+let stampAlignFrame=0,stampAlignObserver=null;
+function alignStampTopToGreeting(){
+ if(stampAlignFrame)cancelAnimationFrame(stampAlignFrame);
+ stampAlignFrame=requestAnimationFrame(()=>{
+  stampAlignFrame=0;
+  const paper=$("lembar"),owner=paper?.querySelector(".signature-owner"),greeting=$("pTtdKiri"),slot=$("pStampImage")?.closest(".signature-stamp-slot");
+  if(!paper||paper.classList.contains("format2-paper")||paper.classList.contains("layout-no-table")||!owner||!greeting||!slot)return;
+  const ownerRect=owner.getBoundingClientRect(),greetingRect=greeting.getBoundingClientRect();
+  slot.style.setProperty("top",Math.max(0,greetingRect.top-ownerRect.top)+"px","important");
+ });
+}
+function watchStampAlignment(){
+ const owner=$("lembar")?.querySelector(".signature-owner"),greeting=$("pTtdKiri");
+ if(!owner||!greeting||typeof ResizeObserver==="undefined")return;
+ if(stampAlignObserver)stampAlignObserver.disconnect();
+ stampAlignObserver=new ResizeObserver(()=>alignStampTopToGreeting());
+ stampAlignObserver.observe(owner);stampAlignObserver.observe(greeting);
+ alignStampTopToGreeting();
+}
+window.addEventListener("resize",alignStampTopToGreeting,{passive:true});
+window.addEventListener("beforeprint",alignStampTopToGreeting);
+
 function applyCustomTemplate(){
   const paper=$("lembar"),active=Boolean(customTemplate);
   paper.style.backgroundImage=active?'url("'+customTemplate+'")':"";
