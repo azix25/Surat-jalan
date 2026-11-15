@@ -1,27 +1,49 @@
-# Konfigurasi AI AZX Office (Cloudflare Workers AI)
+# Konfigurasi AI AZX Office (Gemini API)
 
-AI untuk **AZX Office** dan **AZX Inventory** menggunakan Cloudflare Workers AI melalui Supabase Edge Functions.
+## Mesin AI
 
-## Pengaturan pengelola (sekali di server)
+- **AI Dokumen** dan **AI Inventory** menggunakan Gemini API melalui Supabase Edge Functions.
+- Model teks yang dikonfigurasi pada audit 15 November 2026: `gemini-3.8-flash`.
+- Fungsi backend: `dokumen-ai` dan `inventory-ai`.
+- **Tidak menggunakan DeepSeek atau Ollama.**
+- Transkripsi perintah suara pada AI Dokumen adalah jalur terpisah: bila secret Cloudflare tersedia, audio ditranskripsikan oleh Cloudflare Workers AI Whisper Large v3 Turbo. Teks hasil transkripsi kemudian diteruskan ke AI Dokumen yang menggunakan Gemini.
+
+## Secret server
+
 Di Supabase Dashboard → Edge Functions → Secrets, pastikan tersedia:
-- `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_API_TOKEN`
-- `AI_ACCESS_CODE` (kode akses AZX yang sudah dipakai sebelumnya)
 
-Jangan simpan Cloudflare API Token di HTML, JavaScript, atau repository. Jangan masukkan Cloudflare API Token ke kolom kode akses pengguna.
+- `GEMINI_API_KEY` — wajib untuk AI Dokumen dan AI Inventory.
+- `AI_ACCESS_CODE` — kode akses AI yang dimasukkan pengguna.
+- `CLOUDFLARE_ACCOUNT_ID` dan `CLOUDFLARE_API_TOKEN` — opsional, hanya untuk transkripsi suara.
+
+Jangan simpan Gemini API Key, Cloudflare API Token, atau secret server di HTML, JavaScript, atau repository. Jangan masukkan API Key ke kolom kode akses pengguna.
 
 ## Pengaturan pengguna
+
 1. Masuk ke AZX Office atau AZX Inventory.
-2. Pada penggunaan AI pertama di perangkat/browser tersebut, masukkan **AI_ACCESS_CODE** yang diberikan pengelola.
-3. Kode akses disimpan lokal pada browser perangkat tersebut dan otomatis digunakan oleh kedua modul (dokumen dan inventory). Tidak perlu dimasukkan lagi setiap kali.
+2. Pada penggunaan AI pertama di browser/perangkat tersebut, masukkan `AI_ACCESS_CODE` dari pengelola.
+3. Kode akses disimpan pada localStorage browser dan dipakai bersama oleh modul Dokumen dan Inventory pada origin yang sama.
 4. Jika kode ditolak atau diganti pengelola, masukkan kode terbaru saat diminta.
 
-Catatan: penyimpanan lokal berlaku pada browser/perangkat dan domain yang sama. Menghapus data situs/browser akan menghapus kode tersimpan.
+Catatan: penyimpanan lokal berlaku pada browser/perangkat dan domain yang sama. Menghapus data situs/browser akan menghapus kode tersimpan. Kode akses yang tersimpan di browser bukan pengganti autentikasi akun.
 
-## Cara menggunakan AI dokumen
-1. Pilih jenis dokumen dan tulis instruksi.
-2. Tekan **Buat dengan AI** atau gunakan perintah suara.
-3. Periksa identitas, tanggal, nomor, rincian, dan nominal sebelum disimpan atau dicetak.
+## Cara menggunakan AI Dokumen
 
-## Model dan kuota
-Backend menggunakan Cloudflare Workers AI (Llama 3.3 70B untuk teks dan Whisper Large v3 Turbo untuk transkripsi suara). Ketersediaan dan kuota mengikuti akun Cloudflare; penggunaan gratis memiliki batas dan dapat berubah.
+1. Pilih jenis dan format dokumen.
+2. Tulis instruksi bahasa Indonesia atau gunakan mikrofon.
+3. Periksa kembali identitas, tanggal, nomor, rincian, satuan, dan nominal.
+4. Simpan atau cetak hanya setelah hasil diperiksa. AI menghasilkan draf; AI tidak boleh dianggap sebagai persetujuan otomatis untuk menyimpan atau mencetak dokumen.
+
+## Cara menggunakan AI Inventory
+
+- Ajukan pertanyaan stok dengan kode, nama, warna, varian, atau periode tanggal.
+- Periksa kode SKU, varian, satuan, dan angka sebelum mengambil keputusan operasional.
+- Fitur AI Search ditujukan untuk membaca dan menjelaskan data; pencarian AI tidak boleh membuat atau mengubah transaksi stok.
+
+## Kuota dan pembelajaran
+
+- Kuota serta batas permintaan teks mengikuti akun dan kebijakan Gemini API.
+- Kuota transkripsi suara, jika digunakan, mengikuti akun Cloudflare.
+- Percakapan tidak otomatis melatih ulang Gemini secara permanen. Peningkatan AZX dilakukan melalui prompt, konteks, validasi, evaluasi, dan kode aplikasi.
+- Jangan menggunakan isi dokumen, data pribadi, token, atau API Key sebagai contoh pelatihan. Gunakan data sintetis untuk pengujian regresi.
+
