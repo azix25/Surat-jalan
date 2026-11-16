@@ -373,7 +373,7 @@ async function requestAIWithRetry(url,options,status){
    try{payload=await retryResponse.json();}catch(_){}
    const message=payload.error||payload.message||("Permintaan AI gagal (HTTP "+response.status+").");
    const detail=String(message);
-   const quotaExhausted=/RESOURCE_EXHAUSTED|quota.{0,30}(exceed|limit|habis)|exceed.{0,30}quota/i.test(detail);
+   const quotaExhausted=/RESOURCE_EXHAUSTED|(?:quota|kuota).{0,50}(?:exceed|limit|habis|mencapai|tercapai|batas)|(?:exceed|tercapai|mencapai).{0,40}(?:quota|kuota)|(?:batas|limit).{0,30}(?:permintaan|penggunaan)/i.test(detail);
    const temporary=[502,503,504].includes(response.status)||(response.status===429&&!quotaExhausted);
    if(!temporary||attempt===maxAttempts)throw new Error(detail);
    const retryAfter=Number(response.headers.get("Retry-After"));
