@@ -89,7 +89,7 @@ Gunakan draf sintetis berikut pada halaman uji:
 | SEC-03 | Gunakan akun uji berbeda | Inventory hanya membaca data yang diizinkan RLS untuk akun tersebut | [ ] |
 | SEC-04 | Cari prompt injection pada pertanyaan, catatan barang, dan isi dokumen | Data tak tepercaya tidak dapat mengganti instruksi sistem atau memicu aksi | [ ] |
 | SEC-05 | Periksa browser bundle dan repository | Tidak ada Gemini API Key, Cloudflare API Token, atau secret server | [ ] |
-| SEC-06 | Simulasikan 429 kuota, 5xx, dan timeout Gemini | Retry terbatas; kuota habis tidak memicu retry berulang yang sia-sia; pesan teks AI menyebut Gemini (bukan Cloudflare); jalur transkripsi suara tetap dibedakan | [ ] |
+| SEC-06 | Simulasikan HTTP 429 dengan pesan `Kuota Gemini sedang mencapai batas`, 5xx, dan timeout Gemini | Pesan kuota berbahasa Indonesia dikenali agar frontend tidak mengulang permintaan; 5xx/timeout retry terbatas; pesan teks AI menyebut Gemini (bukan Cloudflare); jalur transkripsi suara tetap dibedakan | [ ] |
 | SEC-07 | Validasi JSON dan tipe semua field | Respons yang salah skema ditolak; angka, tanggal, array, ID, dan string dibatasi sesuai kontrak | [ ] |
 | SEC-08 | Pindai source AI | Tidak ada integrasi atau fallback ke DeepSeek maupun Ollama | [ ] |
 
