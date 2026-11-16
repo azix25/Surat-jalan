@@ -96,14 +96,16 @@
           <div class="table-wrap"><table><thead><tr><th>Tanggal &amp; Jam</th><th>Kode / Barang</th><th>Jenis</th><th>Jumlah</th><th>Orang / Asal / Tujuan</th><th>Referensi / Keterangan</th></tr></thead><tbody id="historyRows"></tbody></table></div>
         </section>
         <section class="view" id="view-reports">
-          <div class="section-head"><div><h2>Laporan inventaris</h2><p>Atur periode dan jenis laporan, lalu pratinjau sebelum dicetak.</p></div></div>
+          <div class="section-head"><div><h2>Laporan inventaris</h2><p>Rekap bulanan nama barang, stok tersedia, barang masuk, dan barang keluar. PDF tersimpan di Arsip AZX Office.</p></div></div>
           <div class="form-grid report-controls">
-            <label>Jenis laporan<select id="reportType"><option value="stock">Posisi stok saat ini</option><option value="all">Semua masuk &amp; keluar</option><option value="masuk">Barang masuk</option><option value="keluar">Barang keluar</option></select></label>
+            <label>Jenis laporan<select id="reportType"><option value="summary">Rekap lengkap per barang</option><option value="stock">Posisi stok saat ini</option><option value="all">Semua masuk &amp; keluar</option><option value="masuk">Barang masuk</option><option value="keluar">Barang keluar</option></select></label>
             <label>Dari tanggal<input id="reportFrom" type="date"></label><label>Sampai tanggal<input id="reportTo" type="date"></label>
             <label>Filter barang<select id="reportItem"><option value="all">Semua barang</option></select></label>
           </div>
-          <div class="form-actions report-actions"><button class="btn btn-primary" id="previewReport">Buat pratinjau</button><button class="btn btn-light" id="printReport">Cetak / Simpan PDF</button></div>
-          <div class="report-paper" id="reportPaper"><div class="report-placeholder">Atur filter lalu tekan “Buat pratinjau”.</div></div>
+          <div class="form-actions report-actions"><button class="btn btn-primary" id="previewReport">Buat pratinjau</button><button class="btn btn-light" id="saveReportPdf">Simpan &amp; Unduh PDF</button><button class="btn btn-light" id="sendReportFormat2">Tambahkan ke Format 2</button></div>
+          <div class="report-paper" id="reportPaper"><div class="report-placeholder">Pilih periode lalu tekan “Buat pratinjau”.</div></div>
+          <div class="section-head" style="margin-top:24px"><div><h3>Arsip PDF AZX Office</h3><p>Laporan yang sudah disimpan di penyimpanan akun ini.</p></div><button class="btn btn-light" id="refreshReportArchive" type="button">↻ Muat arsip</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Nama laporan</th><th>Tanggal disimpan</th><th>Ukuran</th><th>Aksi</th></tr></thead><tbody id="reportArchiveRows"><tr><td colspan="4" class="empty">Memuat arsip…</td></tr></tbody></table></div>
         </section>
       </div>
     </div>
@@ -139,6 +141,8 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
 <script>
 (()=>{
  if(!window.supabase)return;
@@ -191,5 +195,5 @@
  });
 })();
 </script>
-<script src="inventory.js?v=azx-inventory-pack-count-20261116-6"></script>
+<script src="inventory.js?v=azx-inventory-report-pdf-format2-20261116-1"></script>
 </body></html>
