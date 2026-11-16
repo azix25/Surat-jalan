@@ -57,20 +57,17 @@
           <div class="table-wrap"><table><thead><tr><th>Kode utama / SKU</th><th>Nama / Varian</th><th>Kategori</th><th>Stok tersedia</th><th>Batas minimum</th><th>Status</th></tr></thead><tbody id="stockRows"><tr><td colspan="6" class="empty">Belum ada data barang.</td></tr></tbody></table></div>
         </section>
         <section class="view" id="view-items">
-          <div class="section-head"><div><h2>Data barang</h2><p>Daftarkan barang dan tentukan stok awal.</p></div></div>
+          <div class="section-head"><div><h2>Data barang</h2><p>Daftarkan identitas barang dan isi per satuan. Stok dicatat melalui menu transaksi.</p></div></div>
           <form id="itemForm" class="form-grid">
             <label>Kode barang<input id="itemSku" required maxlength="50" placeholder="BRG-001"></label>
             <label>Nama barang<input id="itemName" required maxlength="150" placeholder="Nama barang"></label>
-            <label>Varian (opsional; pisahkan dengan baris baru atau koma)<textarea id="itemVariants" rows="3" placeholder="Merah=2, Biru=3, Hitam=1"></textarea><small class="muted">Format: Nama varian=stok dalam satuan Dus/Ball. Contoh: Merah=2, Biru=3.</small></label>
+            <label>Varian (opsional; pisahkan dengan baris baru atau koma)<textarea id="itemVariants" rows="3" placeholder="Merah, Biru, Hitam"></textarea><small class="muted">Masukkan nama varian saja, pisahkan dengan koma atau baris baru. Stok setiap varian dicatat melalui Catat Transaksi.</small></label>
             <label>Satuan<select id="itemUnit" required><option value="dus">Dus</option><option value="ball">Ball</option></select></label>
             <label>Qty · isi per 1 satuan (pcs)<input id="itemPackSize" type="number" min="1" step="1" value="100" required></label>
-            <label>Stok awal (Dus/Ball)<input id="itemOpening" type="number" min="0" step="0.001" value="0" required></label>
-            <label>Max stok (Dus/Ball)<input id="itemMaximum" type="number" min="0" step="0.001" value="0"></label>
-            <div class="span-all muted" id="itemPackPreview">Total stok awal: 0 pcs</div>
             <label class="span-all">Catatan<input id="itemNotes" maxlength="500" placeholder="Catatan opsional"></label>
             <div class="span-all form-actions"><button class="btn btn-primary">Simpan barang</button><button class="btn btn-light" type="reset">Kosongkan</button></div>
           </form>
-          <div class="section-head subhead"><div><h3>Daftar barang</h3></div></div><div class="table-wrap"><table><thead><tr><th>Kode utama / SKU</th><th>Nama / Varian</th><th>Satuan</th><th>Qty / satuan</th><th>Stok / Max</th><th></th></tr></thead><tbody id="itemRows"></tbody></table></div>
+          <div class="section-head subhead"><div><h3>Daftar barang</h3></div></div><div class="table-wrap"><table><thead><tr><th>Kode utama / SKU</th><th>Nama / Varian</th><th>Satuan</th><th>Qty / satuan</th><th>Stok sekarang</th><th></th></tr></thead><tbody id="itemRows"></tbody></table></div>
         </section>
         <section class="view" id="view-transaction">
           <div class="section-head"><div><h2>Catat transaksi barang</h2><p>Setiap transaksi akan masuk ke riwayat dan memperbarui stok.</p></div><button type="button" class="btn btn-primary" id="quickMultiOut">＋ Barang keluar · Banyak kode</button></div>
