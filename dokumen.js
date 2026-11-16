@@ -59,6 +59,21 @@ function clearSavedAIAccessCode(){
 
 let customTemplate=localStorage.getItem("templateCanvaBisnis")||"";
 let companyLogo=localStorage.getItem("logoPerusahaanBisnis")||"";
+const COMPANY_PROFILE_KEY="azxOfficeCompanyProfile_v1";
+const COMPANY_PROFILE_FIELDS=["perusahaan","alamatPerusahaan","teleponPerusahaan","emailPerusahaan","penanggungJawab","jabatan"];
+function readCompanyProfile(){
+ try{const saved=JSON.parse(localStorage.getItem(COMPANY_PROFILE_KEY)||"{}");return saved&&typeof saved==="object"?saved:{};}
+ catch(error){console.warn("Profil perusahaan tersimpan tidak dapat dibaca:",error);return {};}
+}
+function saveCompanyProfile(){
+ const profile={};COMPANY_PROFILE_FIELDS.forEach(id=>{const el=$(id);if(el)profile[id]=el.value;});
+ try{localStorage.setItem(COMPANY_PROFILE_KEY,JSON.stringify(profile));return true;}
+ catch(error){console.error("Profil perusahaan gagal disimpan:",error);const status=$("azxAutosaveStatus");if(status)status.textContent="Profil perusahaan belum tersimpan. Ruang penyimpanan browser penuh.";return false;}
+}
+function restoreCompanyProfile(){
+ const profile=readCompanyProfile();
+ COMPANY_PROFILE_FIELDS.forEach(id=>{const el=$(id);if(el&&Object.prototype.hasOwnProperty.call(profile,id))el.value=profile[id];});
+}
 const STAMP_UPLOAD_MARKER="stempelPerusahaanBisnis_uploaded_v1";
 let companyStamp=localStorage.getItem("stempelPerusahaanBisnis")||"";
 // Khusus Format 1: gambar lama tanpa penanda upload baru tidak boleh tampil.
@@ -116,6 +131,8 @@ function readData(){const d={jenis:$("jenis").value,template:$("template").value
 function setData(d){
  $("jenis").value=d.jenis||"invoice";$("template").value=d.template||"standar";if($("templateFormat2"))$("templateFormat2").value=d.templateFormat2||"f2-polos";applyCustomTemplate();
  fieldIds.forEach(id=>{if($(id))$(id).value=d[id]??"";});
+ // Profil perusahaan selalu diambil dari penyimpanan khusus, bukan dari arsip dokumen lama atau hasil impor Inventory.
+ restoreCompanyProfile();
  if($("pWordContent"))$("pWordContent").innerHTML=sanitizeDocumentHtml(d.rincianBebas??"");if($("f2WordContent"))$("f2WordContent").innerHTML=sanitizeDocumentHtml(d.rincianFormat2??(d.layoutMode==="no-table"?(d.rincianBebas??""):""));
  const defaults=defaultColumnLabels();Object.entries(defaults).forEach(([id,value])=>{if($(id)&&!d[id])$(id).value=value;});if(d.kolomDetailLabel&&!d.kolomHargaLabel)$("kolomHargaLabel").value=d.kolomDetailLabel;
  extraItemColumns=Array.isArray(d.itemColumns)?d.itemColumns.filter(x=>x&&x.id).map(x=>({id:String(x.id),label:String(x.label||"Kolom")})):[];
@@ -351,7 +368,7 @@ function nextDocumentNumber(sequence){
  return p.company+"/"+p.year+"/"+p.day+"/"+n;
 }
 function makeNumber(){return nextDocumentNumber()}
-function newDoc(){if(!confirm("Buat dokumen baru? Perubahan yang belum disimpan akan hilang."))return;const keep={perusahaan:$("perusahaan").value,alamatPerusahaan:$("alamatPerusahaan").value,teleponPerusahaan:$("teleponPerusahaan").value,emailPerusahaan:$("emailPerusahaan").value,penanggungJawab:$("penanggungJawab").value,jabatan:$("jabatan").value||"Direktur"};["pihak","alamatPihak","nomorDokumen","tanggalDokumen","jatuhTempo","keterangan","pajak","diskon","catatan"].forEach(id=>$(id).value="");$("layoutMode").value="table";if($("pWordContent"))$("pWordContent").innerHTML="";if($("f2WordContent"))$("f2WordContent").innerHTML="";$("rincianBebas").value="";$("teksPenutupKiri").value="Hormat kami,";$("teksPenutupKanan").value="Mengetahui,";Object.entries(keep).forEach(([id,value])=>$(id).value=value);$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber();$("barisItem").innerHTML="";addItem();render()}
+function newDoc(){if(!confirm("Buat dokumen baru? Perubahan yang belum disimpan akan hilang."))return;const keep={perusahaan:$("perusahaan").value,alamatPerusahaan:$("alamatPerusahaan").value,teleponPerusahaan:$("teleponPerusahaan").value,emailPerusahaan:$("emailPerusahaan").value,penanggungJawab:$("penanggungJawab").value,jabatan:$("jabatan").value||"Direktur"};["pihak","alamatPihak","nomorDokumen","tanggalDokumen","jatuhTempo","keterangan","pajak","diskon","catatan"].forEach(id=>$(id).value="");$("layoutMode").value="table";if($("pWordContent"))$("pWordContent").innerHTML="";if($("f2WordContent"))$("f2WordContent").innerHTML="";$("rincianBebas").value="";$("teksPenutupKiri").value="Hormat kami,";$("teksPenutupKanan").value="Mengetahui,";Object.entries(keep).forEach(([id,value])=>$(id).value=value);restoreCompanyProfile();$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber();$("barisItem").innerHTML="";addItem();render()}
 $("fileStempel").addEventListener("change",e=>importCompanyStamp(e.target.files[0]));$("hapusStempel").onclick=()=>{companyStamp="";useReferenceStamp=true;localStorage.removeItem("stempelPerusahaanBisnis");localStorage.removeItem(STAMP_UPLOAD_MARKER);format1UploadedStamp="";$("statusStempel").textContent="Belum ada stempel diunggah";render();};$("fileTemplateCanva").addEventListener("change",e=>importCanvaTemplate(e.target.files[0]));$("fileLogoPerusahaan").addEventListener("change",e=>importCompanyLogo(e.target.files[0]));$("hapusLogoPerusahaan").onclick=()=>{companyLogo="";localStorage.removeItem("logoPerusahaanBisnis");$("statusLogoPerusahaan").textContent="Belum ada logo diunggah";render();};$("hapusTemplateCanva").onclick=()=>{customTemplate="";localStorage.removeItem("templateCanvaBisnis");applyCustomTemplate();render()};$("tambahItem").onclick=()=>addItem();$("tambahKolom").onclick=()=>{extraItemColumns.push({id:safeColumnId(),label:"Kolom baru"});renderExtraColumnManager();$("barisItem").querySelectorAll("tr").forEach(tr=>{const td=document.createElement("td");const input=document.createElement("input");input.type="text";input.className="item-extra";input.dataset.extra=extraItemColumns[extraItemColumns.length-1].id;input.addEventListener("input",render);td.append(input);tr.insertBefore(td,tr.lastElementChild);});render();};$("simpan").onclick=save;async function exportFormat2PDF(source,filename){
  if(typeof window.html2pdf!=="function")throw new Error("Pustaka PDF belum termuat.");
  const clone=source.cloneNode(true);
@@ -412,7 +429,8 @@ $("cetak").onclick=()=>{
  window.print();
  $("nomorDokumen").value=nextDocumentNumber(n+1);
  render();
-};$("baru").onclick=newDoc;$("jenis").onchange=()=>{if(!$("nomorDokumen").value||$("nomorDokumen").value.includes("/"))$("nomorDokumen").value=makeNumber();applyDefaultColumnLabels();render()};$("template").onchange=render;$("templateFormat2").onchange=render;function syncFormatMode(){const f2=$("layoutMode").value==="no-table";if($("previewTitle"))$("previewTitle").textContent=f2?"Pratinjau Format 2":"Pratinjau Format 1";$("templateBuiltInWrap").querySelector("select").hidden=f2;$("templateFormat2").hidden=!f2;$("templateBuiltInWrap").querySelector("label").firstChild.textContent=f2?"Template Format 2":"Template bawaan";document.body.classList.toggle("format2-editor",f2);}fieldIds.forEach(id=>$(id).addEventListener("input",render));$("layoutMode").addEventListener("change",()=>{syncFormatMode();render()});syncFormatMode();applyDefaultColumnLabels();["kolomNamaLabel","kolomJumlahLabel","kolomHargaLabel"].forEach(id=>$(id).addEventListener("input",render));renderExtraColumnManager();$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber();$("perusahaan").addEventListener("input",()=>{$("nomorDokumen").value=makeNumber();render();});$("tanggalDokumen").addEventListener("change",()=>{$("nomorDokumen").value=makeNumber();render();});addItem();history();
+};$("baru").onclick=newDoc;$("jenis").onchange=()=>{if(!$("nomorDokumen").value||$("nomorDokumen").value.includes("/"))$("nomorDokumen").value=makeNumber();applyDefaultColumnLabels();render()};$("template").onchange=render;$("templateFormat2").onchange=render;function syncFormatMode(){const f2=$("layoutMode").value==="no-table";if($("previewTitle"))$("previewTitle").textContent=f2?"Pratinjau Format 2":"Pratinjau Format 1";$("templateBuiltInWrap").querySelector("select").hidden=f2;$("templateFormat2").hidden=!f2;$("templateBuiltInWrap").querySelector("label").firstChild.textContent=f2?"Template Format 2":"Template bawaan";document.body.classList.toggle("format2-editor",f2);}fieldIds.forEach(id=>$(id).addEventListener("input",render));
+COMPANY_PROFILE_FIELDS.forEach(id=>{const el=$(id);if(el){el.addEventListener("input",saveCompanyProfile);el.addEventListener("change",saveCompanyProfile);}});$("layoutMode").addEventListener("change",()=>{syncFormatMode();render()});syncFormatMode();applyDefaultColumnLabels();["kolomNamaLabel","kolomJumlahLabel","kolomHargaLabel"].forEach(id=>$(id).addEventListener("input",render));renderExtraColumnManager();$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber();$("perusahaan").addEventListener("input",()=>{$("nomorDokumen").value=makeNumber();render();});$("tanggalDokumen").addEventListener("change",()=>{$("nomorDokumen").value=makeNumber();render();});addItem();history();
 async function getDocumentAuthHeaders(){
  const client=window.azxOfficeSupabase;
  if(!client)throw new Error("Koneksi akun belum siap. Muat ulang halaman setelah login.");
@@ -638,7 +656,9 @@ $("voiceStop").addEventListener("click",()=>{if(voiceRecorder&&voiceRecorder.sta
    const batches=JSON.parse(localStorage.getItem(OUTBOX_KEY)||"[]");
    const imported=JSON.parse(localStorage.getItem(IMPORTED_KEY)||"[]");
    const docs=readDocumentHistory();
-   const profile=[...docs].reverse().find(d=>d&&d.perusahaan&&d.perusahaan!=="NAMA PERUSAHAAN")||{};
+   const profile={...readCompanyProfile(),...([...docs].reverse().find(d=>d&&d.perusahaan&&d.perusahaan!=="NAMA PERUSAHAAN")||{})};
+   // Nilai profil aktif yang tersimpan memiliki prioritas atas salinan profil pada dokumen lama.
+   Object.assign(profile,readCompanyProfile());
    const created=[];
    batches.forEach(batch=>{
     if(!batch?.id||!Array.isArray(batch.items)||!batch.items.length||imported.includes(batch.id)||docs.some(d=>d.sourceInventoryBatchId===batch.id))return;
