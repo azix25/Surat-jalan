@@ -361,6 +361,13 @@ $("cetak").onclick=()=>{
  $("nomorDokumen").value=nextDocumentNumber(n+1);
  render();
 };$("baru").onclick=newDoc;$("jenis").onchange=()=>{if(!$("nomorDokumen").value||$("nomorDokumen").value.includes("/"))$("nomorDokumen").value=makeNumber();applyDefaultColumnLabels();render()};$("template").onchange=render;$("templateFormat2").onchange=render;function syncFormatMode(){const f2=$("layoutMode").value==="no-table";if($("previewTitle"))$("previewTitle").textContent=f2?"Pratinjau Format 2":"Pratinjau Format 1";$("templateBuiltInWrap").querySelector("select").hidden=f2;$("templateFormat2").hidden=!f2;$("templateBuiltInWrap").querySelector("label").firstChild.textContent=f2?"Template Format 2":"Template bawaan";document.body.classList.toggle("format2-editor",f2);}fieldIds.forEach(id=>$(id).addEventListener("input",render));$("layoutMode").addEventListener("change",()=>{syncFormatMode();render()});syncFormatMode();applyDefaultColumnLabels();["kolomNamaLabel","kolomJumlahLabel","kolomHargaLabel"].forEach(id=>$(id).addEventListener("input",render));renderExtraColumnManager();$("tanggalDokumen").value=today();$("nomorDokumen").value=makeNumber();$("perusahaan").addEventListener("input",()=>{$("nomorDokumen").value=makeNumber();render();});$("tanggalDokumen").addEventListener("change",()=>{$("nomorDokumen").value=makeNumber();render();});addItem();history();
+async function getDocumentAuthHeaders(){
+ const client=window.azxOfficeSupabase;
+ if(!client)throw new Error("Koneksi akun belum siap. Muat ulang halaman setelah login.");
+ const {data,error}=await client.auth.getSession();
+ if(error||!data?.session?.access_token)throw new Error("Sesi login berakhir. Silakan login kembali.");
+ return {Authorization:"Bearer "+data.session.access_token};
+}
 async function requestAIWithRetry(url,options,status){
  const maxAttempts=3;
  let lastError;
@@ -407,7 +414,7 @@ async function generateWithAI(){
    ?prompt+"\\n\\nMODE FORMAT 2: Buat isi dokumen dalam bentuk teks/HTML Word yang rapi untuk area isi bebas. Jangan membuat tabel barang, rincian harga, total, tanda tangan, atau blok penutup. Pertahankan kategori dokumen yang dipilih. Kembalikan isi utama pada rincianFormat2 atau rincianBebas."
    :prompt;
   const response=await requestAIWithRetry("https://nqwqlhcwiwprsbcdadhy.supabase.co/functions/v1/dokumen-ai",{
-   method:"POST",headers:{"Content-Type":"application/json","x-ai-access-code":accessCode},
+   method:"POST",headers:{"Content-Type":"application/json","x-ai-access-code":accessCode,...await getDocumentAuthHeaders()},
    body:JSON.stringify({instruction:aiInstruction,currentDocument:{...current,formatMode:format2?"format2":"format1",templateSource:format2?"Template Format 2 (isi bebas tanpa tabel dan tanda tangan)":customTemplate?"Canva (desain latar dipertahankan; isi dokumen dapat diedit)":"Template bawaan"}})
   },status);
   const result=await response.json();
@@ -492,7 +499,7 @@ async function startRecordedVoiceCommand(){
     const bytes=new Uint8Array(await blob.arrayBuffer());let binary="";
     for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);
     const response=await fetch("https://nqwqlhcwiwprsbcdadhy.supabase.co/functions/v1/dokumen-ai",{
-     method:"POST",headers:{"Content-Type":"application/json","x-ai-access-code":getAIAccessCode()},
+     method:"POST",headers:{"Content-Type":"application/json","x-ai-access-code":getAIAccessCode(),...await getDocumentAuthHeaders()},
      body:JSON.stringify({audioBase64:btoa(binary),mimeType:blob.type||"audio/webm"})
     });
     const result=await response.json();if(!response.ok)throw new Error(result.error||"Suara gagal diproses.");
