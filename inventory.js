@@ -245,7 +245,7 @@ async function saveReportPdf(){
   const data=buildReport();if(!window.jspdf?.jsPDF)throw new Error("Mesin PDF belum termuat. Periksa koneksi lalu muat ulang halaman.");
   const {jsPDF}=window.jspdf,doc=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"}),company="AZX OFFICE · INVENTORY";
   const title={summary:"REKAP PERSEDIAAN & MUTASI BARANG",stock:"LAPORAN POSISI STOK",all:"RIWAYAT BARANG MASUK & KELUAR",masuk:"LAPORAN BARANG MASUK",keluar:"LAPORAN BARANG KELUAR"}[data.type];
-  const totalStock=data.summary.reduce((s,r)=>s+r.stock,0),totalIn=data.summary.reduce((s,r)=>s+r.in,0),totalOut=data.summary.reduce((s,r)=>s+r.out,0);
+  const totalStock=data.summary.reduce((s,r)=>s+r.stockPcs,0),totalIn=data.summary.reduce((s,r)=>s+r.inPcs,0),totalOut=data.summary.reduce((s,r)=>s+r.outPcs,0);
   doc.setFont("helvetica","bold");doc.setFontSize(16);doc.text(company,14,15);doc.setFontSize(12);doc.text(title,14,23);doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text("Periode transaksi: "+(data.from||"Awal data")+" s.d. "+(data.to||"Hari ini"),14,30);doc.text("Dibuat: "+new Date().toLocaleString("id-ID"),14,35);
   doc.autoTable({startY:41,head:[["Total jenis barang","Total stok tersedia*","Barang masuk periode*","Barang keluar periode*"]],body:[[fmt(data.items.length),fmt(totalStock),fmt(totalIn),fmt(totalOut)]],styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[28,48,76]}});
   let y=doc.lastAutoTable.finalY+8;doc.setFont("helvetica","bold");doc.setFontSize(11);doc.text("Rincian setiap barang",14,y);
