@@ -427,9 +427,9 @@ async function generateWithAI(){
    clearSavedAIAccessCode();
    status.textContent="Kode akses ditolak. Masukkan kode AZX yang benar satu kali; kode lama sudah dihapus dari perangkat.";
   }else if(/RESOURCE_EXHAUSTED|quota|limit/i.test(message)){
-   status.textContent="Batas penggunaan Cloudflare Workers AI tercapai. Periksa kuota atau coba lagi nanti.";
+   status.textContent="Batas penggunaan Gemini API tercapai. Tunggu kuota pulih atau coba lagi nanti.";
   }else if(/503|UNAVAILABLE|overloaded|busy/i.test(message)){
-   status.textContent="Layanan Cloudflare Workers AI sedang sibuk. Silakan coba lagi sebentar.";
+   status.textContent="Layanan Gemini sedang sibuk. Silakan coba lagi sebentar.";
   }else{
    status.textContent="Belum berhasil: "+message;
   }
