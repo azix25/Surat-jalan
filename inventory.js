@@ -150,6 +150,24 @@ $("createSuratJalan")?.addEventListener("click",()=>{
 });
 renderSuratJalanArchive();
 function switchView(name){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+name));document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.view===name));try{sessionStorage.setItem("azxInventoryLastViewV1",name)}catch(e){}if(name==="reports")buildReport()}
+
+// Simpan dan pulihkan menu aktif serta posisi gulir setelah refresh.
+function restoreInventoryPosition(){
+ let name="overview";
+ try{name=sessionStorage.getItem("azxInventoryLastViewV1")||"overview"}catch(e){}
+ if(!document.getElementById("view-"+name))name="overview";
+ switchView(name);
+}
+function restoreInventoryScroll(){
+ let saved=0;
+ try{saved=Number(sessionStorage.getItem("azxInventoryScrollYV1"))||0}catch(e){}
+ requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,saved)));
+}
+(()=>{
+ const save=()=>{try{sessionStorage.setItem("azxInventoryScrollYV1",String(window.scrollY||0))}catch(e){}};
+ window.addEventListener("scroll",save,{passive:true});
+ window.addEventListener("pagehide",save);
+})();
 $("logoutBtn").addEventListener("click",async()=>{await supabase.auth.signOut();session=null;location.replace("index.html")});
 document.querySelectorAll(".nav-item").forEach(b=>b.addEventListener("click",()=>switchView(b.dataset.view)));
 document.querySelectorAll("[data-goto]").forEach(b=>b.addEventListener("click",()=>switchView(b.dataset.goto)));
