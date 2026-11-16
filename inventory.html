@@ -61,29 +61,25 @@
           <form id="itemForm" class="form-grid">
             <label>Kode barang<input id="itemSku" required maxlength="50" placeholder="BRG-001"></label>
             <label>Nama barang<input id="itemName" required maxlength="150" placeholder="Nama barang"></label>
-            <label class="span-all">Varian (opsional; pisahkan dengan baris baru atau koma)<textarea id="itemVariants" rows="4" placeholder="Merah=20, Biru=15, Hitam=12&#10;Putih=8&#10;Kuning=10"></textarea><small class="muted">Bisa ditulis per baris atau dipisahkan koma/titik koma. Contoh: Merah=20, Biru=15, Hitam=12. Kode otomatis menjadi M-300-MERAH, M-300-BIRU, dan seterusnya. Tanpa angka stok, stok awal varian = 0.</small></label>
-            <label>Kategori<input id="itemCategory" maxlength="100" placeholder="Bahan / produk / perlengkapan"></label>
-            <label>Satuan<input id="itemUnit" required maxlength="30" value="pcs" placeholder="pcs, dus, kg, meter"></label>
-            <label>Jumlah dus stok awal (opsional)<input id="itemCartons" type="number" min="0" step="1" value="0" placeholder="Contoh: 50"></label>
-            <label>Isi per dus (pcs)<input id="itemPackSize" type="number" min="1" step="1" value="1" required></label>
-            <div class="span-all muted" id="itemPackPreview">Total stok awal dari dus: 0 pcs</div>
-            <label>Stok awal pcs (jika tanpa dus/varian)<input id="itemOpening" type="number" min="0" step="0.001" value="0" required></label>
-            <label>Batas minimum stok<input id="itemMinimum" type="number" min="0" step="0.001" value="0"></label>
+            <label>Varian (opsional; pisahkan dengan baris baru atau koma)<textarea id="itemVariants" rows="3" placeholder="Merah=2, Biru=3, Hitam=1"></textarea><small class="muted">Format: Nama varian=stok dalam satuan Dus/Ball. Contoh: Merah=2, Biru=3.</small></label>
+            <label>Satuan<select id="itemUnit" required><option value="dus">Dus</option><option value="ball">Ball</option></select></label>
+            <label>Qty · isi per 1 satuan (pcs)<input id="itemPackSize" type="number" min="1" step="1" value="100" required></label>
+            <label>Stok awal (Dus/Ball)<input id="itemOpening" type="number" min="0" step="0.001" value="0" required></label>
+            <label>Max stok (Dus/Ball)<input id="itemMaximum" type="number" min="0" step="0.001" value="0"></label>
+            <div class="span-all muted" id="itemPackPreview">Total stok awal: 0 pcs</div>
             <label class="span-all">Catatan<input id="itemNotes" maxlength="500" placeholder="Catatan opsional"></label>
             <div class="span-all form-actions"><button class="btn btn-primary">Simpan barang</button><button class="btn btn-light" type="reset">Kosongkan</button></div>
           </form>
-          <div class="section-head subhead"><div><h3>Daftar barang</h3></div></div><div class="table-wrap"><table><thead><tr><th>Kode utama / SKU</th><th>Nama / Varian</th><th>Satuan</th><th>Isi / dus</th><th>Stok sekarang</th><th></th></tr></thead><tbody id="itemRows"></tbody></table></div>
+          <div class="section-head subhead"><div><h3>Daftar barang</h3></div></div><div class="table-wrap"><table><thead><tr><th>Kode utama / SKU</th><th>Nama / Varian</th><th>Satuan</th><th>Qty / satuan</th><th>Stok / Max</th><th></th></tr></thead><tbody id="itemRows"></tbody></table></div>
         </section>
         <section class="view" id="view-transaction">
           <div class="section-head"><div><h2>Catat transaksi barang</h2><p>Setiap transaksi akan masuk ke riwayat dan memperbarui stok.</p></div><button type="button" class="btn btn-primary" id="quickMultiOut">＋ Barang keluar · Banyak kode</button></div>
           <form id="transactionForm" class="form-grid" novalidate>
             <label>Jenis transaksi<select id="txType" required><option value="masuk">Barang masuk</option><option value="keluar">Barang keluar</option><option value="diambil">Barang diambil</option><option value="rusak">Barang rusak</option></select></label>
             <label id="singleTxItemLabel">Barang<select id="txItem" required><option value="">Pilih barang</option></select></label>
-            <label id="singleTxQuantityLabel">Jumlah<input id="txQuantity" type="number" min="0.001" step="0.001" required placeholder="0"></label>
-            <label id="txCartonsLabel">Jumlah dus<input id="txCartons" type="number" min="0" step="1" placeholder="Contoh: 50"></label>
-            <label id="txPackSizeLabel">Isi per dus (pcs)<input id="txPackSize" type="number" min="0" step="1" placeholder="Contoh: 100"></label>
-            <p class="muted span-all" id="txPackPreview">Isi dus dapat diubah. Jika diisi, jumlah pcs akan dihitung otomatis.</p>
-            <div class="span-all" id="multiOutWrap" hidden><div class="multi-out-head"><div><b>Daftar barang keluar</b><small>Tambahkan beberapa kode dan warna dalam satu surat jalan.</small></div><button type="button" class="btn btn-light" id="addOutRow">＋ Tambah barang</button></div><div class="table-wrap multi-out-table"><table><thead><tr><th>Kode / Barang</th><th>Stok</th><th>Jumlah dus</th><th>Isi per dus (pcs)</th><th>Total pcs keluar</th><th></th></tr></thead><tbody id="multiOutRows"></tbody></table></div><div class="multi-out-total" id="multiOutTotal">0 jenis barang · 0 total</div></div>
+            <label id="singleTxQuantityLabel">Jumlah (Dus/Ball)<input id="txQuantity" type="number" min="0.001" step="0.001" required placeholder="0"></label>
+            <p class="muted span-all" id="txPackPreview">Pilih barang untuk melihat satuan dan isi per satuan.</p>
+            <div class="span-all" id="multiOutWrap" hidden><div class="multi-out-head"><div><b>Daftar barang keluar</b><small>Tambahkan beberapa kode dan warna dalam satu surat jalan.</small></div><button type="button" class="btn btn-light" id="addOutRow">＋ Tambah barang</button></div><div class="table-wrap multi-out-table"><table><thead><tr><th>Kode / Barang</th><th>Stok</th><th>Jumlah (satuan)</th><th>Total pcs keluar</th><th></th></tr></thead><tbody id="multiOutRows"></tbody></table></div><div class="multi-out-total" id="multiOutTotal">0 jenis barang · 0 total</div></div>
             <label>Tanggal transaksi<input id="txDate" type="date" required></label>
             <label>Nama pengambil / asal / tujuan<input id="txPerson" maxlength="150" placeholder="Nama orang, pemasok, atau tujuan"></label>
             <label>Nomor referensi<input id="txReference" maxlength="100" placeholder="Nomor surat jalan / bukti"></label>
@@ -121,7 +117,7 @@
   <section class="reduce-dialog" role="dialog" aria-modal="true" aria-labelledby="addTitle">
     <div class="reduce-head"><div><span class="eyebrow">STOCK IN</span><h2 id="addTitle">Tambah stok</h2><p id="addItemInfo">Pilih jumlah barang masuk.</p></div><button type="button" class="modal-close" id="closeAddModal" aria-label="Tutup">×</button></div>
     <form id="addForm" class="reduce-form">
-      <label>Jumlah barang masuk<input id="addQuantity" type="number" min="0.001" step="0.001" required placeholder="Masukkan jumlah"></label>
+      <label>Jumlah barang masuk (Dus/Ball)<input id="addQuantity" type="number" min="0.001" step="0.001" required placeholder="Masukkan jumlah"></label>
       <label>Asal barang / pemasok (opsional)<input id="addPerson" maxlength="150" placeholder="Nama pemasok atau asal barang"></label>
       <label>Keterangan (opsional)<textarea id="addNotes" rows="2" maxlength="500" placeholder="Tambahkan catatan jika perlu"></textarea></label>
       <div class="reduce-actions"><button type="button" class="btn btn-light" id="cancelAdd">Batal</button><button type="submit" class="btn btn-primary" id="saveAdd">Simpan barang masuk</button></div>
@@ -132,7 +128,7 @@
   <section class="reduce-dialog" role="dialog" aria-modal="true" aria-labelledby="reduceTitle">
     <div class="reduce-head"><div><span class="eyebrow">STOCK ADJUSTMENT</span><h2 id="reduceTitle">Kurangi stok</h2><p id="reduceItemInfo">Pilih jumlah pengurangan stok.</p></div><button type="button" class="modal-close" id="closeReduceModal" aria-label="Tutup">×</button></div>
     <form id="reduceForm" class="reduce-form">
-      <label>Jumlah yang dikurangi<input id="reduceQuantity" type="number" min="0.001" step="0.001" required placeholder="Masukkan jumlah"></label>
+      <label>Jumlah yang dikurangi (Dus/Ball)<input id="reduceQuantity" type="number" min="0.001" step="0.001" required placeholder="Masukkan jumlah"></label>
       <label>Nama pengambil / tujuan (opsional)<input id="reducePerson" maxlength="150" placeholder="Nama orang atau tujuan"></label>
       <label>Keterangan (opsional)<textarea id="reduceNotes" rows="2" maxlength="500" placeholder="Tambahkan catatan jika perlu"></textarea></label>
       <div class="reduce-actions"><button type="button" class="btn btn-light" id="cancelReduce">Batal</button><button type="submit" class="btn btn-primary" id="saveReduce">Simpan pengurangan</button></div>
