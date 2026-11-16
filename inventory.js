@@ -87,7 +87,13 @@ function syncSuratJalanDocsFromTransactions(){
  transactions.filter(t=>t.transaction_type==="keluar"&&String(t.reference_no||"").startsWith("AZX-SJ-")).forEach(t=>{
   const id=t.reference_no;if(!groups.has(id))groups.set(id,[]);
   const item=items.find(x=>x.id===t.item_id)||{};
-  groups.get(id).push({itemId:t.item_id,sku:item.sku||"",name:item.name||"Barang",variant:item.variant_name||"",unit:item.unit||"",qty:Number(t.quantity)||0});
+  const size=Math.max(1,Number(item.pack_size)||1);
+  const note=String(t.notes||"");
+  const packMatch=note.match(/Kemasan:\\s*([0-9.]+(?:,[0-9]+)?)\\s+(dus|ball)\\s*[×x]\\s*([0-9.]+)\\s*pcs/i);
+  const parseLocal=value=>Number(String(value||"0").replace(/\\./g,"").replace(",","."));
+  const packages=packMatch?parseLocal(packMatch[1]):Number(t.quantity||0)/size;
+  const originalPackSize=packMatch?parseLocal(packMatch[3]):size;
+  groups.get(id).push({itemId:t.item_id,sku:item.sku||"",name:item.name||"Barang",variant:item.variant_name||"",unit:item.unit||"",qty:packages,pcs:Number(t.quantity)||0,packSize:originalPackSize});
  });
  const existing=getSuratJalanDocs(),byId=new Map(existing.map(d=>[d.id,d]));
  for(const [id,lines] of groups){
