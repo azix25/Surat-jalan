@@ -42,7 +42,7 @@ $("azxHistorySearch").addEventListener("input",()=>{
  document.querySelectorAll("#riwayat .history-row").forEach(row=>{row.hidden=!row.textContent.toLocaleLowerCase("id").includes(q)});
 });
 $("azxBackupExport").addEventListener("click",()=>{
- const keys=[HISTORY_KEY,"logoPerusahaanBisnis","templateCanvaBisnis","azxOfficeFormat2Alignment",DRAFT_KEY];
+ const keys=[HISTORY_KEY,"logoPerusahaanBisnis","templateCanvaBisnis","azxOfficeFormat2Alignment","azxOfficeCompanyProfile_v1",DRAFT_KEY];
  const backup={app:"AZX Office",formatVersion:1,createdAt:new Date().toISOString(),data:{}};
  keys.forEach(k=>{const v=localStorage.getItem(k);if(v!==null)backup.data[k]=v});
  const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
@@ -56,7 +56,7 @@ $("azxBackupImport").addEventListener("change",async e=>{
   if(backup.app!=="AZX Office"||!backup.data||typeof backup.data!=="object")throw new Error("File bukan cadangan AZX Office yang valid.");
   if(!confirm("Pulihkan cadangan AZX Office? Data arsip, logo, template, dan draf pada perangkat ini dapat diganti."))return;
   for(const [key,value] of Object.entries(backup.data)){
-   if([HISTORY_KEY,"logoPerusahaanBisnis","templateCanvaBisnis","azxOfficeFormat2Alignment",DRAFT_KEY].includes(key)&&typeof value==="string")localStorage.setItem(key,value);
+   if([HISTORY_KEY,"logoPerusahaanBisnis","templateCanvaBisnis","azxOfficeFormat2Alignment","azxOfficeCompanyProfile_v1",DRAFT_KEY].includes(key)&&typeof value==="string")localStorage.setItem(key,value);
   }
   alert("Cadangan berhasil dipulihkan. Halaman akan dimuat ulang.");
   location.reload();
