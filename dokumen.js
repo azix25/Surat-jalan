@@ -702,4 +702,16 @@ $("voiceStop").addEventListener("click",()=>{if(voiceRecorder&&voiceRecorder.sta
  }
  window.addEventListener("storage",e=>{if(e.key===OUTBOX_KEY)syncOutbox();});
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",syncOutbox);else syncOutbox();
+
+/* Impor rekap Inventory ke area isi Format 2 tanpa mengubah format dokumen lain. */
+(function(){
+ const key="azx_inventory_report_format2_outbox";
+ function importInventoryReport(){
+  let payload;try{payload=JSON.parse(localStorage.getItem(key)||"null")}catch(_){return}
+  if(!payload?.html||!new URLSearchParams(location.search).has("fromInventoryReport"))return;
+  const reportDoc={jenis:"rekapitulasi",templateFormat2:"f2-polos",layoutMode:"no-table",rincianFormat2:payload.html,rincianBebas:"",perusahaan:"",alamatPerusahaan:"",teleponPerusahaan:"",emailPerusahaan:"",penanggungJawab:"",jabatan:"Direktur",pihak:"",alamatPihak:"",nomorDokumen:payload.id,tanggalDokumen:(payload.createdAt||new Date().toISOString()).slice(0,10),jatuhTempo:"",keterangan:"Laporan Inventory AZX Office",pajak:"0",diskon:"0",catatan:"Laporan Inventory periode "+(payload.from||"awal data")+" s.d. "+(payload.to||"hari ini"),kolomNamaLabel:"Nama barang",kolomJumlahLabel:"Jumlah",kolomHargaLabel:"",teksPenutupKiri:"",teksPenutupKanan:"",items:[]};
+  try{setData(reportDoc);save();$("layoutMode").value="no-table";syncFormatMode();render();const notice=document.createElement("div");notice.className="inventory-sync-notice";notice.textContent="Laporan Inventory berhasil dimasukkan ke Format 2 dan disimpan dalam arsip dokumen.";document.querySelector(".panel")?.prepend(notice);localStorage.removeItem(key);history();}catch(error){console.error("Impor laporan Inventory ke Format 2 gagal:",error);alert("Laporan Inventory belum dapat dimasukkan ke Format 2: "+error.message);}
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",importInventoryReport);else importInventoryReport();
+})();
 })();
