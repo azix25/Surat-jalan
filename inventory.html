@@ -64,12 +64,15 @@
             <label class="span-all">Varian (opsional; pisahkan dengan baris baru atau koma)<textarea id="itemVariants" rows="4" placeholder="Merah=20, Biru=15, Hitam=12&#10;Putih=8&#10;Kuning=10"></textarea><small class="muted">Bisa ditulis per baris atau dipisahkan koma/titik koma. Contoh: Merah=20, Biru=15, Hitam=12. Kode otomatis menjadi M-300-MERAH, M-300-BIRU, dan seterusnya. Tanpa angka stok, stok awal varian = 0.</small></label>
             <label>Kategori<input id="itemCategory" maxlength="100" placeholder="Bahan / produk / perlengkapan"></label>
             <label>Satuan<input id="itemUnit" required maxlength="30" value="pcs" placeholder="pcs, dus, kg, meter"></label>
-            <label>Stok awal (jika tanpa varian)<input id="itemOpening" type="number" min="0" step="0.001" value="0" required></label>
+            <label>Jumlah dus stok awal (opsional)<input id="itemCartons" type="number" min="0" step="1" value="0" placeholder="Contoh: 50"></label>
+            <label>Isi per dus (pcs)<input id="itemPackSize" type="number" min="1" step="1" value="1" required></label>
+            <div class="span-all muted" id="itemPackPreview">Total stok awal dari dus: 0 pcs</div>
+            <label>Stok awal pcs (jika tanpa dus/varian)<input id="itemOpening" type="number" min="0" step="0.001" value="0" required></label>
             <label>Batas minimum stok<input id="itemMinimum" type="number" min="0" step="0.001" value="0"></label>
             <label class="span-all">Catatan<input id="itemNotes" maxlength="500" placeholder="Catatan opsional"></label>
             <div class="span-all form-actions"><button class="btn btn-primary">Simpan barang</button><button class="btn btn-light" type="reset">Kosongkan</button></div>
           </form>
-          <div class="section-head subhead"><div><h3>Daftar barang</h3></div></div><div class="table-wrap"><table><thead><tr><th>Kode utama / SKU</th><th>Nama / Varian</th><th>Satuan</th><th>Stok sekarang</th><th></th></tr></thead><tbody id="itemRows"></tbody></table></div>
+          <div class="section-head subhead"><div><h3>Daftar barang</h3></div></div><div class="table-wrap"><table><thead><tr><th>Kode utama / SKU</th><th>Nama / Varian</th><th>Satuan</th><th>Isi / dus</th><th>Stok sekarang</th><th></th></tr></thead><tbody id="itemRows"></tbody></table></div>
         </section>
         <section class="view" id="view-transaction">
           <div class="section-head"><div><h2>Catat transaksi barang</h2><p>Setiap transaksi akan masuk ke riwayat dan memperbarui stok.</p></div><button type="button" class="btn btn-primary" id="quickMultiOut">＋ Barang keluar · Banyak kode</button></div>
@@ -195,5 +198,5 @@
  });
 })();
 </script>
-<script src="inventory.js?v=azx-inventory-kemasan-dus-20261116-1"></script>
+<script src="inventory.js?v=azx-inventory-data-barang-kemasan-20261116-1"></script>
 </body></html>
