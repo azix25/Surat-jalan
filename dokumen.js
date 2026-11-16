@@ -433,7 +433,7 @@ async function requestAIWithRetry(url,options,status){
    const message=payload.error||payload.message||("Permintaan AI gagal (HTTP "+response.status+").");
    const detail=String(message);
    const quotaExhausted=/RESOURCE_EXHAUSTED|quota.{0,30}(exceed|limit|habis)|exceed.{0,30}quota/i.test(detail);
-   const temporary=[502,503,504].includes(response.status)||(response.status===429&&!quotaExhausted);
+   const temporary=[502,503].includes(response.status)||(response.status===429&&!quotaExhausted);
    if(!temporary||attempt===maxAttempts)throw new Error(detail);
    const retryAfter=Number(response.headers.get("Retry-After"));
    const delay=Number.isFinite(retryAfter)&&retryAfter>0
@@ -486,9 +486,9 @@ async function generateWithAI(){
    clearSavedAIAccessCode();
    status.textContent="Kode akses ditolak. Masukkan kode AZX yang benar satu kali; kode lama sudah dihapus dari perangkat.";
   }else if(/RESOURCE_EXHAUSTED|quota|limit/i.test(message)){
-   status.textContent="Batas penggunaan Cloudflare Workers AI tercapai. Periksa kuota atau coba lagi nanti.";
+   status.textContent="Batas penggunaan Gemini tercapai. Periksa kuota API Gemini atau coba lagi nanti.";
   }else if(/503|UNAVAILABLE|overloaded|busy/i.test(message)){
-   status.textContent="Layanan Cloudflare Workers AI sedang sibuk. Silakan coba lagi sebentar.";
+   status.textContent="Layanan Gemini sedang sibuk atau melewati batas waktu. Coba lagi beberapa saat.";
   }else{
    status.textContent="Belum berhasil: "+message;
   }
