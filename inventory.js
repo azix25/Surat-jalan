@@ -38,7 +38,7 @@ function stockOf(item){return stockCache.has(item.id)?stockCache.get(item.id):Nu
 function movementSum(type,from){return transactions.filter(t=>(!type||movementType(t.transaction_type)===type)&&(!from||t.transaction_date>=from)).reduce((sum,t)=>{const item=items.find(i=>i.id===t.item_id);const packSize=Math.max(1,Number(item?.pack_size)||1);return sum+Number(t.quantity||0)/packSize},0)}
 function monthStart(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),"01"].join("-")}
 function showAuth(){ $("appPanel").hidden=true;$("accountArea").hidden=true;location.replace("index.html?next=inventory.html")}
-function showApp(){ $("appPanel").hidden=false;$("accountArea").hidden=false;$("userEmail").textContent=session?.user?.email||"";loadAll()}
+function showApp(){ $("appPanel").hidden=false;$("accountArea").hidden=false;$("userEmail").textContent=session?.user?.email||"";loadAll();loadReportArchive()}
 async function fetchAllRows(table,orderColumn,ascending){const all=[];const pageSize=1000;for(let offset=0;;offset+=pageSize){const {data,error}=await supabase.from(table).select("*").order(orderColumn,{ascending}).order("id",{ascending:true}).range(offset,offset+pageSize-1);if(error)throw error;const page=data||[];all.push(...page);if(page.length<pageSize)break}return all}
 async function loadAll(){try{const [i,t]=await Promise.all([fetchAllRows("inventory_items","name",true),fetchAllRows("inventory_transactions","created_at",false)]);items=i;transactions=t;rebuildStockCache();syncSuratJalanDocsFromTransactions();renderAll();renderSuratJalanArchive()}catch(e){toast("Gagal memuat data: "+(e.message||"Periksa koneksi."),true)}}
 function renderAll(){const inMonth=movementSum("masuk",monthStart()),outMonth=movementSum("keluar",monthStart());$("statKinds").textContent=fmt(items.length);$("statStock").textContent=fmt(items.reduce((sum,i)=>sum+stockOf(i)/Math.max(1,Number(i.pack_size)||1),0));$("statIn").textContent=fmt(inMonth);$("statOut").textContent=fmt(outMonth);renderStock();renderItemList();renderSelects();renderHistory();if(reportReady)buildReport()}
@@ -213,9 +213,84 @@ $("transactionForm").addEventListener("submit",async e=>{
  try{const {error}=await supabase.from("inventory_transactions").insert(payload);if(error)throw error;$("transactionForm").reset();$("txDate").value=today();await loadAll();toast("Transaksi berhasil dicatat: "+fmt(packages)+" "+item.unit+" ("+fmt(qty)+" pcs). Stok diperbarui.")}catch(err){toast("Gagal menyimpan transaksi: "+err.message,true)}
 });
 $("txDate").value=today();
-function buildReport(){const type=$("reportType").value,from=$("reportFrom").value,to=$("reportTo").value,itemId=$("reportItem").value;let rows;if(type==="stock"){rows=items.filter(i=>itemId==="all"||i.id===itemId).map(i=>({date:"—",sku:i.sku,name:i.name+(i.variant_name?" · "+i.variant_name:""),kind:"Posisi stok",qty:stockOf(i)/Math.max(1,Number(i.pack_size)||1),unit:i.unit,person:"—",note:"Setara "+fmt(stockOf(i))+" pcs · Batas minimum: "+fmt(Number(i.minimum_stock||0)/Math.max(1,Number(i.pack_size)||1))+" "+i.unit}))}else{rows=transactions.filter(t=>(type==="all"||movementType(t.transaction_type)===type)&&(!from||t.transaction_date>=from)&&(!to||t.transaction_date<=to)&&(itemId==="all"||t.item_id===itemId)).map(t=>{const i=items.find(x=>x.id===t.item_id)||{};return{date:movementTime(t),sku:i.sku||"",name:(i.name||"")+(i.variant_name?" · "+i.variant_name:""),kind:typeNames[t.transaction_type]||"Barang keluar",qty:Number(t.quantity||0)/Math.max(1,Number(i.pack_size)||1),unit:i.unit||"",person:t.person_or_destination||"—",note:[t.reference_no,t.notes].filter(Boolean).join(" · ")||"—"}})}const labels={stock:"LAPORAN POSISI STOK",all:"RIWAYAT BARANG MASUK & KELUAR",masuk:"LAPORAN BARANG MASUK",keluar:"LAPORAN BARANG KELUAR"};$("reportPaper").innerHTML=`<div class="report-head"><h2>AZX OFFICE · INVENTORY</h2><p>${labels[type]}</p></div><div class="report-meta"><span>Periode: ${esc(from||"Semua tanggal")} s.d. ${esc(to||"Sekarang")}</span><span>Dicetak: ${new Date().toLocaleString("id-ID")}</span></div><table><thead><tr><th>Tanggal</th><th>Kode</th><th>Nama barang</th><th>Jenis</th><th>Jumlah / Stok</th><th>Orang / Tujuan</th><th>Keterangan</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.sku)}</td><td>${esc(r.name)}</td><td>${esc(r.kind)}</td><td>${fmt(r.qty)} ${esc(r.unit)}</td><td>${esc(r.person)}</td><td>${esc(r.note)}</td></tr>`).join(""):'<tr><td colspan="7" class="empty">Tidak ada data pada filter ini.</td></tr>'}</tbody><tfoot><tr><td colspan="4">Jumlah baris</td><td colspan="3">${rows.length}</td></tr></tfoot></table><p style="margin-top:35px;text-align:right;font-size:10px">Mengetahui,<br><br><br>(........................................)</p>`;reportReady=true}
-$("previewReport").addEventListener("click",buildReport);$("printReport").addEventListener("click",()=>{if(!reportReady)buildReport();window.print()});["reportType","reportFrom","reportTo","reportItem"].forEach(id=>$(id).addEventListener("change",()=>{if(reportReady)buildReport()}));
+const reportNow=new Date();const reportStart=new Date(reportNow.getFullYear(),reportNow.getMonth(),1);$("reportFrom").value=reportStart.toLocaleDateString("en-CA");$("reportTo").value=today();
+const REPORT_BUCKET="azx-inventory-reports";
+const REPORT_OUTBOX_KEY="azx_inventory_report_format2_outbox";
+function reportRows(){
+ const type=$("reportType").value,from=$("reportFrom").value,to=$("reportTo").value,itemId=$("reportItem").value;
+ const selectedItems=items.filter(i=>itemId==="all"||i.id===itemId);
+ const selectedTx=transactions.filter(t=>(!from||t.transaction_date>=from)&&(!to||t.transaction_date<=to)&&(itemId==="all"||t.item_id===itemId));
+ const byId=new Map();
+ selectedItems.forEach(i=>byId.set(i.id,{item:i,stock:stockOf(i),inPcs:0,outPcs:0}));
+ selectedTx.forEach(t=>{const row=byId.get(t.item_id);if(!row)return;const q=Number(t.quantity||0);if(movementType(t.transaction_type)==="masuk")row.inPcs+=q;else row.outPcs+=q;});
+ const summary=selectedItems.map(i=>{const r=byId.get(i.id),size=Math.max(1,Number(i.pack_size)||1);return {sku:i.parent_sku||i.sku,code:i.sku,name:i.name+(i.variant_name?" · "+i.variant_name:""),unit:i.unit||"pcs",stock:r.stock/size,in:r.inPcs/size,out:r.outPcs/size,stockPcs:r.stock,inPcs:r.inPcs,outPcs:r.outPcs,packSize:size};});
+ const detail=selectedTx.filter(t=>type==="all"||(type==="masuk"&&movementType(t.transaction_type)==="masuk")||(type==="keluar"&&movementType(t.transaction_type)==="keluar")).map(t=>{const i=items.find(x=>x.id===t.item_id)||{},size=Math.max(1,Number(i.pack_size)||1);return {date:movementTime(t),sku:i.sku||"",name:(i.name||"Barang")+(i.variant_name?" · "+i.variant_name:""),kind:typeNames[t.transaction_type]||"Barang keluar",qty:Number(t.quantity||0)/size,unit:i.unit||"",person:t.person_or_destination||"—",note:[t.reference_no,t.notes].filter(Boolean).join(" · ")||"—"}});
+ return {type,from,to,summary,detail,items:selectedItems,transactions:selectedTx};
+}
+function buildReport(){
+ const data=reportRows(),labels={summary:"REKAP PERSEDIAAN & MUTASI BARANG",stock:"LAPORAN POSISI STOK",all:"RIWAYAT BARANG MASUK & KELUAR",masuk:"LAPORAN BARANG MASUK",keluar:"LAPORAN BARANG KELUAR"};
+ const totalStock=data.summary.reduce((s,r)=>s+r.stock,0),totalIn=data.summary.reduce((s,r)=>s+r.in,0),totalOut=data.summary.reduce((s,r)=>s+r.out,0);
+ const period=(data.from||"Awal data")+" s.d. "+(data.to||"Hari ini");
+ const rows=data.summary.filter(r=>data.type==="summary"||data.type==="stock"||data.type==="all"||data.type==="masuk"||data.type==="keluar");
+ const summaryTable=rows.map(r=>"<tr><td>"+esc(r.sku)+"</td><td>"+esc(r.name)+"</td><td>"+fmt(r.stock)+" "+esc(r.unit)+"</td><td>"+fmt(r.in)+" "+esc(r.unit)+"</td><td>"+fmt(r.out)+" "+esc(r.unit)+"</td></tr>").join("");
+ const detailTable=data.detail.map(r=>"<tr><td>"+esc(r.date)+"</td><td>"+esc(r.sku)+"</td><td>"+esc(r.name)+"</td><td>"+esc(r.kind)+"</td><td>"+fmt(r.qty)+" "+esc(r.unit)+"</td><td>"+esc(r.person)+"</td><td>"+esc(r.note)+"</td></tr>").join("");
+ $("reportPaper").innerHTML="<div class='report-head'><h2>AZX OFFICE · INVENTORY</h2><p>"+labels[data.type]+"</p></div><div class='report-meta'><span>Periode transaksi: "+esc(period)+"</span><span>Dibuat: "+esc(new Date().toLocaleString("id-ID"))+"</span></div><table><thead><tr><th>Total jenis barang</th><th>Total stok tersedia</th><th>Barang masuk</th><th>Barang keluar</th></tr></thead><tbody><tr><td>"+fmt(data.items.length)+"</td><td>"+fmt(totalStock)+" unit campuran</td><td>"+fmt(totalIn)+" unit campuran</td><td>"+fmt(totalOut)+" unit campuran</td></tr></tbody></table><h3>Rincian setiap barang</h3><table><thead><tr><th>Kode</th><th>Nama barang / varian</th><th>Stok tersedia</th><th>Masuk periode</th><th>Keluar periode</th></tr></thead><tbody>"+(summaryTable||"<tr><td colspan='5'>Tidak ada barang.</td></tr>")+"</tbody></table>"+(data.type==="summary"||data.type==="all"||data.type==="masuk"||data.type==="keluar"?"<h3>Rincian transaksi periode</h3><table><thead><tr><th>Tanggal</th><th>Kode</th><th>Nama barang</th><th>Jenis</th><th>Jumlah</th><th>Asal / Tujuan</th><th>Keterangan</th></tr></thead><tbody>"+(detailTable||"<tr><td colspan='7'>Tidak ada transaksi pada periode ini.</td></tr>")+"</tbody></table>":"")+"<p style='margin-top:30px;text-align:right;font-size:10px'>AZX OFFICE · Arsip Inventory</p>";
+ reportReady=true;return data;
+}
+function reportFileName(data){const p=(data.from||"semua")+"_"+(data.to||today());return "Laporan-Inventory-"+p+"-"+Date.now()+".pdf";}
+async function saveReportPdf(){
+ if(!session?.user?.id)return toast("Sesi login tidak ditemukan. Silakan masuk kembali.",true);
+ const btn=$("saveReportPdf");btn.disabled=true;const old=btn.textContent;btn.textContent="Membuat PDF…";
+ try{
+  const data=buildReport();if(!window.jspdf?.jsPDF)throw new Error("Mesin PDF belum termuat. Periksa koneksi lalu muat ulang halaman.");
+  const {jsPDF}=window.jspdf,doc=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"}),company="AZX OFFICE · INVENTORY";
+  const title={summary:"REKAP PERSEDIAAN & MUTASI BARANG",stock:"LAPORAN POSISI STOK",all:"RIWAYAT BARANG MASUK & KELUAR",masuk:"LAPORAN BARANG MASUK",keluar:"LAPORAN BARANG KELUAR"}[data.type];
+  const totalStock=data.summary.reduce((s,r)=>s+r.stock,0),totalIn=data.summary.reduce((s,r)=>s+r.in,0),totalOut=data.summary.reduce((s,r)=>s+r.out,0);
+  doc.setFont("helvetica","bold");doc.setFontSize(16);doc.text(company,14,15);doc.setFontSize(12);doc.text(title,14,23);doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text("Periode transaksi: "+(data.from||"Awal data")+" s.d. "+(data.to||"Hari ini"),14,30);doc.text("Dibuat: "+new Date().toLocaleString("id-ID"),14,35);
+  doc.autoTable({startY:41,head:[["Total jenis barang","Total stok tersedia*","Barang masuk periode*","Barang keluar periode*"]],body:[[fmt(data.items.length),fmt(totalStock),fmt(totalIn),fmt(totalOut)]],styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:[28,48,76]}});
+  let y=doc.lastAutoTable.finalY+8;doc.setFont("helvetica","bold");doc.setFontSize(11);doc.text("Rincian setiap barang",14,y);
+  doc.autoTable({startY:y+3,head:[["Kode","Nama barang / varian","Stok tersedia","Barang masuk","Barang keluar","Isi per satuan (pcs)"]],body:data.summary.map(r=>[r.sku,r.name,fmt(r.stock)+" "+r.unit,fmt(r.in)+" "+r.unit,fmt(r.out)+" "+r.unit,fmt(r.packSize)]),styles:{fontSize:8,cellPadding:2.5,overflow:"linebreak"},headStyles:{fillColor:[28,48,76]},columnStyles:{1:{cellWidth:75}}});
+  if(data.type==="summary"||data.type==="all"||data.type==="masuk"||data.type==="keluar"){
+   y=doc.lastAutoTable.finalY+8;if(y>175){doc.addPage();y=18;}doc.setFont("helvetica","bold");doc.setFontSize(11);doc.text("Rincian transaksi periode",14,y);
+   doc.autoTable({startY:y+3,head:[["Tanggal","Kode","Nama barang","Jenis","Jumlah","Asal / Tujuan","Keterangan"]],body:data.detail.map(r=>[r.date,r.sku,r.name,r.kind,fmt(r.qty)+" "+r.unit,r.person,r.note]),styles:{fontSize:7,cellPadding:2,overflow:"linebreak"},headStyles:{fillColor:[28,48,76]},columnStyles:{2:{cellWidth:42},6:{cellWidth:45}}});
+  }
+  const blob=doc.output("blob"),fileName=reportFileName(data),path=session.user.id+"/"+fileName;
+  const {error:uploadError}=await supabase.storage.from(REPORT_BUCKET).upload(path,blob,{contentType:"application/pdf",upsert:false});
+  if(uploadError)throw uploadError;
+  const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=fileName;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+  await loadReportArchive();toast("PDF berhasil disimpan di Arsip AZX Office dan diunduh.");
+ }catch(err){toast("PDF belum berhasil disimpan: "+(err.message||err),true);console.error("Inventory report PDF:",err);}
+ finally{btn.disabled=false;btn.textContent=old;}
+}
+async function loadReportArchive(){
+ const body=$("reportArchiveRows");if(!body)return;
+ if(!session?.user?.id){body.innerHTML="<tr><td colspan='4' class='empty'>Silakan login.</td></tr>";return;}
+ body.innerHTML="<tr><td colspan='4' class='empty'>Memuat arsip…</td></tr>";
+ try{
+  const {data,error}=await supabase.storage.from(REPORT_BUCKET).list(session.user.id,{limit:100,sortBy:{column:"created_at",order:"desc"}});
+  if(error)throw error;
+  const files=(data||[]).filter(f=>f.name&&f.name.toLowerCase().endsWith(".pdf"));
+  body.innerHTML=files.length?files.map(f=>"<tr><td>"+esc(f.name)+"</td><td>"+esc(f.created_at?new Date(f.created_at).toLocaleString("id-ID"):"—")+"</td><td>"+fmt((f.metadata?.size||0)/1024)+" KB</td><td><button type='button' class='btn btn-light' data-report-download='"+esc(f.name)+"'>Unduh</button></td></tr>").join(""):"<tr><td colspan='4' class='empty'>Belum ada PDF tersimpan.</td></tr>";
+ }catch(err){body.innerHTML="<tr><td colspan='4' class='empty'>Arsip belum dapat dimuat: "+esc(err.message||err)+"</td></tr>";}
+}
+async function downloadReportPdf(name){
+ try{const path=session.user.id+"/"+name,{data,error}=await supabase.storage.from(REPORT_BUCKET).download(path);if(error)throw error;const url=URL.createObjectURL(data),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
+ catch(err){toast("Gagal mengunduh PDF: "+err.message,true);}
+}
+function sendReportToFormat2(){
+ const data=buildReport(),companyRows=data.summary.map(r=>"<tr><td>"+esc(r.sku)+"</td><td>"+esc(r.name)+"</td><td>"+fmt(r.stock)+" "+esc(r.unit)+"</td><td>"+fmt(r.in)+" "+esc(r.unit)+"</td><td>"+fmt(r.out)+" "+esc(r.unit)+"</td></tr>").join("");
+ const html="<h2>REKAP PERSEDIAAN BARANG</h2><p>Periode transaksi: "+esc(data.from||"Awal data")+" s.d. "+esc(data.to||"Hari ini")+"</p><p>Total jenis barang: "+fmt(data.items.length)+"</p><table><thead><tr><th>Kode</th><th>Nama barang</th><th>Stok tersedia</th><th>Masuk</th><th>Keluar</th></tr></thead><tbody>"+companyRows+"</tbody></table><p>Dokumen ini dibuat otomatis dari AZX Inventory pada "+esc(new Date().toLocaleString("id-ID"))+".</p>";
+ try{localStorage.setItem(REPORT_OUTBOX_KEY,JSON.stringify({id:"INV-REPORT-"+Date.now(),createdAt:new Date().toISOString(),from:data.from,to:data.to,html}));window.open("dokumen.html?fromInventoryReport=1","_blank");toast("Laporan dikirim ke Format 2. Periksa tab dokumen yang terbuka.");}
+ catch(err){toast("Gagal mengirim ke Format 2: "+err.message,true);}
+}
+$("previewReport").addEventListener("click",buildReport);
+$("saveReportPdf").addEventListener("click",saveReportPdf);
+$("sendReportFormat2").addEventListener("click",sendReportToFormat2);
+$("refreshReportArchive").addEventListener("click",loadReportArchive);
+$("reportArchiveRows").addEventListener("click",e=>{const b=e.target.closest("[data-report-download]");if(b)downloadReportPdf(b.dataset.reportDownload);});
+["reportType","reportFrom","reportTo","reportItem"].forEach(id=>$(id).addEventListener("change",()=>{if(reportReady)buildReport()}));
+
 async function runAI(question){if(!session)return;const accessCode=getAIAccessCode();if(!accessCode)return;const btn=$("aiSearchBtn"),answer=$("aiAnswer");if(!question.trim())return toast("Tulis pertanyaan pencarian terlebih dahulu.",true);btn.disabled=true;btn.textContent="Mencari…";answer.hidden=false;answer.textContent="AZX AI sedang membaca data inventaris…";try{const {data:{session:current}}=await supabase.auth.getSession();const response=await fetch(AI_FUNCTION_URL,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+current.access_token,"x-ai-access-code":accessCode},body:JSON.stringify({question})});const data=await response.json();if(!response.ok){if(response.status===401)clearSavedAIAccessCode();throw new Error(data.error||"Pencarian AI gagal.");}answer.textContent=data.answer+(data.suggestion?"\n\nSaran: "+data.suggestion:"");const ids=new Set(data.matched_item_ids||[]);if(ids.size){const found=items.filter(i=>ids.has(i.id));answer.textContent+="\n\nBarang terkait:\n"+found.map(i=>"• "+i.name+(i.variant_name?" · "+i.variant_name:"")+" ("+i.sku+") — "+fmt(stockOf(i)/Math.max(1,Number(i.pack_size)||1))+" "+i.unit+" ("+fmt(stockOf(i))+" pcs)").join("\n");} }catch(err){answer.textContent=err.message;toast(err.message,true)}finally{btn.disabled=false;btn.textContent="Cari dengan AI"}}
 $("aiSearchBtn").addEventListener("click",()=>runAI($("aiQuestion").value));$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();runAI(e.target.value)}});document.querySelectorAll("[data-ask]").forEach(b=>b.addEventListener("click",()=>{$("aiQuestion").value=b.dataset.ask;runAI(b.dataset.ask)}));
-if(supabase){supabase.auth.getSession().then(({data})=>{session=data.session;if(session)showApp();else showAuth()});supabase.auth.onAuthStateChange((_event,newSession)=>{session=newSession;if(session)showApp();else showAuth()})}else showAuth();
+if(supabase){supabase.auth.getSession().then(({data})=>{session=data.session;if(session)showApp();else showAuth()});supabase.auth.onAuthStateChange((_event,newSession)=>{session=newSession;if(session){showApp();loadReportArchive()}else showAuth()})}else showAuth();
 })();
