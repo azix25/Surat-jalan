@@ -155,19 +155,20 @@ $("itemRows").addEventListener("click",async e=>{const b=e.target.closest("[data
 function addMultiOutRow(selectedId=""){
  const row=document.createElement("tr");
  const options=items.map(i=>`<option value="${esc(i.id)}" ${i.id===selectedId?"selected":""}>${esc(i.sku)} — ${esc(i.name)}${i.variant_name?" · "+esc(i.variant_name):""}</option>`).join("");
- row.innerHTML=`<td><select class="out-item" required><option value="">Pilih kode / warna</option>${options}</select></td><td class="out-stock">Pilih barang</td><td><input class="out-qty" type="number" min="0.001" step="0.001" placeholder="Jumlah" required></td><td><button type="button" class="multi-out-remove" aria-label="Hapus baris">×</button></td>`;
+ row.innerHTML=`<td><select class="out-item" required><option value="">Pilih kode / warna</option>${options}</select></td><td class="out-stock">Pilih barang</td><td><input class="out-cartons" type="number" min="0" step="1" placeholder="Dus"></td><td><input class="out-pack-size" type="number" min="0" step="1" placeholder="Pcs/dus"></td><td><input class="out-qty" type="number" min="0.001" step="0.001" placeholder="Total pcs" required></td><td><button type="button" class="multi-out-remove" aria-label="Hapus baris">×</button></td>`;
  const select=row.querySelector(".out-item"),stock=row.querySelector(".out-stock");
  const updateStock=()=>{const item=items.find(i=>i.id===select.value);stock.textContent=item?fmt(stockOf(item))+" "+item.unit:"Pilih barang";};
  select.addEventListener("change",()=>{updateStock();updateMultiOutTotal()});
- row.querySelector(".out-qty").addEventListener("input",updateMultiOutTotal);
+ const cartons=row.querySelector(".out-cartons"),packSize=row.querySelector(".out-pack-size"),qtyInput=row.querySelector(".out-qty");const updatePackQty=()=>{const a=Number(cartons.value),b=Number(packSize.value);if(cartons.value!==""&&packSize.value!==""&&a>0&&b>0)qtyInput.value=String(a*b);updateMultiOutTotal()};cartons.addEventListener("input",updatePackQty);packSize.addEventListener("input",updatePackQty);qtyInput.addEventListener("input",updateMultiOutTotal);
  row.querySelector(".multi-out-remove").addEventListener("click",()=>{row.remove();updateMultiOutTotal()});
  updateStock();$("multiOutRows").append(row);updateMultiOutTotal();
 }
 function updateMultiOutTotal(){const rows=[...$("multiOutRows").querySelectorAll("tr")],total=rows.reduce((sum,row)=>sum+(Number(row.querySelector(".out-qty").value)||0),0);$("multiOutTotal").textContent=rows.length+" jenis barang · "+fmt(total)+" total satuan";}
-function updateTransactionMode(){const multi=$("txType").value==="keluar";$("multiOutWrap").hidden=!multi;$("singleTxItemLabel").hidden=multi;$("singleTxQuantityLabel").hidden=multi;$("txItem").required=!multi;$("txQuantity").required=!multi;if(multi&&!$("multiOutRows").children.length)addMultiOutRow();}
+function updateTransactionMode(){const multi=$("txType").value==="keluar";$("multiOutWrap").hidden=!multi;$("singleTxItemLabel").hidden=multi;$("singleTxQuantityLabel").hidden=multi;$("txCartonsLabel").hidden=multi;$("txPackSizeLabel").hidden=multi;$("txPackPreview").hidden=multi;$("txItem").required=!multi;$("txQuantity").required=!multi;if(multi&&!$("multiOutRows").children.length)addMultiOutRow();}
 $("addOutRow").addEventListener("click",()=>addMultiOutRow());
 $("quickMultiOut").addEventListener("click",()=>{$("txType").value="keluar";$("txType").dispatchEvent(new Event("change"));$("multiOutWrap").scrollIntoView({behavior:"smooth",block:"center"});$("multiOutRows").querySelector(".out-item")?.focus();});
 $("txType").addEventListener("change",updateTransactionMode);updateTransactionMode();
+const updateSinglePack=()=>{const a=Number($("txCartons").value),b=Number($("txPackSize").value);if($("txCartons").value!==""&&$("txPackSize").value!==""&&a>0&&b>0){$("txQuantity").value=String(a*b);$("txPackPreview").textContent=fmt(a)+" dus × "+fmt(b)+" pcs = "+fmt(a*b)+" pcs";}else $("txPackPreview").textContent="Isi dus dapat diubah. Jika diisi, jumlah pcs akan dihitung otomatis.";};$("txCartons").addEventListener("input",updateSinglePack);$("txPackSize").addEventListener("input",updateSinglePack);
 $("transactionForm").addEventListener("submit",async e=>{
  e.preventDefault();const type=$("txType").value;
  if(type==="keluar"){
@@ -178,7 +179,7 @@ $("transactionForm").addEventListener("submit",async e=>{
   for(const [id,qty] of totals){const item=items.find(i=>i.id===id);if(qty>stockOf(item))return toast("Stok "+item.sku+" tidak cukup. Tersedia "+fmt(stockOf(item))+" "+item.unit+".",true);}
   const now=new Date(),batchId="AZX-SJ-"+now.getFullYear()+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0")+"-"+now.getTime().toString(36).toUpperCase();
   const person=$("txPerson").value.trim(),notes=$("txNotes").value.trim(),date=$("txDate").value;
-  const payload=selected.map(x=>({user_id:session.user.id,item_id:x.item.id,transaction_type:"keluar",quantity:x.qty,transaction_date:date,person_or_destination:person,reference_no:batchId,notes}));
+  const payload=selected.map(x=>{const row=rows.find(r=>r.querySelector(".out-item").value===x.item.id);const cartons=row?row.querySelector(".out-cartons").value:"",packSize=row?row.querySelector(".out-pack-size").value:"";const packNote=cartons!==""&&packSize!==""?"Kemasan: "+cartons+" dus × "+packSize+" pcs/dus = "+fmt(x.qty)+" pcs":"";return{user_id:session.user.id,item_id:x.item.id,transaction_type:"keluar",quantity:x.qty,transaction_date:date,person_or_destination:person,reference_no:batchId,notes:[packNote,notes].filter(Boolean).join(" | ")}});
   const button=$("transactionForm").querySelector('button[type="submit"],button:not([type])');if(!button)return toast("Tombol Simpan transaksi tidak ditemukan. Muat ulang halaman Inventory.",true);button.disabled=true;button.textContent="Menyimpan semua barang…";
   const suratJalan={id:batchId,number:batchId,date,person,notes,createdAt:now.toISOString(),items:selected.map(x=>({itemId:x.item.id,sku:x.item.sku,name:x.item.name,variant:x.item.variant_name||"",unit:x.item.unit,qty:x.qty}))};
   try{
@@ -197,12 +198,12 @@ $("transactionForm").addEventListener("submit",async e=>{
   finally{button.disabled=false;button.textContent="Simpan transaksi"}
   return;
  }
- const item=items.find(i=>i.id===$("txItem").value),qty=Number($("txQuantity").value);
+ const item=items.find(i=>i.id===$("txItem").value);const cartons=$("txCartons").value,packSize=$("txPackSize").value;if((cartons!==""||packSize!=="")&&(!(Number(cartons)>0)||!(Number(packSize)>0)))return toast("Isi jumlah dus dan isi per dus dengan angka lebih dari nol.",true);if(cartons!==""&&packSize!=="")$("txQuantity").value=String(Number(cartons)*Number(packSize));const qty=Number($("txQuantity").value);
  if(!item)return toast("Pilih barang terlebih dahulu.",true);
  if(!Number.isFinite(qty)||qty<=0)return toast("Jumlah transaksi harus lebih besar dari nol.",true);
  if(!$("txDate").value||Number.isNaN(Date.parse($("txDate").value+"T00:00:00")))return toast("Tanggal transaksi tidak valid.",true);
  const before=stockOf(item),reduces=type!=="masuk";if(reduces&&qty>before)return toast("Stok tidak cukup. Stok tersedia "+fmt(before)+" "+item.unit+".",true);
- const payload={user_id:session.user.id,item_id:item.id,transaction_type:type,quantity:qty,transaction_date:$("txDate").value,person_or_destination:$("txPerson").value.trim(),reference_no:$("txReference").value.trim(),notes:$("txNotes").value.trim()};
+ const packNote=cartons!==""&&packSize!==""?"Kemasan: "+cartons+" dus × "+packSize+" pcs/dus = "+fmt(qty)+" pcs":"";const payload={user_id:session.user.id,item_id:item.id,transaction_type:type,quantity:qty,transaction_date:$("txDate").value,person_or_destination:$("txPerson").value.trim(),reference_no:$("txReference").value.trim(),notes:[packNote,$("txNotes").value.trim()].filter(Boolean).join(" | ")};
  try{const {error}=await supabase.from("inventory_transactions").insert(payload);if(error)throw error;$("transactionForm").reset();$("txDate").value=today();await loadAll();toast("Transaksi berhasil dicatat. Stok diperbarui.")}catch(err){toast("Gagal menyimpan transaksi: "+err.message,true)}
 });
 $("txDate").value=today();
