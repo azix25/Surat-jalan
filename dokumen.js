@@ -703,3 +703,19 @@ $("voiceStop").addEventListener("click",()=>{if(voiceRecorder&&voiceRecorder.sta
  window.addEventListener("storage",e=>{if(e.key===OUTBOX_KEY)syncOutbox();});
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",syncOutbox);else syncOutbox();
 })();
+
+// Pulihkan posisi halaman AZX Office setelah refresh (hanya pada tab/perangkat yang sama).
+(()=>{
+ const KEY="azxOfficePagePositionV1";
+ const panel=document.querySelector(".panel");
+ const read=()=>{try{return JSON.parse(sessionStorage.getItem(KEY)||"{}")}catch(e){return {}}};
+ const saved=read();
+ const save=()=>{try{sessionStorage.setItem(KEY,JSON.stringify({x:window.scrollX||0,y:window.scrollY||0,panel:panel?.scrollTop||0}))}catch(e){}};
+ window.addEventListener("scroll",save,{passive:true});
+ panel?.addEventListener("scroll",save,{passive:true});
+ window.addEventListener("pagehide",save);
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  if(Number.isFinite(saved.y))window.scrollTo(saved.x||0,saved.y);
+  if(panel&&Number.isFinite(saved.panel))panel.scrollTop=saved.panel;
+ }));
+})();
