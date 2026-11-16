@@ -1,4 +1,43 @@
 const $=id=>document.getElementById(id);
+function sanitizeDocumentHtml(input){
+ const source=String(input??"");
+ if(!source)return "";
+ const parsed=new DOMParser().parseFromString("<!doctype html><body>"+source+"</body>","text/html");
+ const allowed=new Set(["P","DIV","BR","STRONG","B","EM","I","U","S","UL","OL","LI","H1","H2","H3","H4","H5","H6","BLOCKQUOTE","SPAN","TABLE","THEAD","TBODY","TFOOT","TR","TH","TD","HR","A"]);
+ const blocked=new Set(["SCRIPT","STYLE","IFRAME","OBJECT","EMBED","SVG","MATH","FORM","INPUT","BUTTON","TEXTAREA","SELECT","VIDEO","AUDIO","SOURCE","META","LINK","BASE"]);
+ const safeStyle=(value)=>{
+  const out=[];
+  for(const part of String(value||"").split(";")){
+   const pair=part.split(":");if(pair.length<2)continue;
+   const key=pair.shift().trim().toLowerCase(),val=pair.join(":").trim();
+   if(key==="text-align"&&/^(left|right|center|justify)$/i.test(val))out.push("text-align:"+val.toLowerCase());
+   else if(key==="font-weight"&&/^(normal|bold|[1-9]00)$/i.test(val))out.push("font-weight:"+val.toLowerCase());
+   else if(key==="font-style"&&/^(normal|italic|oblique)$/i.test(val))out.push("font-style:"+val.toLowerCase());
+   else if(key==="text-decoration"&&/^(none|underline|line-through|overline)(\s+(underline|line-through|overline))*$/i.test(val))out.push("text-decoration:"+val.toLowerCase());
+  }
+  return out.join(";");
+ };
+ const cleanNode=(node,parent)=>{
+  if(node.nodeType===Node.TEXT_NODE){parent.append(document.createTextNode(node.nodeValue||""));return;}
+  if(node.nodeType!==Node.ELEMENT_NODE)return;
+  const tag=node.tagName.toUpperCase();
+  if(blocked.has(tag))return;
+  if(!allowed.has(tag)){for(const child of [...node.childNodes])cleanNode(child,parent);return;}
+  const el=document.createElement(tag.toLowerCase());
+  if(tag==="A"){
+   const href=node.getAttribute("href")||"";
+   try{const u=new URL(href,location.href);if(["https:","http:","mailto:"].includes(u.protocol))el.setAttribute("href",u.href);}catch(_){}
+   if(el.hasAttribute("href")){el.setAttribute("rel","noopener noreferrer");el.setAttribute("target","_blank");}
+  }
+  if(node.hasAttribute("style")){const style=safeStyle(node.getAttribute("style"));if(style)el.setAttribute("style",style);}
+  for(const child of [...node.childNodes])cleanNode(child,el);
+  parent.append(el);
+ };
+ const fragment=document.createDocumentFragment();
+ for(const child of [...parsed.body.childNodes])cleanNode(child,fragment);
+ const holder=document.createElement("div");holder.append(fragment);return holder.innerHTML;
+}
+
 const AI_CODE_STORAGE_KEY="azx_ai_access_code";
 function getAIAccessCode(){
  const input=$("aiAccessCode");
@@ -73,11 +112,11 @@ function syncItemEditorFields(){
  $("barisItem").querySelectorAll("tr").forEach(tr=>{const expected=columns.length+1;while(tr.cells.length<expected){const td=document.createElement("td");const col=columns[tr.cells.length];if(col?.kind==="extra"){const input=document.createElement("input");input.className="item-extra";input.dataset.extra=col.id;input.type="text";input.addEventListener("input",render);td.append(input);}tr.insertBefore(td,tr.lastElementChild);}while(tr.cells.length>expected)tr.deleteCell(tr.cells.length-2);});
 }
  function getItems(){return [...$("barisItem").rows].map(r=>{const amount=r.querySelector(".item-qty")?.value??"1";const unit=r.querySelector(".item-unit-select")?.value??"";return {nama:r.querySelector(".item-name")?.value??"",qty:[amount.trim(),unit].filter(Boolean).join(" "),harga:r.querySelector(".item-price")?.value??"0",custom:Object.fromEntries([...r.querySelectorAll(".item-extra")].map(input=>[input.dataset.extra,input.value]))};});}
-function readData(){const d={jenis:$("jenis").value,template:$("template").value,templateFormat2:$("templateFormat2")?.value||"f2-polos"};fieldIds.forEach(id=>d[id]=$(id).value);d.rincianBebas=$("pWordContent")?.innerHTML??$("rincianBebas").value??"";const f2Body=$("f2WordContent");d.rincianFormat2=f2Body?(f2Body.textContent.trim()?f2Body.innerHTML:""):"";d.items=getItems();d.itemColumns=extraItemColumns.map(x=>({...x}));return d;}
+function readData(){const d={jenis:$("jenis").value,template:$("template").value,templateFormat2:$("templateFormat2")?.value||"f2-polos"};fieldIds.forEach(id=>d[id]=$(id).value);d.rincianBebas=sanitizeDocumentHtml($("pWordContent")?.innerHTML??$("rincianBebas").value??"");const f2Body=$("f2WordContent");d.rincianFormat2=f2Body?(f2Body.textContent.trim()?sanitizeDocumentHtml(f2Body.innerHTML):""):"";d.items=getItems();d.itemColumns=extraItemColumns.map(x=>({...x}));return d;}
 function setData(d){
  $("jenis").value=d.jenis||"invoice";$("template").value=d.template||"standar";if($("templateFormat2"))$("templateFormat2").value=d.templateFormat2||"f2-polos";applyCustomTemplate();
  fieldIds.forEach(id=>{if($(id))$(id).value=d[id]??"";});
- if($("pWordContent"))$("pWordContent").innerHTML=d.rincianBebas??"";if($("f2WordContent"))$("f2WordContent").innerHTML=d.rincianFormat2??(d.layoutMode==="no-table"?(d.rincianBebas??""):"");
+ if($("pWordContent"))$("pWordContent").innerHTML=sanitizeDocumentHtml(d.rincianBebas??"");if($("f2WordContent"))$("f2WordContent").innerHTML=sanitizeDocumentHtml(d.rincianFormat2??(d.layoutMode==="no-table"?(d.rincianBebas??""):""));
  const defaults=defaultColumnLabels();Object.entries(defaults).forEach(([id,value])=>{if($(id)&&!d[id])$(id).value=value;});if(d.kolomDetailLabel&&!d.kolomHargaLabel)$("kolomHargaLabel").value=d.kolomDetailLabel;
  extraItemColumns=Array.isArray(d.itemColumns)?d.itemColumns.filter(x=>x&&x.id).map(x=>({id:String(x.id),label:String(x.label||"Kolom")})):[];
  renderExtraColumnManager();$("barisItem").innerHTML="";
@@ -94,7 +133,7 @@ const F2_ALIGN_KEY="azxOfficeFormat2Alignment";
 function setFormat2Alignment(align){if(!["left","center","right"].includes(align))return;const editor=$("f2WordContent");if(!editor)return;editor.style.textAlign=align;try{localStorage.setItem(F2_ALIGN_KEY,align);}catch(e){}document.querySelectorAll("[data-f2-align]").forEach(btn=>{const active=btn.dataset.f2Align===align;btn.classList.toggle("active",active);btn.setAttribute("aria-pressed",String(active));});}
 document.querySelectorAll("[data-f2-align]").forEach(btn=>{btn.addEventListener("mousedown",e=>e.preventDefault());btn.addEventListener("click",()=>{setFormat2Alignment(btn.dataset.f2Align);$("f2WordContent")?.focus();});});
 try{setFormat2Alignment(localStorage.getItem(F2_ALIGN_KEY)||"left");}catch(e){setFormat2Alignment("left");}
-function renderFormat2Preview(d,L){const paper=$("lembarFormat2"),format1=$("lembar"),logo=$("f2Logo");const active=d.layoutMode==="no-table";paper.hidden=!active;paper.style.display=active?"block":"none";format1.hidden=active;format1.style.display=active?"none":"";if(!active)return;paper.className="paper-format2 template-"+($("templateFormat2")?.value||"f2-polos")+" doc-type-"+d.jenis;paper.dataset.category=d.jenis;logo.innerHTML="";if(companyLogo){const img=document.createElement("img");img.src=companyLogo;img.alt="Logo perusahaan";logo.append(img);}else logo.textContent=(d.perusahaan||"NP").trim().split(/\\s+/).filter(Boolean).slice(0,2).map(x=>x[0]||"").join("").toUpperCase()||"NP";$("f2Perusahaan").textContent=d.perusahaan||"NAMA PERUSAHAAN";$("f2Alamat").textContent=d.alamatPerusahaan||"";$("f2Tanggal").textContent=fmtDate(d.tanggalDokumen);$("f2LabelPihak").textContent=""; $("f2Pihak").textContent=d.pihak||"";$("f2AlamatPihak").textContent=d.alamatPihak||"";const content=$("f2WordContent");if(content&&!content.dataset.bound){content.dataset.bound="1";}const body=d.rincianFormat2??"";if(content&&content.innerHTML!==body&&document.activeElement!==content)content.innerHTML=body;}
+function renderFormat2Preview(d,L){const paper=$("lembarFormat2"),format1=$("lembar"),logo=$("f2Logo");const active=d.layoutMode==="no-table";paper.hidden=!active;paper.style.display=active?"block":"none";format1.hidden=active;format1.style.display=active?"none":"";if(!active)return;paper.className="paper-format2 template-"+($("templateFormat2")?.value||"f2-polos")+" doc-type-"+d.jenis;paper.dataset.category=d.jenis;logo.innerHTML="";if(companyLogo){const img=document.createElement("img");img.src=companyLogo;img.alt="Logo perusahaan";logo.append(img);}else logo.textContent=(d.perusahaan||"NP").trim().split(/\\s+/).filter(Boolean).slice(0,2).map(x=>x[0]||"").join("").toUpperCase()||"NP";$("f2Perusahaan").textContent=d.perusahaan||"NAMA PERUSAHAAN";$("f2Alamat").textContent=d.alamatPerusahaan||"";$("f2Tanggal").textContent=fmtDate(d.tanggalDokumen);$("f2LabelPihak").textContent=""; $("f2Pihak").textContent=d.pihak||"";$("f2AlamatPihak").textContent=d.alamatPihak||"";const content=$("f2WordContent");if(content&&!content.dataset.bound){content.dataset.bound="1";}const body=sanitizeDocumentHtml(d.rincianFormat2??"");if(content&&content.innerHTML!==body&&document.activeElement!==content)content.innerHTML=body;}
 function render(){syncItemEditorFields();$("barisItem").querySelectorAll("tr").forEach(tr=>{const q=quantityNumber(tr.querySelector(".item-qty")?.value);const p=priceNumber(tr.querySelector(".item-price")?.value);const cell=tr.querySelector(".item-total-cell");if(cell)cell.textContent=amountDisplay(q*p,$("jenis").value);});const d=readData(),type=d.jenis,L=labels[type]||labels.invoice,items=d.items;const noTable=d.layoutMode==="no-table";document.body.classList.toggle("layout-no-table",noTable);$("lembar").classList.toggle("layout-no-table",noTable);$("pTeksPenutupKiri").textContent=d.teksPenutupKiri??"Hormat kami,";$("pTeksPenutupKanan").textContent=d.teksPenutupKanan??"Mengetahui,";const total=items.reduce((s,x)=>s+quantityNumber(x.qty)*(priceNumber(x.harga)),0);const tax=total*(Number(d.pajak)||0)/100,disc=Number(d.diskon)||0,grand=Math.max(0,total+tax-disc);
 const letterTypes=["penawaran","penagihan","beritaacara","kontrak","surattugas","permohonan","resmi","suratperingatan","suratundangan","suratkuasa","suratketerangan","memointernal","suratpengantar","spk","bast"];
 const reportTypes=["rab","laporanprogress","laporanhari","laporanbiaya","checklistqc","rekapitulasi"];
@@ -103,6 +142,19 @@ const format2=d.layoutMode==="no-table";const activeTemplate=format2?($("templat
 const logoBox=$("pLogo");logoBox.innerHTML="";if(companyLogo){logoBox.classList.add("has-image");const img=document.createElement("img");img.src=companyLogo;img.alt="Logo perusahaan";img.className="logo-img";logoBox.append(img);}else{logoBox.classList.remove("has-image");logoBox.textContent=(d.perusahaan||"NP").trim().split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]||"").join("").toUpperCase()||"NP";}
 $("pPerusahaan").textContent=d.perusahaan||"NAMA PERUSAHAAN";$("pAlamat").textContent=d.alamatPerusahaan||"";$("pKontak").textContent=[d.teleponPerusahaan,d.emailPerusahaan].filter(Boolean).join(" · ");$("pJudul").textContent=L.title;$("pNomor").textContent="No: "+(d.nomorDokumen||"-");$("pTanggal").textContent="Tanggal: "+fmtDate(d.tanggalDokumen);$("pLabelPihak").textContent=format2?"KEPADA YTH.":L.party;$("pPihak").textContent=d.pihak||"Nama pelanggan / penerima";$("pAlamatPihak").textContent=d.alamatPihak||"";$("pJatuhTempoBox").querySelector("small").textContent=L.right;$("pJatuhTempo").textContent=fmtDate(["invoice","penagihan","invoicetermin"].includes(type)?d.jatuhTempo:d.tanggalDokumen);$("pJatuhTempoBox").style.display=format2?"none":["suratjalan","resmi","permohonan","surattugas","beritaacara","kontrak","spk","bast","laporanprogress","laporanhari","permintaanpembelian","suratperingatan","suratundangan","suratkuasa","suratketerangan","memointernal","suratpengantar","checklistqc","laporanbiaya","rekapitulasi"].includes(type)?"none":"flex";$("pKeterangan").textContent=d.keterangan||"";$("pCatatanLabel").textContent=noTable?"Lampiran / Catatan":L.notes;$("pCatatan").textContent=d.catatan||"-";$("pTtdKiri").textContent="Hormat kami,";$("pTtdKanan").textContent=L.rightSign;$("pNamaTtd").textContent=d.penanggungJawab||"(................................)";$("pJabatanTtd").textContent=d.penanggungJawab?(d.jabatan||""):"";const stampImage=$("pStampImage");if(stampImage){const stampSlot=stampImage.closest(".signature-stamp-slot");const uploadedStamp=Boolean(format1UploadedStamp&&!useReferenceStamp);if(uploadedStamp){if(stampSlot)stampSlot.hidden=false;stampImage.onerror=()=>{stampImage.hidden=true;if(stampSlot)stampSlot.hidden=true;const status=$("statusStempel");if(status)status.textContent="Stempel tersimpan, tetapi gambar tidak dapat dibaca browser. Coba unggah ulang dalam PNG atau JPG.";console.error("Gambar stempel unggahan gagal dimuat.");};if(stampImage.getAttribute("src")!==format1UploadedStamp)stampImage.src=format1UploadedStamp;stampImage.hidden=false;stampImage.removeAttribute("hidden");}else{stampImage.hidden=true;stampImage.removeAttribute("src");stampImage.onerror=null;if(stampSlot)stampSlot.hidden=true;}}const f2StampImage=$("f2StampImage");if(f2StampImage){f2StampImage.onerror=()=>{f2StampImage.hidden=true;console.error("Gambar stempel unggahan Format 2 gagal dimuat.");};if(companyStamp){if(f2StampImage.getAttribute("src")!==companyStamp)f2StampImage.src=companyStamp;f2StampImage.hidden=false;f2StampImage.removeAttribute("hidden");}else{f2StampImage.hidden=true;f2StampImage.removeAttribute("src");f2StampImage.onerror=null;}}$("pFooter").textContent=[d.alamatPerusahaan,d.teleponPerusahaan,d.emailPerusahaan].filter(Boolean).join(" | ");
 const wordContent=$("pWordContent");if(wordContent&&!wordContent.dataset.bound){wordContent.dataset.bound="1";wordContent.addEventListener("input",()=>{$("rincianBebas").value=wordContent.innerHTML;});}
+ ["pWordContent","f2WordContent"].forEach(id=>{
+  const editor=$(id);if(!editor||editor.dataset.safePasteBound)return;editor.dataset.safePasteBound="1";
+  editor.addEventListener("paste",event=>{
+   const html=event.clipboardData?.getData("text/html")||"";
+   const plain=event.clipboardData?.getData("text/plain")||"";
+   if(!html&&!plain)return;
+   event.preventDefault();
+   const safe=html?sanitizeDocumentHtml(html):document.createTextNode(plain).textContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
+   document.execCommand("insertHTML",false,safe);
+   editor.dispatchEvent(new Event("input",{bubbles:true}));
+  });
+ });
+
  const head=$("pHeadTabel"),plainItems=$("pItemsPlain");plainItems.textContent="";const columns=getEditorColumns();head.innerHTML="";const hr=document.createElement("tr");const numberHead=document.createElement("th");numberHead.textContent="No.";hr.append(numberHead);columns.forEach(col=>{const th=document.createElement("th");th.textContent=col.label;hr.append(th);});head.append(hr);
  $("pItems").innerHTML="";
  items.forEach((x,i)=>{
