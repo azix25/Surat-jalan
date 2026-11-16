@@ -342,12 +342,12 @@ function history(){
 }
 function save(){
  const d=readData();
- if(!d.nomorDokumen.trim()){alert("Isi nomor dokumen terlebih dahulu.");$("nomorDokumen").focus();return;}
+ if(!d.nomorDokumen.trim()){alert("Isi nomor dokumen terlebih dahulu.");$("nomorDokumen").focus();return false;}
  const list=readDocumentHistory();
  const i=list.findIndex(x=>x.jenis===d.jenis&&x.nomorDokumen===d.nomorDokumen);
  if(i>=0)list[i]=d;else list.push(d);
- try{localStorage.setItem("dokumenBisnis",JSON.stringify(list));history();alert("Dokumen berhasil disimpan di perangkat ini.");}
- catch(error){alert("Dokumen belum dapat disimpan. Ruang penyimpanan browser mungkin penuh.");console.error("Gagal menyimpan arsip dokumen:",error);}
+ try{localStorage.setItem("dokumenBisnis",JSON.stringify(list));history();alert("Dokumen berhasil disimpan di perangkat ini.");return true;}
+ catch(error){alert("Dokumen belum dapat disimpan. Ruang penyimpanan browser mungkin penuh.");console.error("Gagal menyimpan arsip dokumen:",error);return false;}
 }
 function companyInitials(name){
  const words=(name||"").trim().toUpperCase().replace(/[^A-Z0-9\s]/g," ").split(/\s+/).filter(Boolean).filter(w=>!["PT","CV","UD","TBK","PERSERO"].includes(w));
@@ -710,7 +710,7 @@ $("voiceStop").addEventListener("click",()=>{if(voiceRecorder&&voiceRecorder.sta
   let payload;try{payload=JSON.parse(localStorage.getItem(key)||"null")}catch(_){return}
   if(!payload?.html||!new URLSearchParams(location.search).has("fromInventoryReport"))return;
   const reportDoc={jenis:"rekapitulasi",templateFormat2:"f2-polos",layoutMode:"no-table",rincianFormat2:payload.html,rincianBebas:"",perusahaan:"",alamatPerusahaan:"",teleponPerusahaan:"",emailPerusahaan:"",penanggungJawab:"",jabatan:"Direktur",pihak:"",alamatPihak:"",nomorDokumen:payload.id,tanggalDokumen:(payload.createdAt||new Date().toISOString()).slice(0,10),jatuhTempo:"",keterangan:"Laporan Inventory AZX Office",pajak:"0",diskon:"0",catatan:"Laporan Inventory periode "+(payload.from||"awal data")+" s.d. "+(payload.to||"hari ini"),kolomNamaLabel:"Nama barang",kolomJumlahLabel:"Jumlah",kolomHargaLabel:"",teksPenutupKiri:"",teksPenutupKanan:"",items:[]};
-  try{setData(reportDoc);save();$("layoutMode").value="no-table";syncFormatMode();render();const notice=document.createElement("div");notice.className="inventory-sync-notice";notice.textContent="Laporan Inventory berhasil dimasukkan ke Format 2 dan disimpan dalam arsip dokumen.";document.querySelector(".panel")?.prepend(notice);localStorage.removeItem(key);history();}catch(error){console.error("Impor laporan Inventory ke Format 2 gagal:",error);alert("Laporan Inventory belum dapat dimasukkan ke Format 2: "+error.message);}
+  try{setData(reportDoc);$("layoutMode").value="no-table";syncFormatMode();render();if(!save())throw new Error("Arsip dokumen tidak mengonfirmasi penyimpanan. Laporan tetap berada di antrean Inventory agar dapat dicoba kembali.");const notice=document.createElement("div");notice.className="inventory-sync-notice";notice.textContent="Laporan Inventory berhasil dimasukkan ke Format 2 dan disimpan dalam arsip dokumen.";document.querySelector(".panel")?.prepend(notice);localStorage.removeItem(key);history();}catch(error){console.error("Impor laporan Inventory ke Format 2 gagal:",error);alert("Laporan Inventory belum dapat dimasukkan ke Format 2: "+error.message);}
  }
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",importInventoryReport);else importInventoryReport();
 })();
