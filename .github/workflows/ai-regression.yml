@@ -1,0 +1,26 @@
+name: AI regression checks
+
+on:
+  pull_request:
+    paths:
+      - "dokumen.js"
+      - "AI_REGRESSION_TESTS.md"
+      - "tests/ai-gemini-retry.test.mjs"
+      - ".github/workflows/ai-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ai-gemini-retry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check document JavaScript syntax
+        run: node --check dokumen.js
+      - name: Run Gemini retry regression tests
+        run: node --test tests/ai-gemini-retry.test.mjs
