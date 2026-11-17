@@ -438,6 +438,9 @@ async function getDocumentAuthHeaders(){
  if(error||!data?.session?.access_token)throw new Error("Sesi login berakhir. Silakan login kembali.");
  return {Authorization:"Bearer "+data.session.access_token};
 }
+function isGeminiQuotaExhausted(message){return /RESOURCE_EXHAUSTED|(?:quota|kuota).{0,50}(?:exceed(?:ed)?|limit|habis|mencapai.{0,5}(?:batas|limit)|tercapai|terlampaui|penuh|reached|exhausted)|(?:batas|limit).{0,30}penggunaan.{0,30}(?:harian|daily).{0,20}(?:tercapai|habis|exceed(?:ed)?|reached)|daily.{0,30}(?:usage|limit).{0,30}(?:reached|exceeded|exhausted)/i.test(String(message||""));}
+function shouldRetryAIResponse(status,message){return [502,503,504].includes(Number(status))||(Number(status)===429&&!isGeminiQuotaExhausted(message));}
+function getAIRetryDelayMs(response,payload,attempt){const headerSeconds=Number(response?.headers?.get?.("Retry-After"));const bodySeconds=Number(payload?.retry_after);const retryAfter=Number.isFinite(headerSeconds)&&headerSeconds>0?headerSeconds:bodySeconds;return Number.isFinite(retryAfter)&&retryAfter>0?Math.min(retryAfter*1000,60000):1500*Math.pow(2,Math.max(0,Number(attempt)||1)-1);}
 async function requestAIWithRetry(url,options,status){
  const maxAttempts=3;
  let lastError;
@@ -450,14 +453,12 @@ async function requestAIWithRetry(url,options,status){
    try{payload=await retryResponse.json();}catch(_){}
    const message=payload.error||payload.message||("Permintaan AI gagal (HTTP "+response.status+").");
    const detail=String(message);
-   const quotaExhausted=/RESOURCE_EXHAUSTED|quota.{0,30}(exceed|limit|habis)|exceed.{0,30}quota/i.test(detail);
-   const temporary=[502,503].includes(response.status)||(response.status===429&&!quotaExhausted);
+   const temporary=shouldRetryAIResponse(response.status,detail);
    if(!temporary||attempt===maxAttempts)throw new Error(detail);
-   const retryAfter=Number(response.headers.get("Retry-After"));
-   const delay=Number.isFinite(retryAfter)&&retryAfter>0
-    ?Math.min(retryAfter*1000,15000)
-    :1500*Math.pow(2,attempt-1);
-   status.textContent="Layanan AI sedang sibuk. Mencoba kembali ("+attempt+"/"+(maxAttempts-1)+")...";
+   const delay=getAIRetryDelayMs(response,payload,attempt);
+   status.textContent=response.status===429
+    ?"Permintaan AI terlalu cepat. Menunggu sebelum mencoba kembali..."
+    :"Layanan Gemini sedang sibuk. Mencoba kembali ("+attempt+"/"+(maxAttempts-1)+")...";
    await new Promise(resolve=>setTimeout(resolve,delay));
   }catch(error){
    if(error instanceof TypeError){
@@ -503,8 +504,12 @@ async function generateWithAI(){
   if(/401|403|unauthorized|kode akses|access code/i.test(message)){
    clearSavedAIAccessCode();
    status.textContent="Kode akses ditolak. Masukkan kode AZX yang benar satu kali; kode lama sudah dihapus dari perangkat.";
-  }else if(/RESOURCE_EXHAUSTED|quota|limit/i.test(message)){
+  }else if(/batas.{0,20}penggunaan.{0,20}harian/i.test(message)){
+   status.textContent="Batas penggunaan AI harian AZX tercapai. Silakan coba lagi besok.";
+  }else if(/RESOURCE_EXHAUSTED|quota|kuota|limit/i.test(message)){
    status.textContent="Batas penggunaan Gemini tercapai. Periksa kuota API Gemini atau coba lagi nanti.";
+  }else if(/permintaan AI terlalu cepat/i.test(message)){
+   status.textContent="Permintaan AI terlalu cepat. Tunggu sebentar sebelum mencoba lagi.";
   }else if(/503|UNAVAILABLE|overloaded|busy/i.test(message)){
    status.textContent="Layanan Gemini sedang sibuk atau melewati batas waktu. Coba lagi beberapa saat.";
   }else{
