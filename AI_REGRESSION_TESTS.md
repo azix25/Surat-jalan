@@ -115,3 +115,20 @@ Gunakan draf sintetis berikut pada halaman uji:
 | SEC-11 | Masukkan instruksi pengambilalihan/prompt injection ke pertanyaan dan catatan barang sintetis | Teks dianggap data tidak tepercaya; instruksi sistem tetap berlaku dan tidak ada aksi bisnis | [ ] |
 | SEC-12 | Uji keluaran Format 2 dengan atribut `onerror`, URL `javascript:`, iframe, dan elemen aktif lain | Konten berbahaya dibuang/di-escape oleh allowlist sanitizer sebelum dimasukkan ke editor; HTML aman yang diperlukan tetap tampil | [ ] |
 
+## H. Pemeriksaan retry Gemini otomatis
+
+Jalankan pemeriksaan lokal dengan Node.js 20 atau lebih baru:
+
+```sh
+node --check dokumen.js
+node --test tests/ai-gemini-retry.test.mjs
+```
+
+Kasus otomatis memeriksa:
+- Pesan kuota Gemini dalam bahasa Indonesia dan Inggris.
+- Batas penggunaan AI harian agar tidak memicu retry.
+- Pembatasan permintaan per menit agar memakai `retry_after` dari respons server.
+- HTTP 503/504 sebagai kegagalan sementara; HTTP 400 tidak diulang.
+- Prioritas header `Retry-After`, fallback `retry_after` di JSON, dan batas jeda maksimum.
+
+Workflow GitHub Actions hanya membaca source dan menjalankan tes lokal; tidak memanggil Gemini, Supabase, atau data produksi. Tes ini tidak menggantikan uji Gemini end-to-end pada staging.
