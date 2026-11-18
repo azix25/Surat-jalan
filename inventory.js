@@ -253,6 +253,7 @@ async function startInventoryVoice(){
   inventoryVoiceRecorder.onerror=()=>inventoryVoiceStatus("Perekaman gagal. Periksa izin mikrofon perangkat.");
   inventoryVoiceRecorder.onstart=()=>{
    $("inventoryVoiceStart").disabled=true;$("inventoryVoiceStop").disabled=false;
+   inventoryAIState("Mikrofon aktif — menunggu ucapan","recording");
    inventoryVoiceStatus("Mikrofon aktif. Ucapkan pertanyaan inventaris, lalu tekan Berhenti.");
   };
   inventoryVoiceRecorder.onstop=async()=>{
