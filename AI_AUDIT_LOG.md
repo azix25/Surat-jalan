@@ -129,7 +129,7 @@
 - Inventory kini mengambil `pack_size`, menyajikan stok dalam satuan kemasan dan pcs, memberi peringkat kandidat dari seluruh katalog sebelum membatasi konteks model ke 2.000 barang, serta menyertakan transaksi bertanggal. Risiko tersisa: konteks transaksi dibatasi ke 1.200 transaksi terbaru; permintaan periode lama dapat kehilangan data jika melewati batas itu.
 - Prompt kedua fungsi secara eksplisit menangani bahasa Indonesia, variasi istilah, dan salah ketik ringan. Inventory juga meminta klarifikasi saat kandidat ambigu dan membedakan stok kemasan dari pcs.
 - Prompt masih bukan pengganti validasi deterministik. Mode penjelasan Dokumen, batas 300 item, cakupan 2.000 barang/1.200 transaksi, serta perlindungan terhadap instruksi berbahaya yang tersisip dalam catatan masih perlu uji staging.
-- Helper `safeProviderMessage` ada pada source Dokumen; perlu memastikan pemetaannya dipakai konsisten pada seluruh jalur error provider.
+- Helper `safeProviderMessage` hanya muncul sekali sebagai definisi pada source `dokumen-ai` v43; tidak ditemukan pemanggilan. Pemetaan pesan error provider melalui helper ini belum aktif dan perlu diperbaiki serta diuji terpisah.
 
 ### Perbaikan retry frontend
 
