@@ -233,6 +233,72 @@ $("transactionForm").addEventListener("submit",async e=>{
 $("txDate").value=today();
 function buildReport(){const type=$("reportType").value,from=$("reportFrom").value,to=$("reportTo").value,itemId=$("reportItem").value;let rows;if(type==="stock"){rows=items.filter(i=>itemId==="all"||i.id===itemId).map(i=>({date:"—",sku:i.sku,name:i.name+(i.variant_name?" · "+i.variant_name:""),kind:"Posisi stok",qty:stockOf(i)/Math.max(1,Number(i.pack_size)||1),unit:i.unit,person:"—",note:"Setara "+fmt(stockOf(i))+" pcs · Batas minimum: "+fmt(Number(i.minimum_stock||0)/Math.max(1,Number(i.pack_size)||1))+" "+i.unit}))}else{rows=transactions.filter(t=>(type==="all"||movementType(t.transaction_type)===type)&&(!from||t.transaction_date>=from)&&(!to||t.transaction_date<=to)&&(itemId==="all"||t.item_id===itemId)).map(t=>{const i=items.find(x=>x.id===t.item_id)||{};return{date:movementTime(t),sku:i.sku||"",name:(i.name||"")+(i.variant_name?" · "+i.variant_name:""),kind:typeNames[t.transaction_type]||"Barang keluar",qty:Number(t.quantity||0)/Math.max(1,Number(i.pack_size)||1),unit:i.unit||"",person:t.person_or_destination||"—",note:[t.reference_no,t.notes].filter(Boolean).join(" · ")||"—"}})}const labels={stock:"LAPORAN POSISI STOK",all:"RIWAYAT BARANG MASUK & KELUAR",masuk:"LAPORAN BARANG MASUK",keluar:"LAPORAN BARANG KELUAR"};$("reportPaper").innerHTML=`<div class="report-head"><h2>AZX OFFICE · INVENTORY</h2><p>${labels[type]}</p></div><div class="report-meta"><span>Periode: ${esc(from||"Semua tanggal")} s.d. ${esc(to||"Sekarang")}</span><span>Dicetak: ${new Date().toLocaleString("id-ID")}</span></div><table><thead><tr><th>Tanggal</th><th>Kode</th><th>Nama barang</th><th>Jenis</th><th>Jumlah / Stok</th><th>Orang / Tujuan</th><th>Keterangan</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.sku)}</td><td>${esc(r.name)}</td><td>${esc(r.kind)}</td><td>${fmt(r.qty)} ${esc(r.unit)}</td><td>${esc(r.person)}</td><td>${esc(r.note)}</td></tr>`).join(""):'<tr><td colspan="7" class="empty">Tidak ada data pada filter ini.</td></tr>'}</tbody><tfoot><tr><td colspan="4">Jumlah baris</td><td colspan="3">${rows.length}</td></tr></tfoot></table><p style="margin-top:35px;text-align:right;font-size:10px">Mengetahui,<br><br><br>(........................................)</p>`;reportReady=true}
 $("previewReport").addEventListener("click",buildReport);$("printReport").addEventListener("click",()=>{if(!reportReady)buildReport();window.print()});["reportType","reportFrom","reportTo","reportItem"].forEach(id=>$(id).addEventListener("change",()=>{if(reportReady)buildReport()}));
+// Perintah suara AI Inventory memakai jalur transkripsi Whisper yang sama dengan AI Dokumen.
+let inventoryVoiceRecorder=null,inventoryVoiceStream=null,inventoryVoiceChunks=[];
+function inventoryVoiceStatus(message){const el=$("inventoryVoiceStatus");if(el)el.textContent=message;}
+async function startInventoryVoice(){
+ if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){
+  inventoryVoiceStatus("Mikrofon memerlukan Chrome terbaru melalui HTTPS atau localhost.");return;
+ }
+ if(!session)return inventoryVoiceStatus("Silakan masuk terlebih dahulu.");
+ if(!getAIAccessCode())return inventoryVoiceStatus("Masukkan kode akses AI terlebih dahulu.");
+ try{
+  inventoryVoiceStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  const types=["audio/webm;codecs=opus","audio/webm","audio/mp4"];
+  const mime=types.find(type=>MediaRecorder.isTypeSupported(type))||"";
+  inventoryVoiceRecorder=new MediaRecorder(inventoryVoiceStream,mime?{mimeType:mime}:undefined);
+  inventoryVoiceChunks=[];
+  inventoryVoiceRecorder.ondataavailable=event=>{if(event.data?.size)inventoryVoiceChunks.push(event.data);};
+  inventoryVoiceRecorder.onerror=()=>inventoryVoiceStatus("Perekaman gagal. Periksa izin mikrofon perangkat.");
+  inventoryVoiceRecorder.onstart=()=>{
+   $("inventoryVoiceStart").disabled=true;$("inventoryVoiceStop").disabled=false;
+   inventoryVoiceStatus("Mikrofon aktif. Ucapkan pertanyaan inventaris, lalu tekan Berhenti.");
+  };
+  inventoryVoiceRecorder.onstop=async()=>{
+   $("inventoryVoiceStart").disabled=false;$("inventoryVoiceStop").disabled=true;
+   inventoryVoiceStream?.getTracks().forEach(track=>track.stop());inventoryVoiceStream=null;
+   const blob=new Blob(inventoryVoiceChunks,{type:inventoryVoiceRecorder?.mimeType||"audio/webm"});
+   if(!blob.size){inventoryVoiceStatus("Suara tidak terekam. Silakan coba lagi.");return;}
+   if(blob.size>4*1024*1024){inventoryVoiceStatus("Rekaman terlalu besar. Gunakan perintah yang lebih singkat.");return;}
+   inventoryVoiceStatus("Mengubah suara menjadi teks...");
+   try{
+    const bytes=new Uint8Array(await blob.arrayBuffer());let binary="";
+    for(let offset=0;offset<bytes.length;offset+=0x8000)binary+=String.fromCharCode(...bytes.subarray(offset,offset+0x8000));
+    const {data:{session:current}}=await supabase.auth.getSession();
+    if(!current?.access_token)throw new Error("Sesi login berakhir. Silakan masuk kembali.");
+    const accessCode=getAIAccessCode();if(!accessCode)throw new Error("Kode akses AI belum tersedia.");
+    const response=await fetch(SUPABASE_URL+"/functions/v1/dokumen-ai",{
+     method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+current.access_token,"x-ai-access-code":accessCode},
+     body:JSON.stringify({audioBase64:btoa(binary),mimeType:blob.type||"audio/webm"})
+    });
+    const result=await response.json();if(!response.ok)throw new Error(result.error||"Suara gagal ditranskripsikan.");
+    const transcript=String(result.transcript||"").trim();
+    if(!transcript)throw new Error("Tidak ada ucapan yang terdeteksi.");
+    $("aiQuestion").value=transcript;
+    inventoryVoiceStatus("Perintah tertangkap: "+transcript+" — AI Inventory sedang memproses...");
+    await runAI(transcript);
+    inventoryVoiceStatus("Perintah suara selesai diproses. Periksa jawaban AI Inventory.");
+   }catch(error){inventoryVoiceStatus("Gagal memproses suara: "+error.message);toast(error.message,true);}
+  };
+  inventoryVoiceRecorder.start();
+ }catch(error){
+  inventoryVoiceStream?.getTracks().forEach(track=>track.stop());inventoryVoiceStream=null;
+  const reason=error.name==="NotAllowedError"?"Izin mikrofon ditolak. Izinkan mikrofon pada pengaturan situs.":error.name==="NotFoundError"?"Mikrofon tidak ditemukan.":"Tidak bisa membuka mikrofon: "+error.message;
+  inventoryVoiceStatus(reason);
+ }
+}
+function stopInventoryVoice(){
+ if(inventoryVoiceRecorder&&inventoryVoiceRecorder.state==="recording"){
+  inventoryVoiceStatus("Mengirim rekaman untuk diproses...");
+  inventoryVoiceRecorder.stop();
+ }
+}
+$("inventoryVoiceStart")?.addEventListener("click",startInventoryVoice);
+$("inventoryVoiceStop")?.addEventListener("click",stopInventoryVoice);
+window.addEventListener("pagehide",()=>{
+ if(inventoryVoiceRecorder&&inventoryVoiceRecorder.state==="recording")inventoryVoiceRecorder.stop();
+ inventoryVoiceStream?.getTracks().forEach(track=>track.stop());
+});
 async function runAI(question){if(!session)return;const accessCode=getAIAccessCode();if(!accessCode)return;const btn=$("aiSearchBtn"),answer=$("aiAnswer");if(!question.trim())return toast("Tulis pertanyaan pencarian terlebih dahulu.",true);btn.disabled=true;btn.textContent="Mencari…";answer.hidden=false;answer.textContent="AZX AI sedang membaca data inventaris…";try{const {data:{session:current}}=await supabase.auth.getSession();const response=await fetch(AI_FUNCTION_URL,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+current.access_token,"x-ai-access-code":accessCode},body:JSON.stringify({question})});const data=await response.json();if(!response.ok){if(response.status===401)clearSavedAIAccessCode();throw new Error(data.error||"Pencarian AI gagal.");}answer.textContent=data.answer+(data.suggestion?"\n\nSaran: "+data.suggestion:"");const ids=new Set(data.matched_item_ids||[]);if(ids.size){const found=items.filter(i=>ids.has(i.id));answer.textContent+="\n\nBarang terkait:\n"+found.map(i=>"• "+i.name+(i.variant_name?" · "+i.variant_name:"")+" ("+i.sku+") — "+fmt(stockOf(i)/Math.max(1,Number(i.pack_size)||1))+" "+i.unit+" ("+fmt(stockOf(i))+" pcs)").join("\n");} }catch(err){answer.textContent=err.message;toast(err.message,true)}finally{btn.disabled=false;btn.textContent="Cari dengan AI"}}
 $("aiSearchBtn").addEventListener("click",()=>runAI($("aiQuestion").value));$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();runAI(e.target.value)}});document.querySelectorAll("[data-ask]").forEach(b=>b.addEventListener("click",()=>{$("aiQuestion").value=b.dataset.ask;runAI(b.dataset.ask)}));
 if(supabase){supabase.auth.getSession().then(({data})=>{session=data.session;if(session)showApp();else showAuth()});supabase.auth.onAuthStateChange((_event,newSession)=>{session=newSession;if(session)showApp();else showAuth()})}else showAuth();
