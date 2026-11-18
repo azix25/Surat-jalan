@@ -236,6 +236,7 @@ $("previewReport").addEventListener("click",buildReport);$("printReport").addEve
 // Perintah suara AI Inventory memakai jalur transkripsi Whisper yang sama dengan AI Dokumen.
 let inventoryVoiceRecorder=null,inventoryVoiceStream=null,inventoryVoiceChunks=[];
 function inventoryVoiceStatus(message){const el=$("inventoryVoiceStatus");if(el)el.textContent=message;}
+function inventoryAIState(message,state="idle"){const el=$("inventoryAIState");if(!el)return;const time=new Date().toLocaleTimeString("id-ID");const styles={idle:["#eef2f7","#526174"],running:["#fff4d6","#875600"],recording:["#e7f1ff","#1456a0"],success:["#e7f7ed","#17663a"],error:["#fdeaea","#a12626"]};const [background,color]=styles[state]||styles.idle;el.textContent="● "+message+" · "+time;el.style.background=background;el.style.color=color;}
 async function startInventoryVoice(){
  if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){
   inventoryVoiceStatus("Mikrofon memerlukan Chrome terbaru melalui HTTPS atau localhost.");return;
@@ -260,7 +261,8 @@ async function startInventoryVoice(){
    const blob=new Blob(inventoryVoiceChunks,{type:inventoryVoiceRecorder?.mimeType||"audio/webm"});
    if(!blob.size){inventoryVoiceStatus("Suara tidak terekam. Silakan coba lagi.");return;}
    if(blob.size>4*1024*1024){inventoryVoiceStatus("Rekaman terlalu besar. Gunakan perintah yang lebih singkat.");return;}
-   inventoryVoiceStatus("Mengubah suara menjadi teks...");
+   inventoryAIState("AI sedang mengubah suara menjadi teks","running");
+    inventoryVoiceStatus("Mengubah suara menjadi teks...");
    try{
     const bytes=new Uint8Array(await blob.arrayBuffer());let binary="";
     for(let offset=0;offset<bytes.length;offset+=0x8000)binary+=String.fromCharCode(...bytes.subarray(offset,offset+0x8000));
@@ -278,7 +280,7 @@ async function startInventoryVoice(){
     inventoryVoiceStatus("Perintah tertangkap: "+transcript+" — AI Inventory sedang memproses...");
     await runAI(transcript);
     inventoryVoiceStatus("Perintah suara selesai diproses. Periksa jawaban AI Inventory.");
-   }catch(error){inventoryVoiceStatus("Gagal memproses suara: "+error.message);toast(error.message,true);}
+   }catch(error){inventoryAIState("Gagal memproses suara","error");inventoryVoiceStatus("Gagal memproses suara: "+error.message);toast(error.message,true);}
   };
   inventoryVoiceRecorder.start();
  }catch(error){
@@ -299,7 +301,7 @@ window.addEventListener("pagehide",()=>{
  if(inventoryVoiceRecorder&&inventoryVoiceRecorder.state==="recording")inventoryVoiceRecorder.stop();
  inventoryVoiceStream?.getTracks().forEach(track=>track.stop());
 });
-async function runAI(question){if(!session)return;const accessCode=getAIAccessCode();if(!accessCode)return;const btn=$("aiSearchBtn"),answer=$("aiAnswer");if(!question.trim())return toast("Tulis pertanyaan pencarian terlebih dahulu.",true);btn.disabled=true;btn.textContent="Mencari…";answer.hidden=false;answer.textContent="AZX AI sedang membaca data inventaris…";try{const {data:{session:current}}=await supabase.auth.getSession();const response=await fetch(AI_FUNCTION_URL,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+current.access_token,"x-ai-access-code":accessCode},body:JSON.stringify({question})});const data=await response.json();if(!response.ok){if(response.status===401)clearSavedAIAccessCode();throw new Error(data.error||"Pencarian AI gagal.");}answer.textContent=data.answer+(data.suggestion?"\n\nSaran: "+data.suggestion:"");const ids=new Set(data.matched_item_ids||[]);if(ids.size){const found=items.filter(i=>ids.has(i.id));answer.textContent+="\n\nBarang terkait:\n"+found.map(i=>"• "+i.name+(i.variant_name?" · "+i.variant_name:"")+" ("+i.sku+") — "+fmt(stockOf(i)/Math.max(1,Number(i.pack_size)||1))+" "+i.unit+" ("+fmt(stockOf(i))+" pcs)").join("\n");} }catch(err){answer.textContent=err.message;toast(err.message,true)}finally{btn.disabled=false;btn.textContent="Cari dengan AI"}}
+async function runAI(question){if(!session){inventoryAIState("Menunggu login","error");return;}const accessCode=getAIAccessCode();if(!accessCode){inventoryAIState("Kode akses AI belum diisi","error");return;}const btn=$("aiSearchBtn"),answer=$("aiAnswer");if(!question.trim())return toast("Tulis pertanyaan pencarian terlebih dahulu.",true);btn.disabled=true;btn.textContent="Mencari…";inventoryAIState("AI Inventory sedang berjalan","running");answer.hidden=false;answer.textContent="AZX AI sedang membaca data inventaris…";try{const {data:{session:current}}=await supabase.auth.getSession();const response=await fetch(AI_FUNCTION_URL,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+current.access_token,"x-ai-access-code":accessCode},body:JSON.stringify({question})});const data=await response.json();if(!response.ok){if(response.status===401)clearSavedAIAccessCode();throw new Error(data.error||"Pencarian AI gagal.");}answer.textContent=data.answer+(data.suggestion?"\n\nSaran: "+data.suggestion:"");const ids=new Set(data.matched_item_ids||[]);if(ids.size){const found=items.filter(i=>ids.has(i.id));answer.textContent+="\n\nBarang terkait:\n"+found.map(i=>"• "+i.name+(i.variant_name?" · "+i.variant_name:"")+" ("+i.sku+") — "+fmt(stockOf(i)/Math.max(1,Number(i.pack_size)||1))+" "+i.unit+" ("+fmt(stockOf(i))+" pcs)").join("\n");}inventoryAIState("AI Inventory selesai — jawaban tersedia","success");}catch(err){answer.textContent=err.message;inventoryAIState("AI Inventory gagal: "+err.message,"error");toast(err.message,true)}finally{btn.disabled=false;btn.textContent="Cari dengan AI"}}
 $("aiSearchBtn").addEventListener("click",()=>runAI($("aiQuestion").value));$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();runAI(e.target.value)}});document.querySelectorAll("[data-ask]").forEach(b=>b.addEventListener("click",()=>{$("aiQuestion").value=b.dataset.ask;runAI(b.dataset.ask)}));
 if(supabase){supabase.auth.getSession().then(({data})=>{session=data.session;if(session)showApp();else showAuth()});supabase.auth.onAuthStateChange((_event,newSession)=>{session=newSession;if(session)showApp();else showAuth()})}else showAuth();
 })();
