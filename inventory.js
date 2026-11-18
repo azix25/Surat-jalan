@@ -322,7 +322,7 @@ function stopInventoryVoice(){
   inventoryVoiceRecorder.stop();
  }
 }
-$("inventoryVoiceStart")?.addEventListener("click",startInventoryVoice);
+$("inventoryVoiceStart")?.addEventListener("click",()=>{primeInventorySpeech();startInventoryVoice();});
 $("inventoryVoiceStop")?.addEventListener("click",stopInventoryVoice);
 window.addEventListener("pagehide",()=>{
  if(inventoryVoiceRecorder&&inventoryVoiceRecorder.state==="recording")inventoryVoiceRecorder.stop();
@@ -330,38 +330,47 @@ window.addEventListener("pagehide",()=>{
  if(inventoryVoiceAudioContext){inventoryVoiceAudioContext.close().catch(()=>{});inventoryVoiceAudioContext=null;}
  inventoryVoiceStream?.getTracks().forEach(track=>track.stop());
 });
-// Pembaca jawaban AI Inventory (TTS browser/WebView), terpisah dari mikrofon perintah.
-let inventoryAnswerUtterance=null;
+// Pembaca jawaban AI Inventory: otomatis setelah jawaban diterima.
+let inventoryAnswerUtterance=null,inventorySpeechPrimed=false,inventorySpeechRunId=0;
 function inventoryAnswerAudioStatus(message){const el=$("inventoryAnswerAudioStatus");if(el)el.textContent=message;}
+function primeInventorySpeech(){
+ if(!("speechSynthesis" in window)||!("SpeechSynthesisUtterance" in window))return;
+ try{const engine=window.speechSynthesis;engine.resume();if(inventorySpeechPrimed)return;
+  const primer=new SpeechSynthesisUtterance(" ");primer.lang="id-ID";primer.volume=0;
+  primer.onstart=()=>{inventorySpeechPrimed=true;engine.cancel();engine.resume();};
+  primer.onerror=()=>{inventorySpeechPrimed=true;};engine.speak(primer);
+  setTimeout(()=>{if(!inventorySpeechPrimed){inventorySpeechPrimed=true;engine.cancel();engine.resume();}},700);
+ }catch(error){console.warn("Inisialisasi TTS Inventory gagal:",error);}
+}
 function stopInventoryAnswerSpeech(){
- if("speechSynthesis" in window)window.speechSynthesis.cancel();
- inventoryAnswerUtterance=null;
+ inventorySpeechRunId++;if("speechSynthesis" in window)window.speechSynthesis.cancel();inventoryAnswerUtterance=null;
  const speak=$("inventorySpeakAnswer"),stop=$("inventoryStopAnswer");
- if(speak)speak.disabled=!($("aiAnswer")?.textContent||"").trim();
- if(stop)stop.disabled=true;
+ if(speak)speak.disabled=!($("aiAnswer")?.textContent||"").trim();if(stop)stop.disabled=true;
 }
-function speakInventoryAIAnswer(){
- const text=String($("aiAnswer")?.textContent||"").trim();
- if(!text)return inventoryAnswerAudioStatus("Belum ada jawaban untuk dibacakan.");
- if(!("speechSynthesis" in window)||!("SpeechSynthesisUtterance" in window)){
-  inventoryAnswerAudioStatus("Fitur suara tidak didukung browser/WebView ini.");return;
- }
- stopInventoryAnswerSpeech();
- const utterance=new SpeechSynthesisUtterance(text);
- inventoryAnswerUtterance=utterance;
- utterance.lang="id-ID";utterance.rate=1;utterance.pitch=1;utterance.volume=1;
- const voices=window.speechSynthesis.getVoices();
- const voice=voices.find(v=>/^id(-|_)/i.test(v.lang))||voices.find(v=>/indonesia/i.test(v.name));
- if(voice)utterance.voice=voice;
- utterance.onstart=()=>{inventoryAnswerAudioStatus("Sedang membacakan jawaban AI…");$("inventorySpeakAnswer").disabled=true;$("inventoryStopAnswer").disabled=false;};
- utterance.onend=()=>{inventoryAnswerUtterance=null;$("inventorySpeakAnswer").disabled=false;$("inventoryStopAnswer").disabled=true;inventoryAnswerAudioStatus("Pembacaan jawaban selesai.");};
- utterance.onerror=event=>{inventoryAnswerUtterance=null;$("inventorySpeakAnswer").disabled=false;$("inventoryStopAnswer").disabled=true;inventoryAnswerAudioStatus("Suara gagal diputar: "+(event.error||"periksa mesin TTS perangkat."));};
- window.speechSynthesis.speak(utterance);
+function waitInventoryVoices(){return new Promise(resolve=>{
+ if(!("speechSynthesis" in window)){resolve([]);return;}
+ const engine=window.speechSynthesis,existing=engine.getVoices();if(existing.length){resolve(existing);return;}
+ let finished=false;const done=()=>{if(finished)return;finished=true;clearTimeout(timer);engine.removeEventListener?.("voiceschanged",check);resolve(engine.getVoices());};
+ const check=()=>{if(engine.getVoices().length)done();};const timer=setTimeout(done,1200);engine.addEventListener?.("voiceschanged",check);
+});}
+async function speakInventoryAIAnswer(){
+ const text=String($("aiAnswer")?.textContent||"").trim();if(!text)return inventoryAnswerAudioStatus("Belum ada jawaban untuk dibacakan.");
+ if(!("speechSynthesis" in window)||!("SpeechSynthesisUtterance" in window)){inventoryAnswerAudioStatus("Perangkat ini tidak menyediakan TTS browser. Diperlukan dukungan TTS Android/WebView.");return;}
+ stopInventoryAnswerSpeech();const runId=inventorySpeechRunId;inventoryAnswerAudioStatus("Menyiapkan suara Bahasa Indonesia…");
+ const voices=await waitInventoryVoices();if(runId!==inventorySpeechRunId)return;
+ const voice=voices.find(v=>/^id([-_]|$)/i.test(v.lang))||voices.find(v=>/indonesia/i.test(v.name));
+ const utterance=new SpeechSynthesisUtterance(text);inventoryAnswerUtterance=utterance;
+ utterance.lang="id-ID";utterance.rate=0.96;utterance.pitch=1;utterance.volume=1;if(voice)utterance.voice=voice;
+ utterance.onstart=()=>{if(runId!==inventorySpeechRunId)return;inventoryAnswerAudioStatus("🔊 AI Inventory sedang membacakan jawaban…");const stop=$("inventoryStopAnswer");if(stop)stop.disabled=false;};
+ utterance.onend=()=>{if(runId!==inventorySpeechRunId)return;inventoryAnswerUtterance=null;const stop=$("inventoryStopAnswer");if(stop)stop.disabled=true;inventoryAnswerAudioStatus("Pembacaan jawaban selesai.");};
+ utterance.onerror=event=>{if(runId!==inventorySpeechRunId)return;inventoryAnswerUtterance=null;const stop=$("inventoryStopAnswer");if(stop)stop.disabled=true;inventoryAnswerAudioStatus("Suara gagal diputar ("+(event.error||"TTS")+"). Periksa mesin Text-to-Speech Android.");};
+ try{window.speechSynthesis.resume();window.speechSynthesis.speak(utterance);}catch(error){inventoryAnswerAudioStatus("Gagal menjalankan suara: "+error.message);}
 }
-$("inventorySpeakAnswer")?.addEventListener("click",speakInventoryAIAnswer);
+$("inventorySpeakAnswer")?.addEventListener("click",()=>{primeInventorySpeech();speakInventoryAIAnswer();});
 $("inventoryStopAnswer")?.addEventListener("click",()=>{stopInventoryAnswerSpeech();inventoryAnswerAudioStatus("Pembacaan dihentikan.");});
 window.addEventListener("pagehide",stopInventoryAnswerSpeech);
+window.speechSynthesis?.addEventListener?.("voiceschanged",()=>{if(window.speechSynthesis.getVoices().length)inventoryAnswerAudioStatus("Suara perangkat siap.");});
 async function runAI(question){if(!session){inventoryAIState("Menunggu login","error");return;}const accessCode=getAIAccessCode();if(!accessCode){inventoryAIState("Kode akses AI belum diisi","error");return;}const btn=$("aiSearchBtn"),answer=$("aiAnswer");if(!question.trim())return toast("Tulis pertanyaan pencarian terlebih dahulu.",true);btn.disabled=true;btn.textContent="Mencari…";inventoryAIState("AI Inventory sedang berjalan","running");answer.hidden=false;answer.textContent="AZX AI sedang membaca data inventaris…";try{const {data:{session:current}}=await supabase.auth.getSession();const response=await fetch(AI_FUNCTION_URL,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+current.access_token,"x-ai-access-code":accessCode},body:JSON.stringify({question})});const data=await response.json();if(!response.ok){if(response.status===401)clearSavedAIAccessCode();throw new Error(data.error||"Pencarian AI gagal.");}answer.textContent=data.answer+(data.suggestion?"\n\nSaran: "+data.suggestion:"");const ids=new Set(data.matched_item_ids||[]);if(ids.size){const found=items.filter(i=>ids.has(i.id));answer.textContent+="\n\nBarang terkait:\n"+found.map(i=>"• "+i.name+(i.variant_name?" · "+i.variant_name:"")+" ("+i.sku+") — "+fmt(stockOf(i)/Math.max(1,Number(i.pack_size)||1))+" "+i.unit+" ("+fmt(stockOf(i))+" pcs)").join("\n");}const audioControls=$("inventoryAnswerAudioControls");if(audioControls)audioControls.hidden=false;const speakButton=$("inventorySpeakAnswer");if(speakButton)speakButton.disabled=false;inventoryAIState("AI Inventory selesai — jawaban tersedia","success");speakInventoryAIAnswer();}catch(err){answer.textContent=err.message;inventoryAIState("AI Inventory gagal: "+err.message,"error");toast(err.message,true)}finally{btn.disabled=false;btn.textContent="Cari dengan AI"}}
-$("aiSearchBtn").addEventListener("click",()=>runAI($("aiQuestion").value));$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();runAI(e.target.value)}});document.querySelectorAll("[data-ask]").forEach(b=>b.addEventListener("click",()=>{$("aiQuestion").value=b.dataset.ask;runAI(b.dataset.ask)}));
+$("aiSearchBtn").addEventListener("click",()=>{primeInventorySpeech();runAI($("aiQuestion").value)});$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();primeInventorySpeech();runAI(e.target.value)}});document.querySelectorAll("[data-ask]").forEach(b=>b.addEventListener("click",()=>{$("aiQuestion").value=b.dataset.ask;primeInventorySpeech();runAI(b.dataset.ask)}));
 if(supabase){supabase.auth.getSession().then(({data})=>{session=data.session;if(session)showApp();else showAuth()});supabase.auth.onAuthStateChange((_event,newSession)=>{session=newSession;if(session)showApp();else showAuth()})}else showAuth();
 })();
