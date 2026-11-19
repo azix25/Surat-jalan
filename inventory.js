@@ -406,9 +406,9 @@ async function speakInventoryAIAnswer(){
   if(runId!==inventorySpeechRunId)return;
   if(index>=chunks.length){inventoryAnswerUtterance=null;const stop=$("inventoryStopAnswer");if(stop)stop.disabled=true;inventoryAnswerAudioStatus("Pembacaan jawaban selesai.");return;}
   const utterance=new SpeechSynthesisUtterance(chunks[index++]);inventoryAnswerUtterance=utterance;
-  utterance.lang="id-ID";utterance.rate=0.94;utterance.pitch=1.02;utterance.volume=1;if(voice)utterance.voice=voice;
+  utterance.lang="id-ID";utterance.rate=1.0;utterance.pitch=1.0;utterance.volume=1;if(voice)utterance.voice=voice;
   utterance.onstart=()=>{if(runId!==inventorySpeechRunId)return;inventoryAnswerAudioStatus("🔊 Membacakan jawaban…");const stop=$("inventoryStopAnswer");if(stop)stop.disabled=false;};
-  utterance.onend=()=>{if(runId!==inventorySpeechRunId)return;setTimeout(playNext,300);};
+  utterance.onend=()=>{if(runId!==inventorySpeechRunId)return;setTimeout(playNext,200);};
   utterance.onerror=event=>{if(runId!==inventorySpeechRunId)return;inventoryAnswerUtterance=null;const stop=$("inventoryStopAnswer");if(stop)stop.disabled=true;inventoryAnswerAudioStatus("Suara terhenti ("+(event.error||"TTS")+"). Periksa suara Bahasa Indonesia di perangkat.");};
   try{window.speechSynthesis.resume();window.speechSynthesis.speak(utterance);}catch(error){inventoryAnswerAudioStatus("Gagal menjalankan suara: "+error.message);}
  };
