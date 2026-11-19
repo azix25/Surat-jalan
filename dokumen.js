@@ -144,7 +144,7 @@ function setData(d){
  });
  if(!d.items?.length)addItem();render();
 }
-function fmtDate(v){if(!v)return "-";const d=new Date(v+"T00:00:00");return d.toLocaleDateString("id-ID",{day:"2-digit",month:"long",year:"numeric"})}
+function fmtDate(v){if(!v)return "-";const d=new Date(v+"T00:00:00");if(Number.isNaN(d.getTime()))return String(v);return [String(d.getDate()).padStart(2,"0"),String(d.getMonth()+1).padStart(2,"0"),d.getFullYear()].join("-")}
 const noMoneyTypes=["suratjalan","resmi","permohonan","surattugas","beritaacara","kontrak","tandaterima","deliveryorder","spk","bast","laporanprogress","laporanhari","permintaanpembelian","suratperingatan","suratundangan","suratkuasa","suratketerangan","memointernal","suratpengantar","checklistqc"];
 const F2_ALIGN_KEY="azxOfficeFormat2Alignment";
 function setFormat2Alignment(align){if(!["left","center","right"].includes(align))return;const editor=$("f2WordContent");if(!editor)return;editor.style.textAlign=align;try{localStorage.setItem(F2_ALIGN_KEY,align);}catch(e){}document.querySelectorAll("[data-f2-align]").forEach(btn=>{const active=btn.dataset.f2Align===align;btn.classList.toggle("active",active);btn.setAttribute("aria-pressed",String(active));});}
