@@ -147,7 +147,7 @@
  const client=window.supabase.createClient("https://nqwqlhcwiwprsbcdadhy.supabase.co","sb_publishable_HSLy26SUHWwpow0smZrB2Q_sNchYRDx");
  const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
  const fmt=v=>new Intl.NumberFormat("id-ID",{maximumFractionDigits:3}).format(Number(v)||0);
- const dateParts=v=>{if(!v)return "—";const s=String(v);const d=/^\\d{4}-\\d{2}-\\d{2}$/.test(s)?new Date(Number(s.slice(0,4)),Number(s.slice(5,7))-1,Number(s.slice(8,10))):new Date(s);if(Number.isNaN(d.getTime()))return s;return [String(d.getDate()).padStart(2,"0"),String(d.getMonth()+1).padStart(2,"0"),d.getFullYear()].join("-")};
+ const dateParts=v=>{if(!v)return "—";const s=String(v);const isDateOnly=s.length===10&&s[4]==="-"&&s[7]==="-";const d=isDateOnly?new Date(Number(s.slice(0,4)),Number(s.slice(5,7))-1,Number(s.slice(8,10))):new Date(s);if(Number.isNaN(d.getTime()))return s;return [String(d.getDate()).padStart(2,"0"),String(d.getMonth()+1).padStart(2,"0"),d.getFullYear()].join("-")};
  const dateTime=v=>{if(!v)return "—";const d=new Date(v);if(Number.isNaN(d.getTime()))return dateParts(v);return dateParts(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"))+" "+d.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})};
  const monthStart=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-01"};
  const movementType=t=>t==="masuk"||t==="koreksi_tambah"?"masuk":"keluar";
