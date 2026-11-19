@@ -167,3 +167,36 @@
   .topbar .account span{max-width:30px}
   .topbar .account .btn{padding:0 6px;font-size:9px}
 }
+
+
+/* AZX Inventory: label akun dan tombol Keluar sejajar horizontal. */
+.topbar > #accountArea{
+  display:flex!important;
+  flex-flow:row nowrap!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  align-self:center!important;
+  gap:8px!important;
+  width:auto!important;
+  min-width:max-content!important;
+  margin:0 0 0 auto!important;
+  white-space:nowrap!important;
+}
+.topbar > #accountArea > #userEmail{
+  display:inline-block!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  white-space:nowrap!important;
+  line-height:1!important;
+}
+.topbar > #accountArea > #logoutBtn{
+  display:inline-flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin:0!important;
+}
+.topbar > #accountArea[hidden]{display:none!important;}
