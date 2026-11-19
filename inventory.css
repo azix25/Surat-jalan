@@ -20,3 +20,85 @@
  body[data-print-target="delivery"] #suratJalanPaper th,
  body[data-print-target="delivery"] #suratJalanPaper td{border:1px solid #ccd3dc!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+
+/* Asisten persediaan — penyegaran visual, tanpa mengubah perilaku komponen */
+.ai-panel{
+  position:relative;
+  padding:22px 24px;
+  margin:0 0 22px;
+  border:1px solid #dce3eb;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 4px 16px rgba(24,42,65,.045);
+}
+.ai-title{gap:13px;min-height:42px}
+.ai-icon{
+  width:38px;height:38px;flex:0 0 38px;
+  border:1px solid #dce5ee;border-radius:11px;
+  background:#f4f7fa;color:#42617f;
+  font-size:0;position:relative;
+}
+.ai-icon:before{
+  content:"";position:absolute;width:12px;height:12px;
+  border:2px solid #42617f;border-radius:50%;
+  left:11px;top:9px;
+}
+.ai-icon:after{
+  content:"";position:absolute;width:8px;height:2px;
+  background:#42617f;border-radius:2px;
+  left:19px;top:23px;transform:rotate(45deg);
+}
+.ai-title b{font-size:15px;font-weight:750;letter-spacing:-.15px}
+.ai-title small{margin-top:3px;font-size:11px;color:#748196}
+.ai-chip{display:none!important}
+#inventoryAIState{
+  display:flex;align-items:center;min-height:34px;
+  padding:7px 10px!important;margin:15px 0 12px!important;
+  border:1px solid #e7ebf0;border-radius:8px;
+  background:#f7f9fb!important;color:#617084!important;
+  font-size:11px!important;font-weight:600!important;
+}
+.ai-search{gap:8px;margin-top:12px}
+.ai-search input{
+  min-height:44px;padding:0 14px;
+  border:1px solid #d9e1e9;border-radius:8px;
+  background:#fbfcfd;font-size:13px;
+}
+.ai-search input:focus{
+  border-color:#8da9c5;box-shadow:0 0 0 3px rgba(48,91,132,.09);
+  background:#fff;
+}
+.ai-search .btn{min-height:42px;white-space:nowrap}
+#aiSearchBtn{background:#244c70;box-shadow:none}
+#aiSearchBtn:hover{background:#193b5b}
+#inventoryVoiceStart,#inventoryVoiceStop,
+#inventorySpeakAnswer,#inventoryStopAnswer{
+  border:1px solid #dce3eb;background:#fff;color:#43566b;
+}
+#inventoryVoiceStart:hover,#inventoryVoiceStop:hover,
+#inventorySpeakAnswer:hover,#inventoryStopAnswer:hover{background:#f4f7fa}
+#inventoryVoiceStatus{font-size:11px!important;color:#788698!important}
+.quick-asks{gap:7px;margin-top:12px}
+.quick-asks button{
+  border:1px solid #e0e6ed;border-radius:7px;
+  padding:7px 10px;background:#fff;color:#56677b;
+  font-size:11px;font-weight:600;transition:background .15s,border-color .15s;
+}
+.quick-asks button:hover{background:#f5f8fb;border-color:#cbd7e3;color:#294b6b}
+.ai-answer{
+  margin-top:15px;padding:15px 16px;
+  border:1px solid #e2e8ef;border-left:3px solid #6f8da9;
+  border-radius:8px;background:#fbfcfd;color:#2e3d50;
+  font-size:13px;line-height:1.75;white-space:pre-wrap;
+}
+#inventoryAnswerAudioControls{gap:8px}
+#inventoryAnswerAudioControls small{font-size:11px}
+@media(max-width:600px){
+  .ai-panel{padding:16px;margin-bottom:16px}
+  .ai-title{align-items:center}
+  .ai-title b{font-size:14px}
+  .ai-search{gap:7px}
+  .ai-search .btn{width:100%;min-height:42px}
+  .quick-asks button{font-size:10px}
+}
