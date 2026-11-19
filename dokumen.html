@@ -26,7 +26,7 @@
 <header class="topbar azx-office-topbar">
   <a class="brand" href="index.html"><span class="brand-mark">AZX</span><span><b>AZX OFFICE</b><small>Business & Document Management</small></span></a>
   <nav><a href="index.html">Beranda</a><a href="inventory.html">AZX Inventory</a></nav>
-  <div class="account" id="accountArea" hidden><span id="userEmail"></span><button class="btn btn-light" id="logoutBtn" type="button">Keluar</button></div>
+  <div class="account" id="accountArea" hidden><span id="userEmail">Akun saya</span><button class="btn btn-light" id="logoutBtn" type="button">Keluar</button></div>
 </header>
 <main class="layout">
   <aside class="panel no-print">
@@ -188,7 +188,7 @@
   const logout=document.getElementById("logoutBtn");
   if(!client||!account||!email||!logout)return;
   const session=window.azxOfficeSession;
-  email.textContent=session?.user?.email||"";
+  email.textContent="Akun saya";
   account.hidden=!session?.user?.email;
   logout.addEventListener("click",async()=>{
     logout.disabled=true;
