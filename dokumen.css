@@ -905,3 +905,67 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
 .paper:not(.layout-no-table):not(.format2-paper) #pStampImage[hidden]{
  display:none!important;visibility:hidden!important;opacity:0!important;
 }
+
+
+/* Header mobile: seluruh navigasi dan akun sejajar dalam satu baris. */
+@media(max-width:700px){
+  .azx-office-topbar{
+    display:flex;
+    flex-wrap:nowrap;
+    align-items:center;
+    gap:clamp(5px,1.5vw,10px);
+    min-height:58px;
+    padding:8px 10px;
+    white-space:nowrap;
+  }
+  .azx-office-topbar .brand{
+    flex:0 1 auto;
+    min-width:0;
+    gap:6px;
+  }
+  .azx-office-topbar .brand-mark{
+    width:31px;height:31px;flex:0 0 31px;border-radius:8px;font-size:10px;
+  }
+  .azx-office-topbar .brand b{font-size:10px;letter-spacing:.35px}
+  .azx-office-topbar .brand small{display:none}
+  .azx-office-topbar nav{
+    order:initial;
+    display:flex;
+    flex:0 0 auto;
+    width:auto;
+    margin:0 0 0 auto;
+    gap:clamp(7px,2vw,13px);
+    overflow:visible;
+    padding:0;
+  }
+  .azx-office-topbar nav a{font-size:10px;white-space:nowrap}
+  .azx-office-topbar .account{
+    flex:0 0 auto;
+    width:auto;
+    margin:0;
+    justify-content:flex-end;
+    gap:5px;
+  }
+  .azx-office-topbar .account span{
+    display:block;
+    max-width:clamp(34px,11vw,76px);
+    font-size:8px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .azx-office-topbar .btn{
+    min-height:30px;
+    padding:0 8px;
+    border-radius:7px;
+    font-size:10px;
+  }
+}
+@media(max-width:370px){
+  .azx-office-topbar{gap:5px;padding-left:7px;padding-right:7px}
+  .azx-office-topbar .brand b{font-size:9px}
+  .azx-office-topbar nav{gap:6px}
+  .azx-office-topbar nav a{font-size:9px}
+  .azx-office-topbar .account span{max-width:30px}
+  .azx-office-topbar .btn{padding:0 6px;font-size:9px}
+}
