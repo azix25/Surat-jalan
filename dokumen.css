@@ -1002,3 +1002,35 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
   }
   .azx-office-topbar .btn{flex:0 0 auto!important;font-size:10px!important;padding:0 8px!important;}
 }
+
+
+/* FIX FINAL NAVIGASI AZX OFFICE MOBILE:
+   label Akun saya dan tombol Keluar harus satu baris horizontal. */
+@media(max-width:700px){
+  .azx-office-topbar .account{
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:6px!important;
+    width:auto!important;
+    flex:0 0 auto!important;
+    white-space:nowrap!important;
+  }
+  .azx-office-topbar .account #userEmail{
+    display:inline-block!important;
+    width:auto!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+  }
+  .azx-office-topbar .account #logoutBtn{
+    display:inline-flex!important;
+    flex:0 0 auto!important;
+    align-items:center!important;
+    justify-content:center!important;
+    margin:0!important;
+  }
+}
