@@ -396,9 +396,10 @@ async function speakInventoryAIAnswer(){
  if(!("speechSynthesis" in window)||!("SpeechSynthesisUtterance" in window)){inventoryAnswerAudioStatus("Perangkat ini tidak menyediakan TTS browser. Diperlukan dukungan TTS Android/WebView.");return;}
  stopInventoryAnswerSpeech();const runId=inventorySpeechRunId;inventoryAnswerAudioStatus("Menyiapkan pembacaan yang lebih alami…");
  const voices=await waitInventoryVoices();if(runId!==inventorySpeechRunId)return;
- // Utamakan suara Bahasa Indonesia berkualitas dari Google bila tersedia di perangkat.
- const voice=voices.find(v=>/^id([-_]|$)/i.test(v.lang)&&/google/i.test(v.name))
+ // Prioritaskan suara wanita Bahasa Indonesia; gunakan suara alami jika tersedia.
+ const voice=voices.find(v=>/^id([-_]|$)/i.test(v.lang)&&/female|woman|girl|perempuan|wavenet-a|idc/i.test(v.name))
   ||voices.find(v=>/^id([-_]|$)/i.test(v.lang)&&/natural|wavenet|neural/i.test(v.name))
+  ||voices.find(v=>/^id([-_]|$)/i.test(v.lang)&&/google/i.test(v.name))
   ||voices.find(v=>/^id([-_]|$)/i.test(v.lang))
   ||voices.find(v=>/indonesia/i.test(v.name));
  const chunks=splitInventorySpeech(text);let index=0;
@@ -406,7 +407,7 @@ async function speakInventoryAIAnswer(){
   if(runId!==inventorySpeechRunId)return;
   if(index>=chunks.length){inventoryAnswerUtterance=null;const stop=$("inventoryStopAnswer");if(stop)stop.disabled=true;inventoryAnswerAudioStatus("Pembacaan jawaban selesai.");return;}
   const utterance=new SpeechSynthesisUtterance(chunks[index++]);inventoryAnswerUtterance=utterance;
-  utterance.lang="id-ID";utterance.rate=1.0;utterance.pitch=1.0;utterance.volume=1;if(voice)utterance.voice=voice;
+  utterance.lang="id-ID";utterance.rate=1.0;utterance.pitch=1.12;utterance.volume=1;if(voice)utterance.voice=voice;
   utterance.onstart=()=>{if(runId!==inventorySpeechRunId)return;inventoryAnswerAudioStatus("🔊 Membacakan jawaban…");const stop=$("inventoryStopAnswer");if(stop)stop.disabled=false;};
   utterance.onend=()=>{if(runId!==inventorySpeechRunId)return;setTimeout(playNext,200);};
   utterance.onerror=event=>{if(runId!==inventorySpeechRunId)return;inventoryAnswerUtterance=null;const stop=$("inventoryStopAnswer");if(stop)stop.disabled=true;inventoryAnswerAudioStatus("Suara terhenti ("+(event.error||"TTS")+"). Periksa suara Bahasa Indonesia di perangkat.");};
