@@ -354,6 +354,62 @@ function waitInventoryVoices(){return new Promise(resolve=>{
  let finished=false;const done=()=>{if(finished)return;finished=true;clearTimeout(timer);engine.removeEventListener?.("voiceschanged",check);resolve(engine.getVoices());};
  const check=()=>{if(engine.getVoices().length)done();};const timer=setTimeout(done,1200);engine.addEventListener?.("voiceschanged",check);
 });}
+const INVENTORY_TTS_SETTINGS_KEY="azx_inventory_tts_settings";
+let inventoryTTSSettings={voiceURI:"",rate:1,pitch:1.12};
+function loadInventoryTTSSettings(){
+ try{const saved=JSON.parse(localStorage.getItem(INVENTORY_TTS_SETTINGS_KEY)||"{}");inventoryTTSSettings={...inventoryTTSSettings,...saved};}catch(error){}
+}
+function saveInventoryTTSSettings(){try{localStorage.setItem(INVENTORY_TTS_SETTINGS_KEY,JSON.stringify(inventoryTTSSettings));}catch(error){}}
+function populateInventoryVoiceOptions(){
+ const select=$("inventoryVoiceSelect");if(!select)return;
+ const voices=("speechSynthesis" in window)?window.speechSynthesis.getVoices():[];
+ const previous=inventoryTTSSettings.voiceURI;
+ select.innerHTML="";
+ const automatic=document.createElement("option");automatic.value="";automatic.textContent="Otomatis — suara wanita jika tersedia";select.appendChild(automatic);
+ voices.forEach((voice,index)=>{const option=document.createElement("option");option.value=voice.voiceURI||voice.name+"|"+voice.lang+"|"+index;option.textContent=voice.name+" ("+voice.lang+")"+(voice.default?" — default":"");select.appendChild(option);});
+ const exists=Array.from(select.options).some(option=>option.value===previous);
+ select.value=exists?previous:"";
+ if(!exists&&previous){inventoryTTSSettings.voiceURI="";saveInventoryTTSSettings();}
+ const rate=$("inventoryVoiceRate"),pitch=$("inventoryVoicePitch");
+ if(rate)rate.value=String(inventoryTTSSettings.rate);
+ if(pitch)pitch.value=String(inventoryTTSSettings.pitch);
+ updateInventoryVoiceSettingLabels();
+}
+function updateInventoryVoiceSettingLabels(){
+ const rate=$("inventoryVoiceRateValue"),pitch=$("inventoryVoicePitchValue");
+ if(rate&&$("inventoryVoiceRate"))rate.textContent=Number($("inventoryVoiceRate").value).toFixed(2)+"×";
+ if(pitch&&$("inventoryVoicePitch"))pitch.textContent=Number($("inventoryVoicePitch").value).toFixed(2);
+}
+function selectedInventoryVoice(){
+ const voices=window.speechSynthesis?.getVoices?.()||[];
+ if(inventoryTTSSettings.voiceURI)return voices.find(v=>v.voiceURI===inventoryTTSSettings.voiceURI)||null;
+ return voices.find(v=>/^id([-_]|$)/i.test(v.lang)&&/female|woman|girl|perempuan|wavenet-a|idc/i.test(v.name))
+  ||voices.find(v=>/^id([-_]|$)/i.test(v.lang)&&/natural|wavenet|neural/i.test(v.name))
+  ||voices.find(v=>/^id([-_]|$)/i.test(v.lang)&&/google/i.test(v.name))
+  ||voices.find(v=>/^id([-_]|$)/i.test(v.lang))
+  ||voices.find(v=>/indonesia/i.test(v.name))||null;
+}
+function initInventoryVoiceSettings(){
+ loadInventoryTTSSettings();populateInventoryVoiceOptions();
+ $("inventoryVoiceSelect")?.addEventListener("change",event=>{inventoryTTSSettings.voiceURI=event.target.value;saveInventoryTTSSettings();inventoryAnswerAudioStatus(event.target.value?"Suara pilihan disimpan.":"Pemilihan suara otomatis diaktifkan.");});
+ ["inventoryVoiceRate","inventoryVoicePitch"].forEach(id=>$(id)?.addEventListener("input",event=>{
+  inventoryTTSSettings[id==="inventoryVoiceRate"?"rate":"pitch"]=Number(event.target.value);saveInventoryTTSSettings();updateInventoryVoiceSettingLabels();
+ }));
+ $("inventoryVoicePreview")?.addEventListener("click",()=>{primeInventorySpeech();speakInventoryVoicePreview();});
+}
+function speakInventoryVoicePreview(){
+ if(!("speechSynthesis" in window)||!("SpeechSynthesisUtterance" in window))return inventoryAnswerAudioStatus("TTS tidak tersedia di perangkat ini.");
+ stopInventoryAnswerSpeech();
+ const utterance=new SpeechSynthesisUtterance("Halo, saya asisten AZX Inventory. Saya siap membantu memeriksa stok dan aktivitas barang.");
+ const voice=selectedInventoryVoice();if(voice)utterance.voice=voice;
+ utterance.lang=voice?.lang||"id-ID";utterance.rate=inventoryTTSSettings.rate;utterance.pitch=inventoryTTSSettings.pitch;utterance.volume=1;
+ utterance.onstart=()=>inventoryAnswerAudioStatus("Memutar contoh suara…");
+ utterance.onend=()=>inventoryAnswerAudioStatus("Contoh suara selesai.");
+ utterance.onerror=event=>inventoryAnswerAudioStatus("Contoh suara gagal: "+(event.error||"TTS"));
+ inventoryAnswerUtterance=utterance;window.speechSynthesis.resume();window.speechSynthesis.speak(utterance);
+}
+initInventoryVoiceSettings();
+
 function prepareInventorySpeechText(raw){
  return String(raw||"")
   .replace(/^#{1,6}\s*/gm,"")
@@ -396,18 +452,14 @@ async function speakInventoryAIAnswer(){
  if(!("speechSynthesis" in window)||!("SpeechSynthesisUtterance" in window)){inventoryAnswerAudioStatus("Perangkat ini tidak menyediakan TTS browser. Diperlukan dukungan TTS Android/WebView.");return;}
  stopInventoryAnswerSpeech();const runId=inventorySpeechRunId;inventoryAnswerAudioStatus("Menyiapkan pembacaan yang lebih alami…");
  const voices=await waitInventoryVoices();if(runId!==inventorySpeechRunId)return;
- // Prioritaskan suara wanita Bahasa Indonesia; gunakan suara alami jika tersedia.
- const voice=voices.find(v=>/^id([-_]|$)/i.test(v.lang)&&/female|woman|girl|perempuan|wavenet-a|idc/i.test(v.name))
-  ||voices.find(v=>/^id([-_]|$)/i.test(v.lang)&&/natural|wavenet|neural/i.test(v.name))
-  ||voices.find(v=>/^id([-_]|$)/i.test(v.lang)&&/google/i.test(v.name))
-  ||voices.find(v=>/^id([-_]|$)/i.test(v.lang))
-  ||voices.find(v=>/indonesia/i.test(v.name));
+ // Gunakan pilihan manual pengguna atau mode otomatis.
+ const voice=selectedInventoryVoice();
  const chunks=splitInventorySpeech(text);let index=0;
  const playNext=()=>{
   if(runId!==inventorySpeechRunId)return;
   if(index>=chunks.length){inventoryAnswerUtterance=null;const stop=$("inventoryStopAnswer");if(stop)stop.disabled=true;inventoryAnswerAudioStatus("Pembacaan jawaban selesai.");return;}
   const utterance=new SpeechSynthesisUtterance(chunks[index++]);inventoryAnswerUtterance=utterance;
-  utterance.lang="id-ID";utterance.rate=1.0;utterance.pitch=1.12;utterance.volume=1;if(voice)utterance.voice=voice;
+  utterance.lang=voice?.lang||"id-ID";utterance.rate=inventoryTTSSettings.rate;utterance.pitch=inventoryTTSSettings.pitch;utterance.volume=1;if(voice)utterance.voice=voice;
   utterance.onstart=()=>{if(runId!==inventorySpeechRunId)return;inventoryAnswerAudioStatus("🔊 Membacakan jawaban…");const stop=$("inventoryStopAnswer");if(stop)stop.disabled=false;};
   utterance.onend=()=>{if(runId!==inventorySpeechRunId)return;setTimeout(playNext,200);};
   utterance.onerror=event=>{if(runId!==inventorySpeechRunId)return;inventoryAnswerUtterance=null;const stop=$("inventoryStopAnswer");if(stop)stop.disabled=true;inventoryAnswerAudioStatus("Suara terhenti ("+(event.error||"TTS")+"). Periksa suara Bahasa Indonesia di perangkat.");};
