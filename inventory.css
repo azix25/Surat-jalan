@@ -200,3 +200,13 @@
   margin:0!important;
 }
 .topbar > #accountArea[hidden]{display:none!important;}
+
+/* Pengaturan suara AI Inventory */
+.inventory-voice-settings{margin-top:12px;border:1px solid #e2e8ef;border-radius:9px;background:#fff}
+.inventory-voice-settings summary{padding:11px 13px;color:#40566e;font-size:12px;font-weight:700;cursor:pointer}
+.inventory-voice-body{display:grid;gap:12px;padding:12px;border-top:1px solid #edf1f5}
+.inventory-voice-body label{display:grid;gap:6px}
+.inventory-voice-body select{max-width:100%}
+.inventory-voice-range label{display:flex;justify-content:space-between;align-items:center}
+.inventory-voice-range input{min-height:22px;padding:0;accent-color:#315b80}
+.inventory-voice-body .btn{justify-self:start}
