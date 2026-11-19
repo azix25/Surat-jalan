@@ -969,3 +969,36 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
   .azx-office-topbar .account span{max-width:30px}
   .azx-office-topbar .btn{padding:0 6px;font-size:9px}
 }
+
+
+/* AZX Office: navigasi mobile satu baris dan label akun ringkas. */
+.azx-office-topbar{min-width:0;}
+.azx-office-topbar nav{display:flex;align-items:center;gap:clamp(10px,2vw,18px);white-space:nowrap;}
+.azx-office-topbar .account{display:flex;align-items:center;white-space:nowrap;}
+.azx-office-topbar .account span{white-space:nowrap;}
+@media(max-width:700px){
+  .azx-office-topbar{
+    display:flex!important;flex-wrap:nowrap!important;align-items:center!important;
+    gap:clamp(4px,1.2vw,8px)!important;padding:8px 8px!important;
+    width:100%;overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+  }
+  .azx-office-topbar .brand{flex:0 0 auto!important;margin:0!important;}
+  .azx-office-topbar .brand b{font-size:9px!important;white-space:nowrap;}
+  .azx-office-topbar nav{
+    order:0!important;flex:0 0 auto!important;width:auto!important;
+    margin:0 auto 0 0!important;gap:clamp(7px,1.8vw,12px)!important;
+    display:flex!important;align-items:center!important;white-space:nowrap;
+  }
+  .azx-office-topbar nav a{font-size:10px!important;white-space:nowrap;}
+  .azx-office-topbar .account{
+    flex:0 0 auto!important;width:auto!important;margin:0!important;
+    display:flex!important;align-items:center!important;gap:5px!important;
+  }
+  .azx-office-topbar .account span{
+    display:block!important;max-width:none!important;width:auto!important;
+    font-size:9px!important;overflow:visible!important;text-overflow:clip!important;
+    white-space:nowrap!important;
+  }
+  .azx-office-topbar .btn{flex:0 0 auto!important;font-size:10px!important;padding:0 8px!important;}
+}
