@@ -1034,3 +1034,37 @@ html{scroll-behavior:smooth}body{background:var(--azx-canvas);color:var(--azx-in
     margin:0!important;
   }
 }
+
+
+/* OVERRIDE UNIVERSAL: Akun saya dan Keluar selalu satu baris,
+   termasuk saat browser Android memakai mode Situs desktop. */
+.azx-office-topbar > #accountArea{
+  display:flex!important;
+  flex-flow:row nowrap!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  align-self:center!important;
+  gap:8px!important;
+  width:auto!important;
+  min-width:max-content!important;
+  margin:0 0 0 auto!important;
+  white-space:nowrap!important;
+}
+.azx-office-topbar > #accountArea > #userEmail{
+  display:inline-block!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  white-space:nowrap!important;
+  line-height:1!important;
+}
+.azx-office-topbar > #accountArea > #logoutBtn{
+  display:inline-flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin:0!important;
+}
+.azx-office-topbar > #accountArea[hidden]{display:none!important;}
