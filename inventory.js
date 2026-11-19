@@ -382,7 +382,7 @@ function updateInventoryVoiceSettingLabels(){
 }
 function selectedInventoryVoice(){
  const voices=window.speechSynthesis?.getVoices?.()||[];
- if(inventoryTTSSettings.voiceURI)return voices.find(v=>v.voiceURI===inventoryTTSSettings.voiceURI)||null;
+ if(inventoryTTSSettings.voiceURI)return voices.find((v,index)=>v.voiceURI===inventoryTTSSettings.voiceURI||(!v.voiceURI&&(v.name+"|"+v.lang+"|"+index)===inventoryTTSSettings.voiceURI))||null;
  return voices.find(v=>/^id([-_]|$)/i.test(v.lang)&&/female|woman|girl|perempuan|wavenet-a|idc/i.test(v.name))
   ||voices.find(v=>/^id([-_]|$)/i.test(v.lang)&&/natural|wavenet|neural/i.test(v.name))
   ||voices.find(v=>/^id([-_]|$)/i.test(v.lang)&&/google/i.test(v.name))
