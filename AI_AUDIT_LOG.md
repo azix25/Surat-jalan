@@ -113,3 +113,45 @@
 6. Tetapkan perilaku aman untuk follow-up tanpa riwayat, pisahkan data tak tepercaya dari instruksi, dan validasi hasil sebelum ditampilkan/diterapkan.
 7. Hentikan retry berulang pada kuota 429, termasuk pesan Indonesia dan `RESOURCE_EXHAUSTED`.
 8. Jalankan seluruh 45 kasus di staging. Deploy hanya fungsi AI yang berubah setelah seluruh tes terkait lulus; verifikasi status, versi, dan source SHA sesudah deployment.
+
+## Siklus 4 — 19 November 2026
+
+### Snapshot backend aktif
+
+- Supabase project `nqwqlhcwiwprsbcdadhy` diperiksa secara baca-saja.
+- `inventory-ai`: **ACTIVE v29**, diperbarui 19 November 2026 00:01:49 UTC; source SHA `9187824dc877f62d1c6d3f0f979f964b17b75ad3b3298625f64412cda4ec6b2d`.
+- `dokumen-ai`: **ACTIVE v50**, diperbarui 18 November 2026 23:20:31 UTC; source SHA `c0cf4193db4aed34601791c289e4e65c7e6ad06baee0eb09567cd65f2d3ce81b`.
+- Keduanya memanggil Gemini dengan urutan percobaan `gemini-3.5-flash-lite` lalu `gemini-3.6-flash`. Tidak ada panggilan provider lain pada dua source yang diperiksa.
+- Kedua fungsi memvalidasi Bearer token melalui `auth.getUser` dan menerapkan rate limit server-side. `verify_jwt=false` masih dipakai, sehingga pemeriksaan manual di dalam handler harus tetap ada dan diuji.
+
+### Perubahan implementasi yang sudah ada pada backend aktif
+
+1. **Cakupan katalog Inventory meningkat:** item dan transaksi dibaca dengan pagination 1.000 baris per halaman. Kandidat katalog diranking sebelum konteks dikirim ke Gemini; SKU/kode persis mendapat bobot tertinggi. Ini menggantikan batas lama yang hanya mengirim 2.000 item pertama.
+2. **Batas konteks tetap ada dan eksplisit:** pertanyaan biasa mengirim maksimal 80 item, pertanyaan luas maksimal 240 item. Konteks transaksi mengirim maksimal 60 transaksi untuk pertanyaan biasa atau 240 untuk pertanyaan riwayat/periode. Prompt menerima indikator kelengkapan konteks; bila data terpotong, AI diperintahkan menyatakan keterbatasan. Uji INV-20 sampai INV-23 ditambahkan untuk mengukur perilaku ini.
+3. **Konteks Inventory lebih kaya:** data menyertakan SKU, varian, pack size, stok kemasan dan pcs, tanggal transaksi, jenis, jumlah, tujuan, referensi, dan catatan. Prompt menjelaskan sinonim bahasa Indonesia, salah ketik ringan, perbedaan stok vs pergerakan, dan larangan menebak tujuan yang kosong.
+4. **Batas prompt injection diperjelas:** system instruction menyebut nama/catatan/referensi/teks dalam data sebagai data tidak tepercaya, bukan instruksi, serta melarang mutasi inventaris. Uji adversarial staging tetap belum dilakukan.
+5. **Dokumen lebih aman daripada snapshot audit sebelumnya:** fungsi memiliki pemeriksaan sesi, rate limit, guard server-side untuk permintaan baca-saja, penggabungan field lama/ekstensi, dan qty dipertahankan sebagai teks agar satuan seperti `30 dus` tidak menjadi nol. Sanitizer HTML allowlist juga ada di frontend; payload berbahaya tetap perlu diuji di browser staging.
+
+### Temuan yang masih terbuka
+
+- **DOC-15 — batas 300 item:** source Dokumen menggunakan `modelItems.slice(0, 300)` sebelum membentuk respons, tanpa penolakan eksplisit ketika daftar melebihi 300. Ini berisiko memotong item diam-diam. Tambahkan validasi deterministik yang menolak hasil berlebih atau strategi chunking sebelum deployment.
+- **Kelengkapan konteks Inventory harus dibuktikan:** pagination dan flag konteks lengkap terlihat di source, tetapi jawaban Gemini atas katalog/transaksi yang melebihi batas belum diuji end-to-end.
+- **Klasifikasi mode baca-saja memakai pola bahasa:** guard server-side sudah ada, tetapi variasi perintah bahasa Indonesia, negasi, salah ketik, dan kalimat campuran harus diuji untuk mencegah false positive/false negative.
+- **Sanitizer HTML:** inspeksi source bukan bukti bahwa seluruh jalur render aman; jalankan SEC-12 dengan payload sintetis di browser.
+- **Versi model dalam panduan sebelumnya tidak akurat:** `PANDUAN_AI.md` dan baseline suite sebelumnya menyebut Gemini 3.8. Dokumen kini diselaraskan dengan snapshot Edge Function aktif 19 November 2026.
+
+### Pengujian dan batas perubahan
+
+- Regression suite diperbarui menjadi **50 kasus manual**: 23 Inventory, 15 Dokumen, 12 Keamanan. Semua kasus tetap belum dicentang sampai dijalankan di staging dengan fixture sintetis.
+- Pemeriksaan otomatis siklus ini memvalidasi konsistensi teks baseline, jumlah 50 ID unik, dan keberadaan empat kasus batas konteks serta satu kasus batas item. Ini bukan uji Gemini end-to-end.
+- Perubahan repository pada branch kerja ini hanya dokumentasi: `PANDUAN_AI.md`, `AI_REGRESSION_TESTS.md`, dan `AI_AUDIT_LOG.md`.
+- PR #5 lama sekarang divergen dari `main` (9 commit ahead, 26 behind pada saat perbandingan); jangan merge branch tersebut tanpa rekonsiliasi terpisah.
+- Tidak ada perubahan Edge Function, database/RPC, data pengguna, inventory, transaksi, dokumen, akun, login, izin, secrets, atau konfigurasi produksi. Tidak ada deployment, merge, maupun retraining.
+
+### Langkah berikutnya
+
+1. Buat perbaikan backend terisolasi untuk DOC-15: tolak daftar lebih dari 300 item dengan error terstruktur atau implementasikan pemrosesan yang mempertahankan semua item; jangan memotong diam-diam.
+2. Jalankan INV-20 sampai INV-23 di staging menggunakan fixture sintetis untuk memastikan flag cakupan benar-benar memengaruhi jawaban Gemini.
+3. Jalankan uji bahasa Indonesia/salah ketik dan negasi untuk guard baca-saja Dokumen.
+4. Uji payload HTML dan prompt injection di staging.
+5. Periksa kembali versi ACTIVE sebelum setiap rilis karena versi Edge Function dan model dapat berubah terpisah dari repository.

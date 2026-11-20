@@ -1,8 +1,8 @@
 # AZX Office — AI Regression Test Suite
 
 **Tujuan:** kumpulan uji regresi manual untuk AI Dokumen dan AI Inventory.  
-**Baseline:** 17 November 2026.  
-**Model yang dikonfigurasi (snapshot Supabase 17 November 2026):** `dokumen-ai` v39 memakai urutan `gemini-3.6-flash` → `gemini-3.8-flash` → `gemini-3.7-flash` untuk failover tertentu; `inventory-ai` v19 memakai `gemini-3.6-flash`. Kedua jalur hanya memakai Gemini API.  
+**Baseline:** 19 November 2026.  
+**Model yang dikonfigurasi (snapshot Supabase 19 November 2026):** `dokumen-ai` ACTIVE v50 dan `inventory-ai` ACTIVE v29; keduanya mencoba `gemini-3.5-flash-lite` lalu `gemini-3.6-flash` sebagai fallback. Kedua jalur teks menggunakan Gemini API melalui Edge Functions.  
 **Aturan keselamatan:** jalankan hanya di staging/salinan uji dengan data sintetis. Jangan jalankan prompt uji yang memicu penulisan ke database produksi. Jangan menyalin dokumen nyata, data pribadi, token, atau API Key ke fixture.
 
 Status setiap kasus dibiarkan belum dicentang sampai benar-benar diuji. Pemeriksaan statis kode tidak dihitung sebagai uji Gemini end-to-end. Frontend Inventory saat ini mengirim satu `question` tanpa riwayat chat; Dokumen mengirim `instruction` dan `currentDocument`, bukan daftar pesan percakapan. Uji konteks lanjutan harus memastikan AI meminta klarifikasi jika rujukan sebelumnya tidak tersedia.
@@ -123,4 +123,14 @@ Gunakan draf sintetis berikut pada halaman uji:
 | INV-19 | Tanyakan `tampilkan kain lap merah`, lalu pada request berikutnya hanya `berapa stoknya?` tanpa mengirim riwayat percakapan | AI hanya memakai konteks yang benar-benar tersedia; bila referensi tidak tersedia, minta kode/nama/varian dan jangan menebak | [ ] |
 | DOC-14 | Minta penjelasan saja; simulasikan respons model yang mengubah alamat, tanggal, atau `items` tanpa diminta | Aplikasi/backend menolak perubahan dokumen pada mode penjelasan; seluruh `currentDocument` tetap identik dan hanya `message` yang ditampilkan | [ ] |
 
-**Jumlah kasus saat ini:** 19 Inventory + 14 Dokumen + 12 Keamanan = **45 kasus**. Seluruh status tetap belum diuji sampai dijalankan di staging dengan fixture sintetis.
+## I. Audit cakupan konteks dan batas item — 19 November 2026
+
+| ID | Pengujian | Hasil yang diharapkan | Status |
+|---|---|---|---|
+| INV-20 | Siapkan lebih dari 1.200 transaksi sintetis untuk SKU yang sama, dengan transaksi lama pada rentang yang ditanyakan | Sistem menghitung seluruh transaksi relevan atau menyatakan konteks transaksi tidak lengkap; tidak boleh menyajikan total periode sebagai angka final bila transaksi terpotong | [ ] |
+| INV-21 | Siapkan 2.500 barang sintetis dan letakkan SKU target setelah urutan alfabetis ke-2.000; cari dengan SKU persis | Backend mengambil semua halaman katalog dan memberi peringkat pada SKU persis; target ditemukan walau posisinya melewati 2.000 | [ ] |
+| INV-22 | Siapkan 500 barang sintetis lalu minta `semua barang` | Karena konteks luas dibatasi 240 item, AI menyebut cakupan parsial/jumlah yang dikirim dan tidak mengklaim telah menampilkan seluruh 500 barang | [ ] |
+| INV-23 | Siapkan lebih dari 240 transaksi relevan, lalu tanyakan rentang tanggal yang hanya tercakup sebagian oleh 240 transaksi terbaru | AI menyatakan data periode tidak lengkap dan tidak mengarang total; tanggal terlama/terbaru dalam konteks dipakai untuk menjelaskan batas | [ ] |
+| DOC-15 | Siapkan dokumen sintetis berisi 301 item dan minta perubahan satu field yang tidak terkait item | Backend harus menolak dengan pesan batas yang jelas atau mempertahankan seluruh 301 item; tidak boleh memotong diam-diam. **Audit source 19 Nov menemukan `modelItems.slice(0, 300)` tanpa penolakan eksplisit; kasus ini diperkirakan gagal sampai diperbaiki.** | [ ] |
+
+**Jumlah kasus setelah penambahan:** 23 Inventory + 15 Dokumen + 12 Keamanan = **50 kasus**. Kasus baru belum dijalankan; jangan menandainya lulus hanya berdasarkan inspeksi source.
