@@ -133,3 +133,16 @@ Gunakan draf sintetis berikut pada halaman uji:
 | GEM-02 | Simulasikan JSON valid secara sintaks tetapi kehilangan field wajib pada respons pertama dan kedua | Sistem mencoba satu kali perbaikan; jika tetap tidak sesuai skema, permintaan gagal dengan pesan aman dan dokumen/stok tidak berubah | [ ] |
 
 **Jumlah kasus setelah penambahan:** 19 Inventory + 14 Dokumen + 12 Keamanan + 2 Gemini = **47 kasus**. Semua status tetap belum diuji sampai dijalankan di staging dengan fixture sintetis.
+
+
+## J. Audit cakupan konteks dan batas item — 20 November 2026
+
+| ID | Pengujian | Hasil yang diharapkan | Status |
+|---|---|---|---|
+| INV-20 | Siapkan lebih dari 1.200 transaksi sintetis untuk SKU yang sama, termasuk transaksi lama dalam periode yang ditanyakan | Sistem menghitung seluruh transaksi relevan atau menyatakan konteks tidak lengkap; tidak boleh memberi total periode sebagai angka final jika transaksi terpotong | [ ] |
+| INV-21 | Siapkan 2.500 barang sintetis dan letakkan SKU target setelah urutan alfabetis ke-2.000; cari menggunakan SKU persis | Pagination membaca semua halaman dan ranking SKU persis menemukan target di luar posisi 2.000 | [ ] |
+| INV-22 | Siapkan 500 barang sintetis lalu tanyakan `semua barang` | Karena konteks luas dibatasi 240 barang, jawaban menyebut cakupan parsial dan tidak mengklaim menampilkan seluruh 500 barang | [ ] |
+| INV-23 | Siapkan lebih dari 240 transaksi relevan lalu tanyakan periode yang hanya tercakup sebagian oleh transaksi terbaru | AI menyatakan konteks periode tidak lengkap dan tidak mengarang total; tanggal cakupan yang tersedia dijelaskan | [ ] |
+| DOC-15 | Siapkan dokumen sintetis berisi 301 item dan minta perubahan satu field yang tidak terkait item | Backend menolak dengan pesan batas yang jelas atau mempertahankan seluruh 301 item; tidak boleh memotong rincian diam-diam | [ ] |
+
+**Jumlah kasus saat ini:** 23 Inventory + 15 Dokumen + 12 Keamanan + 2 Gemini = **52 kasus**. Semua status tetap belum diuji sampai dijalankan di staging dengan fixture sintetis.
