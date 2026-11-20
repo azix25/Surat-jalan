@@ -144,3 +144,14 @@
 - Source Edge Function yang disalin adalah snapshot ACTIVE pada saat audit; sebelum deployment, bandingkan ulang source SHA/versi Supabase dan uji di staging. Tidak ada deployment dari branch ini.
 - Belum ada bukti perilaku model pada respons JSON rusak sampai GEM-01/GEM-02 dijalankan dengan akun/kuota staging.
 - Tidak ada perubahan database/RPC, data pengguna, inventory, transaksi, dokumen, akun, login, izin, secrets, atau konfigurasi produksi. Tidak ada merge, deployment, atau retraining.
+
+
+### Review prompt, konteks, validasi, dan keamanan pada snapshot ACTIVE
+
+- **Pemahaman Inventory:** prompt sudah mencakup sinonim stok/masuk/keluar/diambil/rusak, SKU, warna/ukuran/varian, salah ketik ringan, perbedaan stok dengan pergerakan, konversi dus/ball ke pcs, serta penggunaan tanggal dan tujuan transaksi.
+- **Batas konteks Inventory:** katalog dibaca dengan pagination 1.000 baris, kandidat diranking, lalu maksimal 80 item untuk pertanyaan biasa atau 240 untuk pertanyaan luas dikirim ke Gemini. Transaksi dibatasi 60 atau 240 sesuai jenis pertanyaan. Prompt menerima flag kelengkapan dan rentang tanggal; INV-20 sampai INV-23 kini mencatat pengujian batas ini.
+- **Konteks percakapan:** frontend Inventory mengirim satu `question` tanpa riwayat pesan. Follow-up seperti `berapa stoknya?` tidak boleh dianggap memiliki konteks percakapan sebelumnya; INV-19 mengharuskan klarifikasi bila rujukan tidak ada pada request.
+- **Mode baca-saja Dokumen:** `isReadOnlyDocumentRequest` benar-benar dipanggil di backend. Untuk permintaan yang terklasifikasi baca-saja, fungsi mengembalikan `currentDocument` sumber dan hanya pesan AI, sehingga hasil model tidak diterapkan. Namun klasifikasi berbasis pola bahasa tetap perlu diuji untuk negasi, salah ketik, dan kalimat campuran.
+- **Validasi Dokumen yang tersisa:** backend menggabungkan field sumber dan hasil model, memvalidasi jenis/template, serta mempertahankan field ekstensi. Akan tetapi daftar item masih memakai `modelItems.slice(0, 300)`; 301 item dapat terpotong. DOC-15 menandai risiko ini dan belum ada perbaikan pada PR ini.
+- **Penanganan error backend:** `safeProviderMessage` terdefinisi pada `dokumen-ai` tetapi tidak memiliki pemanggilan pada source ACTIVE; pemetaan error masih dilakukan langsung di handler. Ini kandidat perapihan berikutnya, bukan bagian perubahan saat ini.
+- **Keamanan:** kedua fungsi memeriksa Bearer session melalui `auth.getUser` dan rate limit server-side. `verify_jwt=false` pada konfigurasi fungsi berarti pemeriksaan manual ini wajib dipertahankan. System prompt menandai nama/catatan/referensi sebagai data tidak tepercaya. Frontend Dokumen memiliki sanitizer HTML allowlist; SEC-12 tetap belum diuji di browser staging.
