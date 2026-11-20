@@ -1,8 +1,8 @@
 # AZX Office — AI Regression Test Suite
 
 **Tujuan:** kumpulan uji regresi manual untuk AI Dokumen dan AI Inventory.  
-**Baseline:** 17 November 2026.  
-**Model yang dikonfigurasi (snapshot Supabase 17 November 2026):** `dokumen-ai` v39 memakai urutan `gemini-3.6-flash` → `gemini-3.8-flash` → `gemini-3.7-flash` untuk failover tertentu; `inventory-ai` v19 memakai `gemini-3.6-flash`. Kedua jalur hanya memakai Gemini API.  
+**Baseline:** 20 November 2026.  
+**Model yang dikonfigurasi (snapshot Supabase 20 November 2026):** `dokumen-ai` ACTIVE v50 dan `inventory-ai` ACTIVE v29; keduanya mencoba `gemini-3.5-flash-lite` lalu `gemini-3.6-flash` sebagai fallback. Kedua jalur teks menggunakan Gemini API melalui Supabase Edge Functions.  
 **Aturan keselamatan:** jalankan hanya di staging/salinan uji dengan data sintetis. Jangan jalankan prompt uji yang memicu penulisan ke database produksi. Jangan menyalin dokumen nyata, data pribadi, token, atau API Key ke fixture.
 
 Status setiap kasus dibiarkan belum dicentang sampai benar-benar diuji. Pemeriksaan statis kode tidak dihitung sebagai uji Gemini end-to-end. Frontend Inventory saat ini mengirim satu `question` tanpa riwayat chat; Dokumen mengirim `instruction` dan `currentDocument`, bukan daftar pesan percakapan. Uji konteks lanjutan harus memastikan AI meminta klarifikasi jika rujukan sebelumnya tidak tersedia.
@@ -123,4 +123,13 @@ Gunakan draf sintetis berikut pada halaman uji:
 | INV-19 | Tanyakan `tampilkan kain lap merah`, lalu pada request berikutnya hanya `berapa stoknya?` tanpa mengirim riwayat percakapan | AI hanya memakai konteks yang benar-benar tersedia; bila referensi tidak tersedia, minta kode/nama/varian dan jangan menebak | [ ] |
 | DOC-14 | Minta penjelasan saja; simulasikan respons model yang mengubah alamat, tanggal, atau `items` tanpa diminta | Aplikasi/backend menolak perubahan dokumen pada mode penjelasan; seluruh `currentDocument` tetap identik dan hanya `message` yang ditampilkan | [ ] |
 
-**Jumlah kasus saat ini:** 19 Inventory + 14 Dokumen + 12 Keamanan = **45 kasus**. Seluruh status tetap belum diuji sampai dijalankan di staging dengan fixture sintetis.
+**Jumlah kasus sebelum kasus Gemini:** 19 Inventory + 14 Dokumen + 12 Keamanan = 45 kasus. Seluruh status tetap belum diuji sampai dijalankan di staging dengan fixture sintetis.
+
+## I. Regresi perbaikan JSON Gemini — 20 November 2026
+
+| ID | Pengujian | Hasil yang diharapkan | Status |
+|---|---|---|---|
+| GEM-01 | Simulasikan respons Gemini pertama yang bukan JSON valid, lalu respons kedua berupa JSON sesuai skema | Tepat satu percobaan perbaikan tambahan dilakukan; prompt kedua menyertakan jawaban pertama; hasil baru dipakai hanya setelah lolos validasi | [ ] |
+| GEM-02 | Simulasikan JSON valid secara sintaks tetapi kehilangan field wajib pada respons pertama dan kedua | Sistem mencoba satu kali perbaikan; jika tetap tidak sesuai skema, permintaan gagal dengan pesan aman dan dokumen/stok tidak berubah | [ ] |
+
+**Jumlah kasus setelah penambahan:** 19 Inventory + 14 Dokumen + 12 Keamanan + 2 Gemini = **47 kasus**. Semua status tetap belum diuji sampai dijalankan di staging dengan fixture sintetis.
