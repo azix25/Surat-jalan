@@ -113,3 +113,34 @@
 6. Tetapkan perilaku aman untuk follow-up tanpa riwayat, pisahkan data tak tepercaya dari instruksi, dan validasi hasil sebelum ditampilkan/diterapkan.
 7. Hentikan retry berulang pada kuota 429, termasuk pesan Indonesia dan `RESOURCE_EXHAUSTED`.
 8. Jalankan seluruh 45 kasus di staging. Deploy hanya fungsi AI yang berubah setelah seluruh tes terkait lulus; verifikasi status, versi, dan source SHA sesudah deployment.
+
+
+## Siklus 4 — 20 November 2026 (snapshot main terbaru)
+
+### Snapshot sumber dan runtime
+
+- GitHub `main` saat audit: `a32e994e01858ab3ee7bf2c327a6f1c3be8c3c42`.
+- PR #6 masih Draft dan divergen: 3 commit di depan serta 29 commit di belakang `main`; perubahan dokumentasinya tidak digabungkan atau dianggap sebagai kondisi main.
+- Supabase project diperiksa secara baca-saja. `dokumen-ai` ACTIVE v50, source SHA `c0cf4193db4aed34601791c289e4e65c7e6ad06baee0eb09567cd65f2d3ce81b`; `inventory-ai` ACTIVE v29, source SHA `9187824dc877f62d1c6d3f0f979f964b17b75ad3b3298625f64412cda4ec6b2d`.
+- Kedua fungsi mencoba `gemini-3.5-flash-lite` lalu `gemini-3.6-flash` sebagai fallback. API key dibaca dari environment server; pemindaian snapshot tidak menemukan pola API key hard-coded.
+
+### Temuan terukur
+
+1. **Perbaikan JSON Gemini tidak pernah berjalan:** kedua Edge Function memiliki loop `attempt < 1`, sementara prompt perbaikan baru ditambahkan ketika `attempt === 1`. Jadi hanya ada satu request per model dan cabang repair tidak terjangkau. Instruksi prompt menyebut perbaikan otomatis, tetapi implementasinya belum melakukannya.
+2. **Deteksi kuota frontend tidak mengenali bahasa Indonesia:** `dokumen.js` di `main` hanya mencocokkan `quota`, sedangkan backend mengembalikan pesan `Kuota Gemini sedang mencapai batas` dan `Batas penggunaan AI harian tercapai`. HTTP 429 ini dapat keliru dianggap sementara dan diulang sampai tiga kali.
+3. **Jeda retry kurang lengkap:** frontend hanya membaca `Retry-After` numerik dan membatasi jeda 15 detik; nilai `retry_after` pada body JSON serta format tanggal HTTP belum dipakai. HTTP 504 juga belum masuk daftar status sementara pada frontend.
+
+### Perubahan di branch kerja
+
+- Menambahkan snapshot source Edge Function aktif ke `supabase/functions/dokumen-ai/index.ts` dan `supabase/functions/inventory-ai/index.ts` agar kode backend yang diaudit dapat ditinjau melalui GitHub. Snapshot diberi versi dan source SHA; tidak ada nilai secret yang disalin.
+- Menambahkan helper bersama `supabase/functions/_shared/gemini-json-repair.mjs`. Kedua fungsi sekarang mengizinkan tepat satu percobaan perbaikan JSON/schema tambahan (maksimal dua request per model), dan jawaban sebelumnya dibatasi 12.000 karakter saat dimasukkan ke prompt perbaikan.
+- Memperbaiki `dokumen.js` agar mengenali kuota Indonesia/Inggris, tidak mengulang 429 saat kuota habis, mencoba ulang 504, dan membaca `Retry-After` sebagai detik atau HTTP-date serta `retry_after` dari body; jeda dibatasi 60 detik.
+- Menambahkan 6 tes untuk helper dan integrasi loop JSON, serta membawa 22 tes regresi retry Gemini ke branch yang berbasis `main` terbaru. Workflow CI menjalankan `node --check dokumen.js` dan kedua suite Node.
+- Matriks manual diperbarui menjadi 47 kasus; GEM-01 dan GEM-02 mencatat pengujian respons JSON rusak dan skema tidak lengkap.
+
+### Batas verifikasi dan risiko
+
+- Tes Node menguji helper retry frontend dan pembentukan prompt repair serta memeriksa integrasi statis kedua source. Tes ini **tidak** memanggil Gemini dan bukan pengujian staging end-to-end.
+- Source Edge Function yang disalin adalah snapshot ACTIVE pada saat audit; sebelum deployment, bandingkan ulang source SHA/versi Supabase dan uji di staging. Tidak ada deployment dari branch ini.
+- Belum ada bukti perilaku model pada respons JSON rusak sampai GEM-01/GEM-02 dijalankan dengan akun/kuota staging.
+- Tidak ada perubahan database/RPC, data pengguna, inventory, transaksi, dokumen, akun, login, izin, secrets, atau konfigurasi produksi. Tidak ada merge, deployment, atau retraining.
