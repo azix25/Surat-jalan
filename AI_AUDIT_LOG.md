@@ -167,3 +167,10 @@
 - GitHub Actions run #7 pada 21 November 2026 berhasil: parsing `dokumen.js`, suite retry Gemini, dan suite JSON repair semuanya lulus.
 - Total pengujian otomatis: 30 kasus (24 retry + 6 JSON repair). Pengujian ini bersifat lokal/sintetis; tidak memanggil Gemini atau menguji staging.
 - Tidak ada perubahan pada `main`, Supabase ACTIVE, database/RPC, data pengguna, inventory, transaksi, dokumen, akun, login, izin, secrets, atau konfigurasi produksi. Tidak ada merge, deployment, atau retraining.
+
+
+### Pertahanan prompt pada jalur perbaikan JSON
+
+- Output Gemini pertama kini diperlakukan sebagai string keluaran model yang tidak tepercaya, bukan instruksi baru. Helper menginstruksikan model perbaikan agar tidak mengikuti perintah/perubahan aturan yang mungkin tertanam di output sebelumnya, lalu memasukkan output sebagai string JSON-escaped.
+- Ditambahkan uji sintetis dengan teks instruksi palsu dan newline untuk memastikan output sebelumnya di-escape. SEC-13 ditambahkan ke matriks manual; kasus end-to-end tetap belum diuji di staging.
+- Suite otomatis pada head PR terbaru: 31 tes (24 retry + 7 JSON repair); GitHub Actions run #10 berhasil. Tes ini menguji pembentukan prompt, bukan ketahanan model Gemini secara langsung.
