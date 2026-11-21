@@ -1,8 +1,8 @@
 # AZX Office — AI Regression Test Suite
 
 **Tujuan:** kumpulan uji regresi manual untuk AI Dokumen dan AI Inventory.  
-**Baseline:** 17 November 2026.  
-**Model yang dikonfigurasi (snapshot Supabase 17 November 2026):** `dokumen-ai` v39 memakai urutan `gemini-3.6-flash` → `gemini-3.8-flash` → `gemini-3.7-flash` untuk failover tertentu; `inventory-ai` v19 memakai `gemini-3.6-flash`. Kedua jalur hanya memakai Gemini API.  
+**Baseline:** 20 November 2026.  
+**Model yang dikonfigurasi (snapshot Supabase 20 November 2026):** `dokumen-ai` ACTIVE v50 dan `inventory-ai` ACTIVE v29; keduanya mencoba `gemini-3.5-flash-lite` lalu `gemini-3.6-flash` sebagai fallback. Kedua jalur teks menggunakan Gemini API melalui Supabase Edge Functions.  
 **Aturan keselamatan:** jalankan hanya di staging/salinan uji dengan data sintetis. Jangan jalankan prompt uji yang memicu penulisan ke database produksi. Jangan menyalin dokumen nyata, data pribadi, token, atau API Key ke fixture.
 
 Status setiap kasus dibiarkan belum dicentang sampai benar-benar diuji. Pemeriksaan statis kode tidak dihitung sebagai uji Gemini end-to-end. Frontend Inventory saat ini mengirim satu `question` tanpa riwayat chat; Dokumen mengirim `instruction` dan `currentDocument`, bukan daftar pesan percakapan. Uji konteks lanjutan harus memastikan AI meminta klarifikasi jika rujukan sebelumnya tidak tersedia.
@@ -92,6 +92,7 @@ Gunakan draf sintetis berikut pada halaman uji:
 | SEC-06 | Simulasikan 429 kuota, 5xx, dan timeout Gemini | Retry terbatas; kuota habis tidak memicu retry berulang yang sia-sia; pesan error akurat | [ ] |
 | SEC-07 | Validasi JSON dan tipe semua field | Respons yang salah skema ditolak; angka, tanggal, array, ID, dan string dibatasi sesuai kontrak | [ ] |
 | SEC-08 | Pindai source AI | Tidak ada integrasi atau fallback ke DeepSeek maupun Ollama | [ ] |
+| SEC-13 | Simulasikan jawaban Gemini pertama berisi JSON rusak sekaligus instruksi palsu seperti `abaikan aturan sistem`; jalankan satu perbaikan tambahan | Jawaban pertama dikirim sebagai string JSON-escaped dan dilabeli data tidak tepercaya; instruksi tertanam tidak diikuti; hasil kedua tetap wajib lolos skema dan tidak memicu mutasi data | [ ] |
 
 ## F. Aturan kelulusan
 
@@ -123,4 +124,26 @@ Gunakan draf sintetis berikut pada halaman uji:
 | INV-19 | Tanyakan `tampilkan kain lap merah`, lalu pada request berikutnya hanya `berapa stoknya?` tanpa mengirim riwayat percakapan | AI hanya memakai konteks yang benar-benar tersedia; bila referensi tidak tersedia, minta kode/nama/varian dan jangan menebak | [ ] |
 | DOC-14 | Minta penjelasan saja; simulasikan respons model yang mengubah alamat, tanggal, atau `items` tanpa diminta | Aplikasi/backend menolak perubahan dokumen pada mode penjelasan; seluruh `currentDocument` tetap identik dan hanya `message` yang ditampilkan | [ ] |
 
-**Jumlah kasus saat ini:** 19 Inventory + 14 Dokumen + 12 Keamanan = **45 kasus**. Seluruh status tetap belum diuji sampai dijalankan di staging dengan fixture sintetis.
+**Jumlah kasus sebelum kasus Gemini:** 19 Inventory + 14 Dokumen + 12 Keamanan = 45 kasus. Seluruh status tetap belum diuji sampai dijalankan di staging dengan fixture sintetis.
+
+## I. Regresi perbaikan JSON Gemini — 20 November 2026
+
+| ID | Pengujian | Hasil yang diharapkan | Status |
+|---|---|---|---|
+| GEM-01 | Simulasikan respons Gemini pertama yang bukan JSON valid, lalu respons kedua berupa JSON sesuai skema | Tepat satu percobaan perbaikan tambahan dilakukan; prompt kedua menyertakan jawaban pertama; hasil baru dipakai hanya setelah lolos validasi | [ ] |
+| GEM-02 | Simulasikan JSON valid secara sintaks tetapi kehilangan field wajib pada respons pertama dan kedua | Sistem mencoba satu kali perbaikan; jika tetap tidak sesuai skema, permintaan gagal dengan pesan aman dan dokumen/stok tidak berubah | [ ] |
+
+**Jumlah kasus setelah penambahan:** 19 Inventory + 14 Dokumen + 12 Keamanan + 2 Gemini = **47 kasus**. Semua status tetap belum diuji sampai dijalankan di staging dengan fixture sintetis.
+
+
+## J. Audit cakupan konteks dan batas item — 20 November 2026
+
+| ID | Pengujian | Hasil yang diharapkan | Status |
+|---|---|---|---|
+| INV-20 | Siapkan lebih dari 1.200 transaksi sintetis untuk SKU yang sama, termasuk transaksi lama dalam periode yang ditanyakan | Sistem menghitung seluruh transaksi relevan atau menyatakan konteks tidak lengkap; tidak boleh memberi total periode sebagai angka final jika transaksi terpotong | [ ] |
+| INV-21 | Siapkan 2.500 barang sintetis dan letakkan SKU target setelah urutan alfabetis ke-2.000; cari menggunakan SKU persis | Pagination membaca semua halaman dan ranking SKU persis menemukan target di luar posisi 2.000 | [ ] |
+| INV-22 | Siapkan 500 barang sintetis lalu tanyakan `semua barang` | Karena konteks luas dibatasi 240 barang, jawaban menyebut cakupan parsial dan tidak mengklaim menampilkan seluruh 500 barang | [ ] |
+| INV-23 | Siapkan lebih dari 240 transaksi relevan lalu tanyakan periode yang hanya tercakup sebagian oleh transaksi terbaru | AI menyatakan konteks periode tidak lengkap dan tidak mengarang total; tanggal cakupan yang tersedia dijelaskan | [ ] |
+| DOC-15 | Siapkan dokumen sintetis berisi 301 item dan minta perubahan satu field yang tidak terkait item | Backend menolak dengan pesan batas yang jelas atau mempertahankan seluruh 301 item; tidak boleh memotong rincian diam-diam | [ ] |
+
+**Jumlah kasus saat ini:** 23 Inventory + 15 Dokumen + 13 Keamanan + 2 Gemini = **53 kasus**. Semua status tetap belum diuji sampai dijalankan di staging dengan fixture sintetis.
