@@ -174,3 +174,11 @@
 - Output Gemini pertama kini diperlakukan sebagai string keluaran model yang tidak tepercaya, bukan instruksi baru. Helper menginstruksikan model perbaikan agar tidak mengikuti perintah/perubahan aturan yang mungkin tertanam di output sebelumnya, lalu memasukkan output sebagai string JSON-escaped.
 - Ditambahkan uji sintetis dengan teks instruksi palsu dan newline untuk memastikan output sebelumnya di-escape. SEC-13 ditambahkan ke matriks manual; kasus end-to-end tetap belum diuji di staging.
 - Suite otomatis pada head PR terbaru: 31 tes (24 retry + 7 JSON repair); GitHub Actions run #10 berhasil. Tes ini menguji pembentukan prompt, bukan ketahanan model Gemini secara langsung.
+
+### Verifikasi ulang Supabase ACTIVE — 21 November 2026
+
+- Pemeriksaan read-only Supabase mengonfirmasi `dokumen-ai` ACTIVE v50 dengan source SHA `c0cf4193db4aed34601791c289e4e65c7e6ad06baee0eb09567cd65f2d3ce81b` dan `inventory-ai` ACTIVE v29 dengan source SHA `9187824dc877f62d1c6d3f0f979f964b17b75ad3b3298625f64412cda4ec6b2d`; keduanya masih sama dengan snapshot yang menjadi basis PR.
+- Kedua fungsi ACTIVE masih memakai loop `attempt < 1` dan belum mengimpor helper JSON repair. Jadi perbaikan JSON repair serta penandaan output sebelumnya sebagai data tidak tepercaya **belum aktif di Supabase**; keduanya hanya ada pada branch PR #7.
+- Kedua fungsi ACTIVE tetap memiliki pemeriksaan `auth.getUser` dan rate limit server-side. `safeProviderMessage` pada Dokumen hanya terdefinisi (satu kemunculan) dan belum dipanggil. Tidak ditemukan pola secret/API key literal pada source yang diperiksa.
+- GitHub Actions run #11 pada head `70e7eb2d26f43f8c1fad07408e840cf01b310683` berhasil: pemeriksaan sintaks dan kedua suite otomatis lulus. Total 31 tes (24 retry + 7 JSON repair).
+- Pemeriksaan ini hanya membaca source Supabase dan metadata fungsi. Tidak ada deployment atau perubahan produksi.
