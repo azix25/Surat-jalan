@@ -70,13 +70,23 @@ test("header Retry-After HTTP-date dihitung relatif terhadap waktu uji", () => {
   assert.equal(getAIRetryDelayMs(response, { retry_after: 30 }, 1, now), 5000);
 });
 
-test("HTTP-date Retry-After yang sudah lewat memakai fallback body", () => {
+test("HTTP-date Retry-After yang sudah lewat berarti coba ulang segera", () => {
   const now = Date.UTC(2026, 10, 18, 3, 0, 0);
   const response = { headers: { get: () => "Tue, 17 Nov 2026 03:00:00 GMT" } };
-  assert.equal(getAIRetryDelayMs(response, { retry_after: 30 }, 1, now), 30000);
+  assert.equal(getAIRetryDelayMs(response, { retry_after: 30 }, 1, now), 0);
 });
 
-test("Retry-After bernilai nol tidak salah dibaca sebagai tanggal", () => {
+test("Retry-After bernilai nol diutamakan daripada body", () => {
   const response = { headers: { get: () => "0" } };
+  assert.equal(getAIRetryDelayMs(response, { retry_after: 30 }, 1), 0);
+});
+
+test("header Retry-After tidak valid memakai retry_after dari body", () => {
+  const response = { headers: { get: () => "bukan-tanggal" } };
   assert.equal(getAIRetryDelayMs(response, { retry_after: 30 }, 1), 30000);
+});
+
+test("retry_after body bernilai nol dihormati", () => {
+  const response = { headers: { get: () => null } };
+  assert.equal(getAIRetryDelayMs(response, { retry_after: 0 }, 1), 0);
 });
