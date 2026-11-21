@@ -155,3 +155,15 @@
 - **Validasi Dokumen yang tersisa:** backend menggabungkan field sumber dan hasil model, memvalidasi jenis/template, serta mempertahankan field ekstensi. Akan tetapi daftar item masih memakai `modelItems.slice(0, 300)`; 301 item dapat terpotong. DOC-15 menandai risiko ini dan belum ada perbaikan pada PR ini.
 - **Penanganan error backend:** `safeProviderMessage` terdefinisi pada `dokumen-ai` tetapi tidak memiliki pemanggilan pada source ACTIVE; pemetaan error masih dilakukan langsung di handler. Ini kandidat perapihan berikutnya, bukan bagian perubahan saat ini.
 - **Keamanan:** kedua fungsi memeriksa Bearer session melalui `auth.getUser` dan rate limit server-side. `verify_jwt=false` pada konfigurasi fungsi berarti pemeriksaan manual ini wajib dipertahankan. System prompt menandai nama/catatan/referensi sebagai data tidak tepercaya. Frontend Dokumen memiliki sanitizer HTML allowlist; SEC-12 tetap belum diuji di browser staging.
+
+
+## Siklus 5 — 21 November 2026
+
+### Koreksi semantik Retry-After
+
+- Audit ulang helper retry menemukan bahwa nilai header `Retry-After: 0` dan HTTP-date yang sudah lewat diperlakukan seperti header yang tidak tersedia. Akibatnya, nilai `retry_after` dari body atau jeda eksponensial dapat mengalahkan instruksi server yang valid untuk mencoba ulang segera.
+- Helper kini mempertahankan prioritas header jika valid, termasuk nilai nol dan tanggal yang sudah lewat (jeda 0 ms). Nilai `retry_after` dari body hanya menjadi fallback saat header hilang/tidak valid; nilai body nol juga dihormati. Batas maksimum 60 detik tetap berlaku.
+- Menambah dua tes regresi dan memperjelas dua ekspektasi lama: header nol serta HTTP-date kedaluwarsa tidak boleh diganti oleh jeda body.
+- GitHub Actions run #7 pada 21 November 2026 berhasil: parsing `dokumen.js`, suite retry Gemini, dan suite JSON repair semuanya lulus.
+- Total pengujian otomatis: 30 kasus (24 retry + 6 JSON repair). Pengujian ini bersifat lokal/sintetis; tidak memanggil Gemini atau menguji staging.
+- Tidak ada perubahan pada `main`, Supabase ACTIVE, database/RPC, data pengguna, inventory, transaksi, dokumen, akun, login, izin, secrets, atau konfigurasi produksi. Tidak ada merge, deployment, atau retraining.
