@@ -124,3 +124,14 @@ Gunakan draf sintetis berikut pada halaman uji:
 | DOC-14 | Minta penjelasan saja; simulasikan respons model yang mengubah alamat, tanggal, atau `items` tanpa diminta | Aplikasi/backend menolak perubahan dokumen pada mode penjelasan; seluruh `currentDocument` tetap identik dan hanya `message` yang ditampilkan | [ ] |
 
 **Jumlah kasus saat ini:** 19 Inventory + 14 Dokumen + 12 Keamanan = **45 kasus**. Seluruh status tetap belum diuji sampai dijalankan di staging dengan fixture sintetis.
+
+
+## I. Kasus tambahan — 22 November 2026
+
+| ID | Prompt / tindakan uji | Hasil yang diharapkan | Status |
+|---|---|---|---|
+| INV-24 | Kirim pertanyaan Inventory pertama dan tahan respons endpoint; saat masih berjalan, kirim pertanyaan kedua melalui tombol cepat atau Enter | Hanya satu request berjalan; request kedua tidak menimpa jawaban pertama. Setelah request pertama selesai, pertanyaan baru dapat dikirim | [ ] |
+| INV-25 | Simulasikan kegagalan jaringan pada request pertama, lalu kirim pertanyaan baru | Status pemrosesan dibersihkan; tombol aktif kembali; request berikutnya dapat dijalankan | [ ] |
+| INV-26 | Kirim pertanyaan kosong ketika tidak ada request berjalan, lalu kirim pertanyaan valid | Pertanyaan kosong tidak mengunci pemrosesan; pertanyaan valid tetap dapat dikirim | [ ] |
+
+**Jumlah kasus saat ini:** 19 Inventory + 14 Dokumen + 12 Keamanan + 3 kasus Inventory tambahan = **48 kasus**. INV-24 sampai INV-26 dijalankan otomatis pada PR yang mengubah inventory.js; seluruh kasus Gemini end-to-end tetap memerlukan staging dan fixture sintetis.
