@@ -49,7 +49,7 @@ function okResponse(answer) {
   };
 }
 
-function createHarness(fetchImpl) {
+function createHarness(fetchImpl, options = {}) {
   const nodes = {
     aiSearchBtn: { disabled: false, textContent: "Kirim pertanyaan" },
     aiAnswer: { hidden: true, textContent: "" },
@@ -66,11 +66,14 @@ function createHarness(fetchImpl) {
     supabase: {
       auth: {
         getSession: async () => ({
-          data: { session: { access_token: "synthetic-session-token" } }
+          data: { session: Object.prototype.hasOwnProperty.call(options, "session") ? options.session : { access_token: "synthetic-session-token" } }
         })
       }
     },
     fetch: fetchImpl,
+    AbortController,
+    setTimeout: options.setTimeout || setTimeout,
+    clearTimeout: options.clearTimeout || clearTimeout,
     AI_FUNCTION_URL: "https://example.invalid/functions/v1/inventory-ai",
     SUPABASE_KEY: "synthetic-public-key",
     clearSavedAIAccessCode: () => {},
@@ -142,4 +145,66 @@ test("pertanyaan kosong tidak mengunci request valid berikutnya", async () => {
   assert.equal(fetchCount, 0);
   await harness.runAI("stok kabel");
   assert.equal(fetchCount, 1);
+});
+
+
+test("permintaan yang melewati 60 detik dibatalkan dan lock dapat dipakai ulang", async () => {
+  let fetchCount = 0;
+  let fireTimeout;
+  let timeoutDelay = 0;
+  let clearedTimers = 0;
+  const harness = createHarness(async (_url, options) => {
+    fetchCount += 1;
+    if (fetchCount === 1) {
+      return new Promise((_resolve, reject) => {
+        const abort = () => {
+          const error = new Error("synthetic abort");
+          error.name = "AbortError";
+          reject(error);
+        };
+        if (options.signal.aborted) abort();
+        else options.signal.addEventListener("abort", abort, { once: true });
+      });
+    }
+    return okResponse("Jawaban setelah timeout");
+  }, {
+    setTimeout(callback, delay) {
+      fireTimeout = callback;
+      timeoutDelay = delay;
+      return 42;
+    },
+    clearTimeout(id) {
+      if (id === 42) clearedTimers += 1;
+    }
+  });
+
+  const firstRun = harness.runAI("stok kabel");
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(fetchCount, 1);
+  assert.equal(timeoutDelay, 60000);
+  assert.equal(typeof fireTimeout, "function");
+
+  fireTimeout();
+  await firstRun;
+  assert.match(harness.nodes.aiAnswer.textContent, /Waktu tunggu AI habis setelah 60 detik/);
+  assert.equal(harness.nodes.aiSearchBtn.disabled, false);
+  assert.equal(clearedTimers, 1);
+
+  await harness.runAI("stok kabel");
+  assert.equal(fetchCount, 2);
+  assert.match(harness.nodes.aiAnswer.textContent, /Jawaban setelah timeout/);
+  assert.equal(clearedTimers, 2);
+});
+
+test("sesi yang sudah berakhir ditangani tanpa TypeError dan tanpa request Gemini", async () => {
+  let fetchCount = 0;
+  const harness = createHarness(async () => {
+    fetchCount += 1;
+    return okResponse("Tidak boleh dipanggil");
+  }, { session: null });
+
+  await harness.runAI("stok kabel");
+  assert.match(harness.nodes.aiAnswer.textContent, /Sesi login berakhir/);
+  assert.equal(fetchCount, 0);
+  assert.equal(harness.nodes.aiSearchBtn.disabled, false);
 });
