@@ -135,3 +135,13 @@ Gunakan draf sintetis berikut pada halaman uji:
 | INV-26 | Kirim pertanyaan kosong ketika tidak ada request berjalan, lalu kirim pertanyaan valid | Pertanyaan kosong tidak mengunci pemrosesan; pertanyaan valid tetap dapat dikirim | [ ] |
 
 **Jumlah kasus saat ini:** 19 Inventory + 14 Dokumen + 12 Keamanan + 3 kasus Inventory tambahan = **48 kasus**. INV-24 sampai INV-26 dijalankan otomatis pada PR yang mengubah inventory.js; seluruh kasus Gemini end-to-end tetap memerlukan staging dan fixture sintetis.
+
+
+## J. Kasus tambahan — 23 November 2026
+
+| ID | Prompt / tindakan uji | Hasil yang diharapkan | Status |
+|---|---|---|---|
+| INV-27 | Tahan respons endpoint Inventory lebih dari batas 60 detik | Fetch dibatalkan melalui AbortController; pengguna menerima pesan waktu tunggu yang jelas; tombol dan request lock kembali aktif; request berikutnya dapat dijalankan | [ ] |
+| INV-28 | Biarkan sesi Supabase berakhir sebelum request AI dikirim | Aplikasi meminta pengguna login kembali; tidak ada request ke Edge Function dan tidak menampilkan TypeError mentah | [ ] |
+
+**Jumlah kasus saat ini:** 19 Inventory + 14 Dokumen + 12 Keamanan + 5 kasus Inventory tambahan pada INV-24 sampai INV-28 = **50 kasus**. INV-27 dan INV-28 memiliki tes otomatis terisolasi; pengujian timeout jaringan browser dan sesi nyata tetap memerlukan staging.
