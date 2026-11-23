@@ -35,6 +35,8 @@ function extractRunAI(sourceText) {
   throw new Error("runAI memiliki kurung kurawal yang tidak seimbang");
 }
 
+const timeoutDeclaration = source.match(/const\s+INVENTORY_AI_REQUEST_TIMEOUT_MS\s*=\s*60000\s*;/)?.[0];
+assert.ok(timeoutDeclaration, "request timeout harus dideklarasikan");
 const lockDeclaration = source.match(/let\s+inventoryAIRequestInFlight\s*=\s*false\s*;/)?.[0];
 assert.ok(lockDeclaration, "request lock harus dideklarasikan");
 const runAIFunction = extractRunAI(source);
@@ -85,7 +87,7 @@ function createHarness(fetchImpl, options = {}) {
   };
 
   vm.runInNewContext(
-    lockDeclaration + "\n" + runAIFunction + "\nthis.runAI = runAI;",
+    timeoutDeclaration + "\n" + lockDeclaration + "\n" + runAIFunction + "\nthis.runAI = runAI;",
     sandbox
   );
   return { runAI: sandbox.runAI, nodes, states };
