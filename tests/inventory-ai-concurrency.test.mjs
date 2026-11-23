@@ -39,7 +39,7 @@ const lockDeclaration = source.match(/let\s+inventoryAIRequestInFlight\s*=\s*fal
 assert.ok(lockDeclaration, "request lock harus dideklarasikan");
 const runAIFunction = extractRunAI(source);
 assert.match(runAIFunction, /if\(inventoryAIRequestInFlight\)/);
-assert.match(runAIFunction, /finally\{inventoryAIRequestInFlight=false;/);
+assert.match(runAIFunction, /finally\\s*\\{[\\s\\S]*inventoryAIRequestInFlight=false;/);
 
 function okResponse(answer) {
   return {
