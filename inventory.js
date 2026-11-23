@@ -494,9 +494,9 @@ async function runAI(question){
   const response=await fetch(AI_FUNCTION_URL,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+current.access_token,"x-ai-access-code":accessCode},body:JSON.stringify({question:query}),signal:controller.signal});
   const data=await response.json();
   if(!response.ok){if(response.status===401)clearSavedAIAccessCode();throw new Error(data.error||"Pencarian tidak berhasil.");}
-  answer.textContent=formatInventoryAnswerDates(data.answer)+(data.suggestion?"\\n\\nSaran: "+formatInventoryAnswerDates(data.suggestion):"");
+  answer.textContent=formatInventoryAnswerDates(data.answer)+(data.suggestion?"\n\nSaran: "+formatInventoryAnswerDates(data.suggestion):"");
   const ids=new Set(data.matched_item_ids||[]);
-  if(ids.size){const found=items.filter(i=>ids.has(i.id));answer.textContent+="\\n\\nBarang terkait:\\n"+found.map(i=>"• "+i.name+(i.variant_name?" · "+i.variant_name:"")+" ("+i.sku+") — "+fmt(stockOf(i)/Math.max(1,Number(i.pack_size)||1))+" "+i.unit+" ("+fmt(stockOf(i))+" pcs)").join("\\n");}
+  if(ids.size){const found=items.filter(i=>ids.has(i.id));answer.textContent+="\n\nBarang terkait:\n"+found.map(i=>"• "+i.name+(i.variant_name?" · "+i.variant_name:"")+" ("+i.sku+") — "+fmt(stockOf(i)/Math.max(1,Number(i.pack_size)||1))+" "+i.unit+" ("+fmt(stockOf(i))+" pcs)").join("\n");}
   const audioControls=$("inventoryAnswerAudioControls");if(audioControls)audioControls.hidden=false;
   const speakButton=$("inventorySpeakAnswer");if(speakButton)speakButton.disabled=false;
   inventoryAIState("Jawaban sudah tersedia","success");await speakInventoryAIAnswer();
