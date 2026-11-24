@@ -182,3 +182,47 @@
 - Kedua fungsi ACTIVE tetap memiliki pemeriksaan `auth.getUser` dan rate limit server-side. `safeProviderMessage` pada Dokumen hanya terdefinisi (satu kemunculan) dan belum dipanggil. Tidak ditemukan pola secret/API key literal pada source yang diperiksa.
 - GitHub Actions run #11 pada head `70e7eb2d26f43f8c1fad07408e840cf01b310683` berhasil: pemeriksaan sintaks dan kedua suite otomatis lulus. Total 31 tes (24 retry + 7 JSON repair).
 - Pemeriksaan ini hanya membaca source Supabase dan metadata fungsi. Tidak ada deployment atau perubahan produksi.
+
+
+## Siklus 8 — 24 November 2026
+
+### Verifikasi sumber ACTIVE dan GitHub
+
+- GitHub \`main\` masih pada commit \`a32e994e01858ab3ee7bf2c327a6f1c3be8c3c42\`; tidak ada perubahan pada \`main\`.
+- Supabase project \`nqwqlhcwiwprsbcdadhy\` berstatus \`ACTIVE_HEALTHY\`.
+- Edge Function \`dokumen-ai\`: \`ACTIVE\` v50, source SHA \`c0cf4193db4aed34601791c289e4e65c7e6ad06baee0eb09567cd65f2d3ce81b\`.
+- Edge Function \`inventory-ai\`: \`ACTIVE\` v29, source SHA \`9187824dc877f62d1c6d3f0f979f964b17b75ad3b3298625f64412cda4ec6b2d\`.
+- Kedua fungsi memanggil Gemini dengan urutan \`gemini-3.5-flash-lite\` lalu \`gemini-3.6-flash\`. Nomor versi Edge Function bukan nomor versi model.
+- Snapshot source kedua fungsi pada branch PR #7 dibandingkan dengan source ACTIVE. Perbedaannya yang disengaja adalah header snapshot, import helper JSON repair, dan loop perbaikan; source Inventory selain perubahan repair sama dengan ACTIVE.
+- Panduan pada \`main\` masih memuat snapshot lama (v32/v16 dan model Gemini 3.8); panduan pada branch PR #7 diperbarui ke snapshot ACTIVE v50/v29 per 24 November.
+- Tidak ditemukan integrasi DeepSeek atau Ollama pada source yang diperiksa.
+
+### Temuan integritas rincian Dokumen
+
+- Source ACTIVE v50 menggunakan \`modelItems.slice(0, 300)\`. Ini dapat memotong rincian di atas 300 item tanpa penolakan yang jelas.
+- Seluruh \`currentDocument.items\` dikirim ke Gemini, bahkan ketika pengguna hanya meminta perubahan alamat/tanggal. Output model kemudian dipakai sebagai daftar item jika berupa array.
+- Jika model mengembalikan daftar lebih pendek, backend sebelumnya menerima array tersebut; risiko kehilangan item tidak dibatasi oleh pemeriksaan jumlah.
+- Penggabungan \`...original, ...item\` mempertahankan field tambahan tingkat atas, tetapi objek nested \`custom\` dapat tertimpa seluruhnya ketika model mengembalikan hanya satu key custom.
+
+### Perubahan terisolasi pada branch PR #7
+
+- Menambahkan \`supabase/functions/_shared/document-items.mjs\`:
+  - Mendeteksi permintaan yang menyentuh rincian dengan kata kunci Indonesia seperti barang, item, rincian, SKU, qty, satuan, harga, pcs, dus, warna, dan varian.
+  - Untuk perubahan field non-item, mengeluarkan \`items\` dari payload Gemini agar model tidak menulis ulang daftar; backend mempertahankan array sumber secara utuh, termasuk 301 item.
+  - Untuk perubahan item dengan lebih dari 300 rincian, menolak sebelum memanggil Gemini dengan HTTP 422.
+  - Menolak output model yang kehilangan item, menambahkan item tanpa instruksi penambahan eksplisit, berisi elemen non-objek, atau melebihi 300 item.
+  - Menggabungkan objek \`custom\` per key agar kolom tambahan lain tetap utuh.
+  - Penghapusan item melalui AI untuk sementara ditolak dengan pesan jelas; pengguna dapat menghapus baris langsung pada editor. Ini pembatasan sementara demi mencegah penghapusan baris lain akibat output model yang terpotong.
+- Menghubungkan helper ke \`dokumen-ai/index.ts\`; tidak mengubah frontend atau kontrak database.
+- Mengoreksi komentar urutan model di source Dokumen agar sesuai dengan array model aktual (Flash Lite dahulu, Flash sebagai fallback).
+- Menambah 5 kasus manual DOC-16 sampai DOC-20; matriks kini berisi 58 kasus dan seluruh status manual tetap belum diuji.
+- Menambahkan 13 tes perilaku helper dan 1 tes integrasi statis ke suite Node; workflow CI menjalankan suite baru.
+- Tes helper lokal sebelum tes integrasi statis: **13/13 lulus**. Hasil GitHub Actions setelah commit terbaru masih menunggu pemeriksaan.
+- Deno runtime, browser staging, dan Gemini end-to-end belum diuji. Pemeriksaan lokal Node tidak dianggap sebagai bukti perilaku Gemini.
+
+### Risiko dan batas
+
+- Deteksi maksud item memakai pola bahasa; instruksi ambigu dapat diklasifikasikan sebagai perubahan item atau non-item. Kasus kalimat campuran dan salah ketik tetap perlu diuji di staging.
+- Permintaan hapus item melalui AI belum didukung oleh helper baru; penghapusan manual pada editor tetap tersedia.
+- Perubahan hanya berada di branch kerja PR #7. Tidak ada perubahan pada Supabase ACTIVE, database/RPC, inventory, transaksi, dokumen pengguna, akun, login, izin, secrets, atau konfigurasi produksi.
+- Tidak ada merge, deployment, atau retraining.
