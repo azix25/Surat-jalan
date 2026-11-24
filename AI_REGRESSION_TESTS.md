@@ -1,8 +1,8 @@
 # AZX Office — AI Regression Test Suite
 
 **Tujuan:** kumpulan uji regresi manual untuk AI Dokumen dan AI Inventory.  
-**Baseline:** 20 November 2026.  
-**Model yang dikonfigurasi (snapshot Supabase 20 November 2026):** `dokumen-ai` ACTIVE v50 dan `inventory-ai` ACTIVE v29; keduanya mencoba `gemini-3.5-flash-lite` lalu `gemini-3.6-flash` sebagai fallback. Kedua jalur teks menggunakan Gemini API melalui Supabase Edge Functions.  
+**Baseline:** 24 November 2026.  
+**Model yang dikonfigurasi (snapshot Supabase 24 November 2026):** `dokumen-ai` ACTIVE v50 dan `inventory-ai` ACTIVE v29; keduanya mencoba `gemini-3.5-flash-lite` lalu `gemini-3.6-flash` sebagai fallback. Kedua jalur teks menggunakan Gemini API melalui Supabase Edge Functions.  
 **Aturan keselamatan:** jalankan hanya di staging/salinan uji dengan data sintetis. Jangan jalankan prompt uji yang memicu penulisan ke database produksi. Jangan menyalin dokumen nyata, data pribadi, token, atau API Key ke fixture.
 
 Status setiap kasus dibiarkan belum dicentang sampai benar-benar diuji. Pemeriksaan statis kode tidak dihitung sebagai uji Gemini end-to-end. Frontend Inventory saat ini mengirim satu `question` tanpa riwayat chat; Dokumen mengirim `instruction` dan `currentDocument`, bukan daftar pesan percakapan. Uji konteks lanjutan harus memastikan AI meminta klarifikasi jika rujukan sebelumnya tidak tersedia.
@@ -144,6 +144,19 @@ Gunakan draf sintetis berikut pada halaman uji:
 | INV-21 | Siapkan 2.500 barang sintetis dan letakkan SKU target setelah urutan alfabetis ke-2.000; cari menggunakan SKU persis | Pagination membaca semua halaman dan ranking SKU persis menemukan target di luar posisi 2.000 | [ ] |
 | INV-22 | Siapkan 500 barang sintetis lalu tanyakan `semua barang` | Karena konteks luas dibatasi 240 barang, jawaban menyebut cakupan parsial dan tidak mengklaim menampilkan seluruh 500 barang | [ ] |
 | INV-23 | Siapkan lebih dari 240 transaksi relevan lalu tanyakan periode yang hanya tercakup sebagian oleh transaksi terbaru | AI menyatakan konteks periode tidak lengkap dan tidak mengarang total; tanggal cakupan yang tersedia dijelaskan | [ ] |
-| DOC-15 | Siapkan dokumen sintetis berisi 301 item dan minta perubahan satu field yang tidak terkait item | Backend menolak dengan pesan batas yang jelas atau mempertahankan seluruh 301 item; tidak boleh memotong rincian diam-diam | [ ] |
+| DOC-15 | Siapkan dokumen sintetis berisi 301 item dan minta perubahan satu field yang tidak terkait item | Seluruh 301 item dipertahankan; daftar item tidak dikirim ulang ke Gemini dan tidak boleh terpotong | [ ] |
 
-**Jumlah kasus saat ini:** 23 Inventory + 15 Dokumen + 13 Keamanan + 2 Gemini = **53 kasus**. Semua status tetap belum diuji sampai dijalankan di staging dengan fixture sintetis.
+**Jumlah kasus sebelum audit 24 November:** 23 Inventory + 15 Dokumen + 13 Keamanan + 2 Gemini = **53 kasus**. Semua status tetap belum diuji sampai dijalankan di staging dengan fixture sintetis.
+
+
+## K. Integritas rincian Dokumen — 24 November 2026
+
+| ID | Prompt / tindakan uji | Hasil yang diharapkan | Status |
+|---|---|---|---|
+| DOC-16 | Siapkan 301 item lalu minta `Ubah alamat penerima` | Field `items` tidak dikirim ke Gemini; respons mempertahankan seluruh 301 item persis seperti sumber | [ ] |
+| DOC-17 | Siapkan 301 item lalu minta `Ubah qty barang menjadi 2 pcs` | Permintaan ditolak sebelum memanggil Gemini dengan pesan batas yang jelas; tidak ada perubahan dokumen | [ ] |
+| DOC-18 | Siapkan 3 item lalu simulasikan Gemini hanya mengembalikan 2 item saat perubahan rincian | Respons ditolak; tidak ada hasil parsial yang diterapkan dan ketiga item sumber tetap utuh | [ ] |
+| DOC-19 | Item memiliki `custom: {Warna: "Merah", Batch: "B-01"}`; minta ubah Warna menjadi Biru | Warna berubah menjadi Biru, Batch dan field ekstensi lain tetap, qty `30 pcs` tetap berupa teks | [ ] |
+| DOC-20 | Minta `Hapus item Barang 1` melalui AI | AI memberi pesan bahwa penghapusan harus dilakukan langsung di editor; tidak ada item yang dihapus | [ ] |
+
+**Jumlah kasus saat ini:** 23 Inventory + 20 Dokumen + 13 Keamanan + 2 Gemini = **58 kasus**. Semua status manual tetap belum diuji sampai dijalankan di staging dengan fixture sintetis. Tes otomatis helper item berjalan terpisah dan tidak memanggil Gemini.
