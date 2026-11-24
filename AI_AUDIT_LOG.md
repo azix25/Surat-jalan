@@ -217,7 +217,7 @@
 - Mengoreksi komentar urutan model di source Dokumen agar sesuai dengan array model aktual (Flash Lite dahulu, Flash sebagai fallback).
 - Menambah 5 kasus manual DOC-16 sampai DOC-20; matriks kini berisi 58 kasus dan seluruh status manual tetap belum diuji.
 - Menambahkan 13 tes perilaku helper dan 1 tes integrasi statis ke suite Node; workflow CI menjalankan suite baru.
-- Tes helper lokal sebelum tes integrasi statis: **13/13 lulus**. Hasil GitHub Actions setelah commit terbaru masih menunggu pemeriksaan.
+- GitHub Actions run **#17** pada 24 November 2026 berhasil: `node --check dokumen.js`, 24 tes retry, 7 tes JSON repair, dan 14 tes integritas rincian Dokumen; total **45 tes otomatis, 0 gagal**. Run menguji commit kode/tes `44824bd4e9169c4d30fd20fe87ef9ab012b2db7e`; commit audit log setelahnya hanya memperbarui dokumentasi.
 - Deno runtime, browser staging, dan Gemini end-to-end belum diuji. Pemeriksaan lokal Node tidak dianggap sebagai bukti perilaku Gemini.
 
 ### Risiko dan batas
