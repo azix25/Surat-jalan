@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -102,4 +103,15 @@ test("hasil item dengan elemen non-objek ditolak", () => {
 
 test("instruksi mempertahankan item lama sekaligus menambah item baru tetap dikenali", () => {
   assert.equal(isDocumentItemMutation("Jangan ubah item lama, tambahkan satu item baru"), true);
+});
+
+
+test("dokumen-ai mengeluarkan items dari prompt non-item dan memvalidasi hasil sebelum respons", async () => {
+  const source = await readFile(new URL("../supabase/functions/dokumen-ai/index.ts", import.meta.url), "utf8");
+  assert.match(source, /prepareDocumentModelInput\(sourceDoc, instruction/);
+  assert.match(source, /currentDocument: modelInput\.document/);
+  assert.match(source, /reconcileDocumentItems\(/);
+  assert.match(source, /doc\.items = itemResult\.items/);
+  assert.doesNotMatch(source, /modelItems\.slice\(0,\s*300\)/);
+  assert.ok(source.indexOf("const modelInput = prepareDocumentModelInput") < source.indexOf("const aiModels ="));
 });
