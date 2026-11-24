@@ -280,7 +280,7 @@ Deno.serve(async (req: Request) => {
     const modelInput = prepareDocumentModelInput(sourceDoc, instruction, { readOnly: readOnlyRequest, maxItems: MAX_DOCUMENT_ITEMS });
     if (!modelInput.ok) return json({ error: modelInput.error }, 422);
 
-    // Failover hemat waktu: model utama Gemini 3.6 Flash, lalu Flash-Lite untuk cadangan cepat. Maksimal dua panggilan agar Edge Function tidak melewati batas runtime.
+    // Urutan pemanggilan yang diverifikasi: Gemini 3.5 Flash Lite terlebih dahulu, lalu Gemini 3.6 Flash sebagai fallback. Maksimal dua model.
     let parsed: any;
     let finalAIError: any = null;
     const aiModels = ["gemini-3.5-flash-lite", "gemini-3.6-flash"];
