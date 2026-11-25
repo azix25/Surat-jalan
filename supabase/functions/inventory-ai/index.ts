@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 // This branch copy is not deployed; validate in staging before any release.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { buildGeminiJsonPrompt, GEMINI_JSON_REPAIR_ATTEMPTS } from "../_shared/gemini-json-repair.mjs";
+import { rankInventoryItems } from "../_shared/inventory-search.mjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -187,14 +188,7 @@ Deno.serve(async (req: Request) => {
       };
     });
 
-    // Search the full catalog before limiting model context; matching SKUs/names
-    // are ranked first instead of being hidden by alphabetical first-page truncation.
-    const terms = question.toLocaleLowerCase("id").match(/[a-z0-9-]{2,}/g) || [];
-    const rankedItems = stockItems.map((item:any) => {
-      const hay = [item.kode,item.kode_utama,item.nama,item.varian,item.kategori].join(" ").toLocaleLowerCase("id");
-      const score = terms.reduce((sum,term) => sum + (hay.includes(term) ? ((item.kode||"").toLowerCase()===term || (item.kode_utama||"").toLowerCase()===term ? 12 : 2) : 0), 0);
-      return { item, score };
-    }).sort((a:any,b:any) => b.score-a.score);
+    const rankedItems = rankInventoryItems(question, stockItems);
     const broadInventoryQuery = /\b(semua|seluruh|daftar|rekap|laporan)\b/i.test(question);
     const contextLimit = broadInventoryQuery ? 240 : 80;
     const context = rankedItems.slice(0, contextLimit).map((x:any)=>x.item);

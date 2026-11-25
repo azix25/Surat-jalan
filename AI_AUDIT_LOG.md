@@ -226,3 +226,33 @@
 - Permintaan hapus item melalui AI belum didukung oleh helper baru; penghapusan manual pada editor tetap tersedia.
 - Perubahan hanya berada di branch kerja PR #7. Tidak ada perubahan pada Supabase ACTIVE, database/RPC, inventory, transaksi, dokumen pengguna, akun, login, izin, secrets, atau konfigurasi produksi.
 - Tidak ada merge, deployment, atau retraining.
+
+
+## Siklus 5 — 25 November 2026
+
+### Snapshot dan status
+- GitHub `main` terverifikasi pada commit `9372f31d5cd22d2e1a6abebeed3ca0423b2dc31b`; perubahan terbaru pada main hanya menambahkan tautan dokumentasi di README.
+- PR #7 disinkronkan dengan commit main tersebut melalui merge commit `946c8d26d9efb1b0f114d5026cc3576fa57e6385`; branch kerja tetap terpisah dari main.
+- Supabase project diperiksa secara baca-saja. `inventory-ai` ACTIVE v29, source SHA `9187824dc877f62d1c6d3f0f979f964b17b75ad3b3298625f64412cda4ec6b2d`; `dokumen-ai` ACTIVE v50, source SHA `c0cf4193db4aed34601791c289e4e65c7e6ad06baee0eb09567cd65f2d3ce81b`.
+- Kedua jalur teks memakai Gemini: `gemini-3.5-flash-lite` lalu `gemini-3.6-flash` sebagai fallback. API key hanya dibaca dari environment server.
+
+### Temuan baru dan perubahan
+- Prompt Inventory meminta toleransi salah ketik ringan, tetapi pemeringkatan kandidat di backend hanya memakai pencocokan substring persis. Karena model hanya menerima 80 item untuk pertanyaan biasa, barang dengan typo pada nama/varian dapat tidak masuk konteks jika katalog besar.
+- Menambahkan helper `supabase/functions/_shared/inventory-search.mjs` untuk ranking typo-tolerant yang konservatif:
+  - Normalisasi huruf Unicode/aksen.
+  - Koreksi maksimal satu edit (termasuk transposisi huruf) untuk kata alfabet minimal 5 karakter.
+  - Hanya diterapkan jika seluruh katalog memiliki tepat satu token kandidat; jika ambigu tidak ada fuzzy boost.
+  - SKU/kode barang tetap harus cocok persis.
+  - Istilah perintah umum bahasa Indonesia dikecualikan dari koreksi fuzzy.
+  - Maksimal 8 istilah fuzzy per pertanyaan untuk membatasi pekerjaan.
+- Menghubungkan helper sebelum batas konteks 80/240 barang, sehingga kandidat typo yang unik dapat naik ke konteks Gemini.
+- Menambahkan 6 tes sintetis untuk typo nama/warna, transposisi, kandidat ambigu, token pendek, SKU persis, dan normalisasi aksen.
+- Menambahkan kasus manual INV-29; matriks menjadi 59 kasus.
+- Memperbarui workflow CI agar menjalankan suite typo-tolerant.
+
+### Validasi dan batas
+- Uji lokal Node: **6/6 lulus**, 0 gagal. Fixture 102 item membuktikan target Kabel Merah yang semula berada di luar 80 item teratas naik ke peringkat pertama untuk pertanyaan `tampilkan kable merha`.
+- Tes tidak memanggil Gemini, tidak membaca data inventaris nyata, dan tidak mengubah database.
+- Deno runtime, GitHub Actions setelah commit terbaru, browser staging, serta uji Gemini end-to-end belum diverifikasi pada saat pencatatan ini.
+- Risiko: koreksi satu-edit dapat memberi skor pada istilah yang secara linguistik dekat; pembatas kandidat tunggal dan batas panjang mengurangi risiko tetapi tidak menggantikan klarifikasi ketika beberapa varian masuk akal.
+- Tidak ada perubahan pada Supabase ACTIVE, database/RPC, inventory, transaksi, dokumen pengguna, akun, login, izin, secrets, atau konfigurasi produksi. Tidak ada merge ke main, deployment, atau retraining.

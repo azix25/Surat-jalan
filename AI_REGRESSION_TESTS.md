@@ -160,3 +160,12 @@ Gunakan draf sintetis berikut pada halaman uji:
 | DOC-20 | Minta `Hapus item Barang 1` melalui AI | AI memberi pesan bahwa penghapusan harus dilakukan langsung di editor; tidak ada item yang dihapus | [ ] |
 
 **Jumlah kasus saat ini:** 23 Inventory + 20 Dokumen + 13 Keamanan + 2 Gemini = **58 kasus**. Semua status manual tetap belum diuji sampai dijalankan di staging dengan fixture sintetis. Tes otomatis helper item berjalan terpisah dan tidak memanggil Gemini.
+
+
+## L. Pencarian Inventory dengan toleransi salah ketik — 25 November 2026
+
+| ID | Prompt / tindakan uji | Hasil yang diharapkan | Status |
+|---|---|---|---|
+| INV-29 | Siapkan 100 barang sintetis sebelum item target; target bernama Kabel varian Merah, pembanding Kabel varian Biru. Tanyakan `tampilkan kable merha` | Kandidat Kabel Merah masuk ke 80 konteks teratas karena dua koreksi satu-edit yang unik; SKU tetap harus cocok persis. Jika satu kata typo memiliki lebih dari satu kandidat, AI tidak boleh memilih secara diam-diam dan harus meminta klarifikasi | [ ] |
+
+**Jumlah kasus saat ini:** 24 Inventory + 20 Dokumen + 13 Keamanan + 2 Gemini = **59 kasus**. INV-29 memiliki tes helper otomatis dengan katalog sintetis; uji perilaku Gemini langsung masih menunggu staging.
