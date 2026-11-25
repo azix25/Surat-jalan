@@ -28,3 +28,4 @@ Arsip dokumen, stempel/logo, template, draf otomatis, dan antrean sinkronisasi S
 ## Catatan pengujian
 
 Sebelum digunakan untuk operasional, uji login/logout, pembuatan dan pengeditan dokumen, arsip, unggah stempel/logo, kedua format, cetak/PDF, transaksi stok, sinkronisasi Surat Jalan, backup, serta pemulihan pada browser dan perangkat target.
+link 'https://azix25.github.io/Surat-jalan/'
