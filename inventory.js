@@ -29,7 +29,7 @@ const today = () => new Date().toLocaleDateString("en-CA");
 const typeNames = {masuk:"Barang masuk",keluar:"Barang keluar",diambil:"Barang keluar",rusak:"Barang keluar",koreksi_tambah:"Barang masuk",koreksi_kurang:"Barang keluar"};
 function movementType(type){return type==="masuk"||type==="koreksi_tambah"?"masuk":"keluar"}
 function movementTime(t){const d=t.created_at?new Date(t.created_at):new Date((t.transaction_date||today())+"T00:00:00");return d.toLocaleString("id-ID",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}
-function formatInventoryAnswerDates(value){return String(value??"").replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g,(_,year,month,day)=>new Intl.DateTimeFormat("id-ID",{day:"numeric",month:"long",year:"numeric"}).format(new Date(Number(year),Number(month)-1,Number(day))))}
+const formatInventoryAnswerDates = value => window.AZXInventoryDateFormat.formatAnswerDates(value);
 const supabase = window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY);
 let authMode = "login", session = null, items = [], transactions = [], reportReady = false, toastTimer;
 function toast(message,error=false){const el=$("toast");el.textContent=message;el.className="toast show"+(error?" error":"");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.className="toast",3500)}
