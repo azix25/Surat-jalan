@@ -2,7 +2,7 @@
   "use strict";
 
   function formatAnswerDates(value) {
-    return String(value ?? "").replace(/\\b(\\d{4})-(\\d{2})-(\\d{2})\\b/g, (match, year, month, day) => {
+    return String(value ?? "").replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, (match, year, month, day) => {
       const y = Number(year);
       const m = Number(month);
       const d = Number(day);
