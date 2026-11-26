@@ -9,6 +9,7 @@ on:
       - "tests/gemini-json-repair.test.mjs"
       - "tests/document-items-integrity.test.mjs"
       - "tests/inventory-fuzzy-search.test.mjs"
+      - "tests/gemini-http-retry.test.mjs"
       - "supabase/functions/**"
       - ".github/workflows/ai-regression.yml"
   workflow_dispatch:
@@ -36,3 +37,5 @@ jobs:
 
       - name: Run Inventory typo-tolerant search regression tests
         run: node --test tests/inventory-fuzzy-search.test.mjs
+      - name: Run bounded Gemini HTTP retry regression tests
+        run: node --test tests/gemini-http-retry.test.mjs
