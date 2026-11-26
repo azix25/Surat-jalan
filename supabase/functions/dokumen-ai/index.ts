@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 // This branch copy is not deployed; validate in staging before any release.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { buildGeminiJsonPrompt, GEMINI_JSON_REPAIR_ATTEMPTS } from "../_shared/gemini-json-repair.mjs";
+import { shouldRetryGeminiHttpStatus } from "../_shared/gemini-http-retry.mjs";
 import { MAX_DOCUMENT_ITEMS, prepareDocumentModelInput, reconcileDocumentItems } from "../_shared/document-items.mjs";
 
 const corsHeaders = {
@@ -70,7 +71,7 @@ async function generateGeminiJson(args: {
   for (let attempt = 0; attempt <= GEMINI_JSON_REPAIR_ATTEMPTS; attempt++) {
     const prompt = buildGeminiJsonPrompt(args.prompt, previous, attempt);
     let response: Response | null = null;
-    for (let retry = 0; retry < 1; retry++) {
+    for (let retry = 0; ; retry++) {
       response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-goog-api-key": args.apiKey },
@@ -81,7 +82,7 @@ async function generateGeminiJson(args: {
         }),
         signal: AbortSignal.timeout(args.timeoutMs),
       });
-      if (response.ok || ![429,500,502,503,504].includes(response.status) || retry === 2) break;
+      if (!shouldRetryGeminiHttpStatus(response.status, retry)) break;
       await new Promise(resolve => setTimeout(resolve, 300));
     }
     const payload = await response!.json().catch(() => ({}));
