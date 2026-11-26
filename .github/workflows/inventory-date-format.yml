@@ -1,6 +1,9 @@
 name: Inventory AI date formatting regression
 
 on:
+  push:
+    branches:
+      - ai/inventory-date-validation-20261126
   pull_request:
     paths:
       - "inventory.js"
