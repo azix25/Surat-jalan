@@ -1,0 +1,28 @@
+name: Inventory AI date formatting regression
+
+on:
+  pull_request:
+    paths:
+      - "inventory.js"
+      - "inventory.html"
+      - "inventory-date-format.js"
+      - "tests/inventory-date-format.test.mjs"
+      - ".github/workflows/inventory-date-format.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory-date-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Check Inventory JavaScript syntax
+        run: node --check inventory.js && node --check inventory-date-format.js
+      - name: Run date formatting regression tests
+        run: node --test tests/inventory-date-format.test.mjs
