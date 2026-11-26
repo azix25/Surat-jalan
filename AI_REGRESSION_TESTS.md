@@ -169,3 +169,13 @@ Gunakan draf sintetis berikut pada halaman uji:
 | INV-29 | Siapkan 100 barang sintetis sebelum item target; target bernama Kabel varian Merah, pembanding Kabel varian Biru. Tanyakan `tampilkan kable merha` | Kandidat Kabel Merah masuk ke 80 konteks teratas karena dua koreksi satu-edit yang unik; SKU tetap harus cocok persis. Jika satu kata typo memiliki lebih dari satu kandidat, AI tidak boleh memilih secara diam-diam dan harus meminta klarifikasi | [ ] |
 
 **Jumlah kasus saat ini:** 24 Inventory + 20 Dokumen + 13 Keamanan + 2 Gemini = **59 kasus**. INV-29 memiliki tes helper otomatis dengan katalog sintetis; uji perilaku Gemini langsung masih menunggu staging.
+
+
+## M. Retry HTTP Gemini pada backend — 26 November 2026
+
+| ID | Pengujian | Hasil yang diharapkan | Status |
+|---|---|---|---|
+| GEM-03 | Simulasikan respons Gemini HTTP 503 lalu 200 pada Inventory dan Dokumen | Masing-masing fungsi mengulang tepat satu kali setelah jeda 300 ms, lalu menerima respons kedua; jumlah request maksimal dua per percobaan model | [ ] |
+| GEM-04 | Simulasikan HTTP 429 kuota, HTTP 400, dan HTTP 401 | Tidak ada retry backend; 429 diteruskan agar pesan kuota/rate limit ditangani sesuai klasifikasi, sedangkan 4xx tidak membuang request tambahan | [ ] |
+
+**Jumlah kasus saat ini:** 24 Inventory + 20 Dokumen + 13 Keamanan + 4 Gemini = **61 kasus**. GEM-03/GEM-04 memiliki tes kebijakan otomatis sintetis; pengujian Gemini langsung tetap memerlukan staging.
