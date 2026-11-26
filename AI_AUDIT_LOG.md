@@ -256,3 +256,32 @@
 - Deno runtime, GitHub Actions setelah commit terbaru, browser staging, serta uji Gemini end-to-end belum diverifikasi pada saat pencatatan ini.
 - Risiko: koreksi satu-edit dapat memberi skor pada istilah yang secara linguistik dekat; pembatas kandidat tunggal dan batas panjang mengurangi risiko tetapi tidak menggantikan klarifikasi ketika beberapa varian masuk akal.
 - Tidak ada perubahan pada Supabase ACTIVE, database/RPC, inventory, transaksi, dokumen pengguna, akun, login, izin, secrets, atau konfigurasi produksi. Tidak ada merge ke main, deployment, atau retraining.
+
+
+## Siklus 10 — 26 November 2026
+
+### Temuan baru
+
+- Audit ulang snapshot Edge Function Gemini yang disalin ke PR #7 menemukan retry HTTP backend tidak pernah berjalan: kedua fungsi memakai `for (let retry = 0; retry < 1; retry++)`, sehingga hanya satu request. Kondisi penghentian pada Inventory juga selalu benar pada iterasi pertama; kondisi Dokumen mengizinkan nilai retry yang tidak mungkin dicapai.
+- Dampak: respons sementara HTTP 500/502/503/504 langsung gagal tanpa satu percobaan ulang terbatas. Ini berbeda dari JSON repair, yang merupakan percobaan terpisah untuk keluaran JSON/skema tidak valid.
+
+### Perubahan terisolasi pada PR #7
+
+- Menambahkan helper `gemini-http-retry.mjs` dengan kebijakan satu retry maksimum hanya untuk HTTP 500, 502, 503, dan 504.
+- Menghubungkan helper ke `inventory-ai` dan `dokumen-ai`; retry menunggu 300 ms, lalu berhenti setelah respons kedua.
+- HTTP 429 tidak diulang oleh backend agar kuota/rate limit tidak memicu permintaan tambahan; HTTP 4xx lain juga tidak diulang.
+- Menambahkan GEM-03 dan GEM-04 ke matriks regresi.
+
+### Validasi
+
+- GitHub Actions run #24 pada 26 November 2026: SUCCESS.
+- Suite retry backend baru: 14/14 lulus.
+- Suite gabungan pada run tersebut: 24 retry frontend + 7 JSON repair + 14 integritas dokumen + 6 fuzzy search + 14 retry backend = 65 tes, 0 gagal.
+- Source TypeScript diperiksa melalui tes integrasi statis; Deno type-check dan pemanggilan Gemini langsung belum dilakukan.
+
+### Batas dan risiko
+
+- Retry hanya berlaku pada respons HTTP 5xx yang eksplisit. Network error dan timeout tidak diulang untuk menghindari duplikasi biaya ketika status penerimaan request tidak diketahui.
+- HTTP 429 tidak dicoba ulang pada backend; klasifikasi kuota vs pembatasan per menit tetap memerlukan verifikasi pesan provider di staging.
+- File Edge Function di PR #7 adalah snapshot sumber yang disalin untuk review, bukan perubahan pada deployment aktif.
+- Tidak mengubah database/RPC, data pengguna, stok, transaksi, dokumen, akun, login, izin, secrets, atau konfigurasi produksi. Tidak ada merge, deployment, atau retraining.
