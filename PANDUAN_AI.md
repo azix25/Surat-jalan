@@ -3,7 +3,10 @@
 ## Mesin AI
 
 - **AI Dokumen** dan **AI Inventory** menggunakan Gemini API melalui Supabase Edge Functions.
-- Model teks yang dikonfigurasi pada audit 15 November 2026: `gemini-3.8-flash`.
+- Snapshot model pada Edge Functions aktif saat audit 18 November 2026:
+  - AI Dokumen menggunakan `gemini-3.6-flash`.
+  - AI Inventory menggunakan `gemini-3.6-flash`.
+- Ini adalah snapshot source aktif yang diperiksa, bukan jaminan ketersediaan permanen.
 - Fungsi backend: `dokumen-ai` dan `inventory-ai`.
 - **Tidak menggunakan DeepSeek atau Ollama.**
 - Transkripsi perintah suara pada AI Dokumen adalah jalur terpisah: bila secret Cloudflare tersedia, audio ditranskripsikan oleh Cloudflare Workers AI Whisper Large v3 Turbo. Teks hasil transkripsi kemudian diteruskan ke AI Dokumen yang menggunakan Gemini.

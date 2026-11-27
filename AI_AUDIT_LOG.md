@@ -113,3 +113,32 @@
 6. Tetapkan perilaku aman untuk follow-up tanpa riwayat, pisahkan data tak tepercaya dari instruksi, dan validasi hasil sebelum ditampilkan/diterapkan.
 7. Hentikan retry berulang pada kuota 429, termasuk pesan Indonesia dan `RESOURCE_EXHAUSTED`.
 8. Jalankan seluruh 45 kasus di staging. Deploy hanya fungsi AI yang berubah setelah seluruh tes terkait lulus; verifikasi status, versi, dan source SHA sesudah deployment.
+
+## Siklus 4 — 18 November 2026
+
+### Snapshot backend Gemini
+
+- Project Supabase berstatus `ACTIVE_HEALTHY`.
+- Edge Function `dokumen-ai`: **ACTIVE v43**, source SHA `a2530e4c87da5a6ed42abf4882f833bf22230717972e23c1dcb566c13325dda4`.
+- Edge Function `inventory-ai`: **ACTIVE v23**, source SHA `70ebffe2ef907e42ddb6585b14e2a9ff2f9e73af1014bfabfd351933616f97b2`.
+- Kedua fungsi memakai Gemini `gemini-3.6-flash` pada jalur aktif yang diperiksa. Keduanya memvalidasi Bearer session melalui `auth.getUser`; `verify_jwt=false` tetap membuat pemeriksaan manual di dalam fungsi menjadi kontrol penting.
+
+### Perubahan yang sudah tampak pada backend aktif
+
+- Dokumen kini mempertahankan `qty` sebagai teks (misalnya `30 dus`) dan menggabungkan field tambahan item dari sumber; batas pemrosesan item menjadi 300. Risiko tersisa: daftar lebih dari 300 item masih dipotong dengan `slice(0, 300)` tanpa penolakan eksplisit.
+- Inventory kini mengambil `pack_size`, menyajikan stok dalam satuan kemasan dan pcs, memberi peringkat kandidat dari seluruh katalog sebelum membatasi konteks model ke 2.000 barang, serta menyertakan transaksi bertanggal. Risiko tersisa: konteks transaksi dibatasi ke 1.200 transaksi terbaru; permintaan periode lama dapat kehilangan data jika melewati batas itu.
+- Prompt kedua fungsi secara eksplisit menangani bahasa Indonesia, variasi istilah, dan salah ketik ringan. Inventory juga meminta klarifikasi saat kandidat ambigu dan membedakan stok kemasan dari pcs.
+- Prompt masih bukan pengganti validasi deterministik. Mode penjelasan Dokumen, batas 300 item, cakupan 2.000 barang/1.200 transaksi, serta perlindungan terhadap instruksi berbahaya yang tersisip dalam catatan masih perlu uji staging.
+- Helper `safeProviderMessage` hanya muncul sekali sebagai definisi pada source `dokumen-ai` v43; tidak ditemukan pemanggilan. Pemetaan pesan error provider melalui helper ini belum aktif dan perlu diperbaiki serta diuji terpisah.
+
+### Perbaikan retry frontend
+
+- PR #5 diselaraskan dengan commit terbaru `main` tanpa mengubah branch `main`.
+- Helper retry sekarang mendukung header `Retry-After` dalam detik maupun HTTP-date standar. Nilai header yang valid diprioritaskan; jika tanggal sudah lewat/tidak valid, fallback body `retry_after` dan jeda eksponensial tetap berlaku. Nilai header nol tidak keliru dibaca sebagai tanggal. Jeda tetap dibatasi maksimum 60 detik.
+- Ditambahkan tiga tes deterministik untuk tanggal HTTP masa depan, tanggal kedaluwarsa, dan nilai nol. Tidak ada request Gemini, Supabase, atau data produksi dalam tes.
+
+### Batas perubahan
+
+- Hanya branch kerja/PR: frontend Dokumen, test harness, workflow CI, dan dokumentasi.
+- Tidak ada perubahan Edge Function, database/RPC, stok, transaksi, dokumen pengguna, akun, login, izin, secrets, atau konfigurasi produksi.
+- Tidak ada merge, deployment, atau retraining.
