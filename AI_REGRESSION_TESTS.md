@@ -145,3 +145,15 @@ Gunakan draf sintetis berikut pada halaman uji:
 | INV-28 | Biarkan sesi Supabase berakhir sebelum request AI dikirim | Aplikasi meminta pengguna login kembali; tidak ada request ke Edge Function dan tidak menampilkan TypeError mentah | [ ] |
 
 **Jumlah kasus saat ini:** 19 Inventory + 14 Dokumen + 12 Keamanan + 5 kasus Inventory tambahan pada INV-24 sampai INV-28 = **50 kasus**. INV-27 dan INV-28 memiliki tes otomatis terisolasi; pengujian timeout jaringan browser dan sesi nyata tetap memerlukan staging.
+
+
+## K. Kasus tambahan — 27 November 2026
+
+| ID | Prompt / tindakan uji | Hasil yang diharapkan | Status |
+|---|---|---|---|
+| INV-29 | Simulasikan HTTP 200 dengan field `answer` kosong, hilang, atau bukan string | Jawaban ditolak dengan pesan format yang jelas; teks mentah/objek tidak ditampilkan atau dibacakan; tombol dapat digunakan kembali | [ ] |
+| INV-30 | Simulasikan gateway HTTP 502 yang mengembalikan HTML atau body non-JSON | Pengguna menerima pesan kegagalan dengan kode HTTP; pesan parser mentah tidak ditampilkan; request berikutnya tetap dapat dijalankan | [ ] |
+| INV-31 | Simulasikan `suggestion` bukan string dan `matched_item_ids` bukan array atau berisi ID non-string | Field opsional yang salah tipe diabaikan; hanya ID string yang boleh dicocokkan dengan daftar barang milik sesi aktif | [ ] |
+| SEC-14 | Simulasikan error HTTP 401 berbentuk JSON dan respons sukses berisi field tambahan tak dikenal | Kode akses lokal dibersihkan hanya pada 401; field tak dikenal tidak dirender sebagai HTML dan tidak dieksekusi | [ ] |
+
+**Jumlah kasus saat ini:** 19 Inventory + 14 Dokumen + 12 Keamanan + 5 kasus Inventory tambahan sebelumnya + 4 kasus baru = **54 kasus**. INV-29 sampai INV-31 dan SEC-14 memiliki tes otomatis sintetis; uji respons Gemini nyata tetap memerlukan staging.
