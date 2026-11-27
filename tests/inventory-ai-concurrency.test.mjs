@@ -5,9 +5,9 @@ import vm from "node:vm";
 
 const source = readFileSync(new URL("../inventory.js", import.meta.url), "utf8");
 
-function extractRunAI(sourceText) {
-  const start = sourceText.indexOf("async function runAI(question){");
-  assert.notEqual(start, -1, "runAI harus tersedia");
+function extractFunction(sourceText, signature) {
+  const start = sourceText.indexOf(signature);
+  assert.notEqual(start, -1, signature + " harus tersedia");
   let depth = 0;
   let quote = null;
   let escaped = false;
@@ -32,13 +32,15 @@ function extractRunAI(sourceText) {
       if (depth === 0) return sourceText.slice(start, i + 1);
     }
   }
-  throw new Error("runAI memiliki kurung kurawal yang tidak seimbang");
+  throw new Error(signature + " memiliki kurung kurawal yang tidak seimbang");
 }
+const extractRunAI = sourceText => extractFunction(sourceText, "async function runAI(question){");
 
 const timeoutDeclaration = source.match(/const\s+INVENTORY_AI_REQUEST_TIMEOUT_MS\s*=\s*60000\s*;/)?.[0];
 assert.ok(timeoutDeclaration, "request timeout harus dideklarasikan");
 const lockDeclaration = source.match(/let\s+inventoryAIRequestInFlight\s*=\s*false\s*;/)?.[0];
 assert.ok(lockDeclaration, "request lock harus dideklarasikan");
+const responseReaderFunction = extractFunction(source, "async function readInventoryAIResponse(response){");
 const runAIFunction = extractRunAI(source);
 assert.match(runAIFunction, /if\(inventoryAIRequestInFlight\)/);
 assert.match(runAIFunction, /finally\s*\{[\s\S]*inventoryAIRequestInFlight=false;/);
@@ -59,6 +61,8 @@ function createHarness(fetchImpl, options = {}) {
     inventorySpeakAnswer: { disabled: true }
   };
   const states = [];
+  let clearCodeCount = 0;
+  let speechCount = 0;
   const sandbox = {
     $: id => nodes[id] || (nodes[id] = {}),
     session: { user: { id: "synthetic-user" } },
@@ -78,19 +82,19 @@ function createHarness(fetchImpl, options = {}) {
     clearTimeout: options.clearTimeout || clearTimeout,
     AI_FUNCTION_URL: "https://example.invalid/functions/v1/inventory-ai",
     SUPABASE_KEY: "synthetic-public-key",
-    clearSavedAIAccessCode: () => {},
+    clearSavedAIAccessCode: () => { clearCodeCount += 1; },
     formatInventoryAnswerDates: value => String(value ?? ""),
     items: [],
     fmt: value => String(value),
     stockOf: () => 0,
-    speakInventoryAIAnswer: async () => {}
+    speakInventoryAIAnswer: async () => { speechCount += 1; }
   };
 
   vm.runInNewContext(
-    timeoutDeclaration + "\n" + lockDeclaration + "\n" + runAIFunction + "\nthis.runAI = runAI;",
+    timeoutDeclaration + "\n" + lockDeclaration + "\n" + responseReaderFunction + "\n" + runAIFunction + "\nthis.runAI = runAI;",
     sandbox
   );
-  return { runAI: sandbox.runAI, nodes, states };
+  return { runAI: sandbox.runAI, nodes, states, clearCodeCount: () => clearCodeCount, speechCount: () => speechCount };
 }
 
 test("request kedua ditolak saat Gemini masih memproses request pertama", async () => {
@@ -209,4 +213,68 @@ test("sesi yang sudah berakhir ditangani tanpa TypeError dan tanpa request Gemin
   assert.match(harness.nodes.aiAnswer.textContent, /Sesi login berakhir/);
   assert.equal(fetchCount, 0);
   assert.equal(harness.nodes.aiSearchBtn.disabled, false);
+});
+
+
+test("respons non-JSON dari gateway menampilkan pesan aman dan request lock pulih", async () => {
+  let fetchCount = 0;
+  const harness = createHarness(async () => {
+    fetchCount += 1;
+    if (fetchCount === 1) {
+      return { ok: false, status: 502, json: async () => { throw new SyntaxError("Unexpected token <"); } };
+    }
+    return okResponse("Jawaban setelah gateway pulih");
+  });
+
+  await harness.runAI("stok kabel");
+  assert.match(harness.nodes.aiAnswer.textContent, /HTTP 502/);
+  assert.doesNotMatch(harness.nodes.aiAnswer.textContent, /Unexpected token/);
+  assert.equal(harness.nodes.aiSearchBtn.disabled, false);
+
+  await harness.runAI("stok kabel");
+  assert.equal(fetchCount, 2);
+  assert.match(harness.nodes.aiAnswer.textContent, /Jawaban setelah gateway pulih/);
+});
+
+test("jawaban kosong atau bukan teks ditolak sebelum dibacakan", async () => {
+  const harness = createHarness(async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({ answer: { text: "bukan string" } })
+  }));
+
+  await harness.runAI("stok kabel");
+  assert.match(harness.nodes.aiAnswer.textContent, /jawaban kosong atau format tidak sesuai/i);
+  assert.equal(harness.speechCount(), 0);
+  assert.equal(harness.nodes.aiSearchBtn.disabled, false);
+});
+
+test("error JSON HTTP 401 ditampilkan dan kode akses lokal dibersihkan", async () => {
+  const harness = createHarness(async () => ({
+    ok: false,
+    status: 401,
+    json: async () => ({ error: "Sesi tidak valid" })
+  }));
+
+  await harness.runAI("stok kabel");
+  assert.equal(harness.nodes.aiAnswer.textContent, "Sesi tidak valid");
+  assert.equal(harness.clearCodeCount(), 1);
+  assert.equal(harness.speechCount(), 0);
+});
+
+test("field opsional yang salah tipe diabaikan dan ID barang non-string tidak dipakai", async () => {
+  const harness = createHarness(async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({
+      answer: "Stok kabel tersedia.",
+      suggestion: { html: "<script>bad()</script>" },
+      matched_item_ids: ["synthetic-id", 42, null, ""]
+    })
+  }));
+
+  await harness.runAI("stok kabel");
+  assert.equal(harness.nodes.aiAnswer.textContent, "Stok kabel tersedia.");
+  assert.doesNotMatch(harness.nodes.aiAnswer.textContent, /Barang terkait/);
+  assert.equal(harness.speechCount(), 1);
 });
