@@ -471,7 +471,76 @@ $("inventorySpeakAnswer")?.addEventListener("click",()=>{primeInventorySpeech();
 $("inventoryStopAnswer")?.addEventListener("click",()=>{stopInventoryAnswerSpeech();inventoryAnswerAudioStatus("Pembacaan dihentikan.");});
 window.addEventListener("pagehide",stopInventoryAnswerSpeech);
 window.speechSynthesis?.addEventListener?.("voiceschanged",()=>{populateInventoryVoiceOptions();if(window.speechSynthesis.getVoices().length)inventoryAnswerAudioStatus("Daftar suara perangkat siap.");});
-async function runAI(question){if(!session){inventoryAIState("Menunggu login","error");return;}const accessCode=getAIAccessCode();if(!accessCode){inventoryAIState("Kode akses AI belum diisi","error");return;}const btn=$("aiSearchBtn"),answer=$("aiAnswer");if(!question.trim())return toast("Tulis pertanyaan pencarian terlebih dahulu.",true);btn.disabled=true;btn.textContent="Mencari…";inventoryAIState("Sedang memeriksa data persediaan","running");answer.hidden=false;answer.textContent="Sedang memeriksa data inventaris…";try{const {data:{session:current}}=await supabase.auth.getSession();const response=await fetch(AI_FUNCTION_URL,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+current.access_token,"x-ai-access-code":accessCode},body:JSON.stringify({question})});const data=await response.json();if(!response.ok){if(response.status===401)clearSavedAIAccessCode();throw new Error(data.error||"Pencarian tidak berhasil.");}answer.textContent=formatInventoryAnswerDates(data.answer)+(data.suggestion?"\n\nSaran: "+formatInventoryAnswerDates(data.suggestion):"");const ids=new Set(data.matched_item_ids||[]);if(ids.size){const found=items.filter(i=>ids.has(i.id));answer.textContent+="\n\nBarang terkait:\n"+found.map(i=>"• "+i.name+(i.variant_name?" · "+i.variant_name:"")+" ("+i.sku+") — "+fmt(stockOf(i)/Math.max(1,Number(i.pack_size)||1))+" "+i.unit+" ("+fmt(stockOf(i))+" pcs)").join("\n");}const audioControls=$("inventoryAnswerAudioControls");if(audioControls)audioControls.hidden=false;const speakButton=$("inventorySpeakAnswer");if(speakButton)speakButton.disabled=false;inventoryAIState("Jawaban sudah tersedia","success");await speakInventoryAIAnswer();}catch(err){answer.textContent=err.message;inventoryAIState("Pemeriksaan gagal: "+err.message,"error");toast(err.message,true)}finally{btn.disabled=false;btn.textContent="Kirim pertanyaan"}}
+async function readInventoryAIResponse(response){
+ let payload;
+ try{
+  payload=await response.json();
+ }catch(_){
+  const message=response?.ok
+   ?"Respons AI tidak dapat dibaca."
+   :"Layanan AI gagal (HTTP "+Number(response?.status||0)+") dan respons tidak dapat dibaca.";
+  throw new Error(message+" Silakan coba lagi.");
+ }
+ if(!payload||typeof payload!=="object"||Array.isArray(payload)){
+  throw new Error(response?.ok
+   ?"Format respons AI tidak sesuai. Silakan coba lagi."
+   :"Layanan AI gagal (HTTP "+Number(response?.status||0)+").");
+ }
+ if(!response.ok){
+  if(response.status===401)clearSavedAIAccessCode();
+  const message=typeof payload.error==="string"&&payload.error.trim()
+   ?payload.error.trim()
+   :"Pencarian tidak berhasil (HTTP "+Number(response.status||0)+").";
+  throw new Error(message);
+ }
+ if(typeof payload.answer!=="string"||!payload.answer.trim()){
+  throw new Error("AI mengembalikan jawaban kosong atau format tidak sesuai. Silakan coba lagi.");
+ }
+ return {
+  answer:payload.answer,
+  suggestion:typeof payload.suggestion==="string"?payload.suggestion:"",
+  matched_item_ids:Array.isArray(payload.matched_item_ids)
+   ?payload.matched_item_ids.filter(id=>typeof id==="string"&&id.trim().length>0)
+   :[]
+ };
+}
+let inventoryAIRequestInFlight=false;
+const INVENTORY_AI_REQUEST_TIMEOUT_MS=60000;
+async function runAI(question){
+ if(inventoryAIRequestInFlight){inventoryAIState("Permintaan sebelumnya masih diproses","running");return;}
+ if(!session){inventoryAIState("Menunggu login","error");return;}
+ const query=String(question??"").trim();
+ if(!query)return toast("Tulis pertanyaan pencarian terlebih dahulu.",true);
+ const accessCode=getAIAccessCode();
+ if(!accessCode){inventoryAIState("Kode akses AI belum diisi","error");return;}
+ const btn=$("aiSearchBtn"),answer=$("aiAnswer");
+ btn.disabled=true;btn.textContent="Mencari…";inventoryAIState("Sedang memeriksa data persediaan","running");answer.hidden=false;answer.textContent="Sedang memeriksa data inventaris…";
+ inventoryAIRequestInFlight=true;
+ let timeoutId=null;
+ try{
+  const auth=await supabase.auth.getSession();
+  const current=auth?.data?.session;
+  if(!current?.access_token)throw new Error("Sesi login berakhir. Silakan login kembali.");
+  if(typeof AbortController!=="function")throw new Error("Browser belum mendukung pembatasan waktu permintaan AI. Perbarui browser lalu coba lagi.");
+  const controller=new AbortController();
+  timeoutId=setTimeout(()=>controller.abort(),INVENTORY_AI_REQUEST_TIMEOUT_MS);
+  const response=await fetch(AI_FUNCTION_URL,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+current.access_token,"x-ai-access-code":accessCode},body:JSON.stringify({question:query}),signal:controller.signal});
+  const data=await readInventoryAIResponse(response);
+  answer.textContent=formatInventoryAnswerDates(data.answer)+(data.suggestion?"\n\nSaran: "+formatInventoryAnswerDates(data.suggestion):"");
+  const ids=new Set(data.matched_item_ids);
+  const found=items.filter(i=>ids.has(i.id));
+  if(found.length){answer.textContent+="\n\nBarang terkait:\n"+found.map(i=>"• "+i.name+(i.variant_name?" · "+i.variant_name:"")+" ("+i.sku+") — "+fmt(stockOf(i)/Math.max(1,Number(i.pack_size)||1))+" "+i.unit+" ("+fmt(stockOf(i))+" pcs)").join("\n");}
+  const audioControls=$("inventoryAnswerAudioControls");if(audioControls)audioControls.hidden=false;
+  const speakButton=$("inventorySpeakAnswer");if(speakButton)speakButton.disabled=false;
+  inventoryAIState("Jawaban sudah tersedia","success");await speakInventoryAIAnswer();
+ }catch(err){
+  const message=err?.name==="AbortError"?"Waktu tunggu AI habis setelah 60 detik. Periksa koneksi lalu coba lagi.":(err?.message||"Pemeriksaan AI gagal.");
+  answer.textContent=message;inventoryAIState("Pemeriksaan gagal: "+message,"error");toast(message,true);
+ }finally{
+  if(timeoutId!==null)clearTimeout(timeoutId);
+  inventoryAIRequestInFlight=false;btn.disabled=false;btn.textContent="Kirim pertanyaan";
+ }
+}
 $("aiSearchBtn").addEventListener("click",()=>{primeInventorySpeech();runAI($("aiQuestion").value)});$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();primeInventorySpeech();runAI(e.target.value)}});document.querySelectorAll("[data-ask]").forEach(b=>b.addEventListener("click",()=>{$("aiQuestion").value=b.dataset.ask;primeInventorySpeech();runAI(b.dataset.ask)}));
 if(supabase){supabase.auth.getSession().then(({data})=>{session=data.session;if(session)showApp();else showAuth()});supabase.auth.onAuthStateChange((_event,newSession)=>{session=newSession;if(session)showApp();else showAuth()})}else showAuth();
 })();

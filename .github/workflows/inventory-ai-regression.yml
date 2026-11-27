@@ -1,0 +1,34 @@
+name: Inventory AI concurrency regression
+
+on:
+  push:
+    branches:
+      - ai/inventory-request-lock-20261122
+    paths:
+      - "inventory.js"
+      - "tests/inventory-ai-concurrency.test.mjs"
+      - ".github/workflows/inventory-ai-regression.yml"
+  pull_request:
+    paths:
+      - "inventory.js"
+      - "AI_REGRESSION_TESTS.md"
+      - "tests/inventory-ai-concurrency.test.mjs"
+      - ".github/workflows/inventory-ai-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory-ai-concurrency:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Check Inventory JavaScript syntax
+        run: node --check inventory.js
+      - name: Run Inventory AI concurrency tests
+        run: node --test tests/inventory-ai-concurrency.test.mjs
