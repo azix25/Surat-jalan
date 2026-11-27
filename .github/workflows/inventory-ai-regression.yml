@@ -1,6 +1,13 @@
 name: Inventory AI concurrency regression
 
 on:
+  push:
+    branches:
+      - ai/inventory-request-lock-20261122
+    paths:
+      - "inventory.js"
+      - "tests/inventory-ai-concurrency.test.mjs"
+      - ".github/workflows/inventory-ai-regression.yml"
   pull_request:
     paths:
       - "inventory.js"
