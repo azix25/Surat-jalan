@@ -471,6 +471,39 @@ $("inventorySpeakAnswer")?.addEventListener("click",()=>{primeInventorySpeech();
 $("inventoryStopAnswer")?.addEventListener("click",()=>{stopInventoryAnswerSpeech();inventoryAnswerAudioStatus("Pembacaan dihentikan.");});
 window.addEventListener("pagehide",stopInventoryAnswerSpeech);
 window.speechSynthesis?.addEventListener?.("voiceschanged",()=>{populateInventoryVoiceOptions();if(window.speechSynthesis.getVoices().length)inventoryAnswerAudioStatus("Daftar suara perangkat siap.");});
+async function readInventoryAIResponse(response){
+ let payload;
+ try{
+  payload=await response.json();
+ }catch(_){
+  const message=response?.ok
+   ?"Respons AI tidak dapat dibaca."
+   :"Layanan AI gagal (HTTP "+Number(response?.status||0)+") dan respons tidak dapat dibaca.";
+  throw new Error(message+" Silakan coba lagi.");
+ }
+ if(!payload||typeof payload!=="object"||Array.isArray(payload)){
+  throw new Error(response?.ok
+   ?"Format respons AI tidak sesuai. Silakan coba lagi."
+   :"Layanan AI gagal (HTTP "+Number(response?.status||0)+").");
+ }
+ if(!response.ok){
+  if(response.status===401)clearSavedAIAccessCode();
+  const message=typeof payload.error==="string"&&payload.error.trim()
+   ?payload.error.trim()
+   :"Pencarian tidak berhasil (HTTP "+Number(response.status||0)+").";
+  throw new Error(message);
+ }
+ if(typeof payload.answer!=="string"||!payload.answer.trim()){
+  throw new Error("AI mengembalikan jawaban kosong atau format tidak sesuai. Silakan coba lagi.");
+ }
+ return {
+  answer:payload.answer,
+  suggestion:typeof payload.suggestion==="string"?payload.suggestion:"",
+  matched_item_ids:Array.isArray(payload.matched_item_ids)
+   ?payload.matched_item_ids.filter(id=>typeof id==="string"&&id.trim().length>0)
+   :[]
+ };
+}
 let inventoryAIRequestInFlight=false;
 const INVENTORY_AI_REQUEST_TIMEOUT_MS=60000;
 async function runAI(question){
@@ -492,8 +525,7 @@ async function runAI(question){
   const controller=new AbortController();
   timeoutId=setTimeout(()=>controller.abort(),INVENTORY_AI_REQUEST_TIMEOUT_MS);
   const response=await fetch(AI_FUNCTION_URL,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+current.access_token,"x-ai-access-code":accessCode},body:JSON.stringify({question:query}),signal:controller.signal});
-  const data=await response.json();
-  if(!response.ok){if(response.status===401)clearSavedAIAccessCode();throw new Error(data.error||"Pencarian tidak berhasil.");}
+  const data=await readInventoryAIResponse(response);
   answer.textContent=formatInventoryAnswerDates(data.answer)+(data.suggestion?"\n\nSaran: "+formatInventoryAnswerDates(data.suggestion):"");
   const ids=new Set(data.matched_item_ids||[]);
   if(ids.size){const found=items.filter(i=>ids.has(i.id));answer.textContent+="\n\nBarang terkait:\n"+found.map(i=>"• "+i.name+(i.variant_name?" · "+i.variant_name:"")+" ("+i.sku+") — "+fmt(stockOf(i)/Math.max(1,Number(i.pack_size)||1))+" "+i.unit+" ("+fmt(stockOf(i))+" pcs)").join("\n");}
