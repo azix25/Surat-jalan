@@ -10,6 +10,7 @@ on:
       - "tests/document-items-integrity.test.mjs"
       - "tests/inventory-fuzzy-search.test.mjs"
       - "tests/gemini-http-retry.test.mjs"
+      - "tests/dokumen-ai-timeout.test.mjs"
       - "supabase/functions/**"
       - ".github/workflows/ai-regression.yml"
   workflow_dispatch:
