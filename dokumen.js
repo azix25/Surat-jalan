@@ -456,7 +456,12 @@ async function requestAIWithRetry(url,options,status){
    try{payload=await response.clone().json();}
    catch(error){if(error?.name==="AbortError")throw error;}
    if(response.ok){
-    if(!payload||typeof payload!=="object"||Array.isArray(payload))throw new Error("Respons AI Dokumen tidak valid atau tidak dapat dibaca. Silakan coba lagi.");
+    if(!payload||typeof payload!=="object"||Array.isArray(payload)||
+       !payload.document||typeof payload.document!=="object"||Array.isArray(payload.document)||
+       !Array.isArray(payload.document.items)||
+       payload.document.items.some(item=>!item||typeof item!=="object"||Array.isArray(item))){
+     throw new Error("Respons AI Dokumen tidak memuat struktur dokumen dan rincian yang valid. Dokumen tidak diubah. Silakan coba lagi.");
+    }
     return payload;
    }
    const message=payload?.error||payload?.message||("Permintaan AI gagal (HTTP "+response.status+").");
