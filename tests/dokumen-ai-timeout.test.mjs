@@ -121,11 +121,13 @@ test("timeout saat membaca body membatalkan request dan tidak mencoba ulang", as
       clone() {
         return {
           json: () => new Promise((_resolve, reject) => {
-            options.signal.addEventListener("abort", () => {
+            const onAbort = () => {
               const error = new Error("synthetic abort");
               error.name = "AbortError";
               reject(error);
-            }, { once: true });
+            };
+            if (options.signal.aborted) onAbort();
+            else options.signal.addEventListener("abort", onAbort, { once: true });
           })
         };
       },
@@ -133,7 +135,7 @@ test("timeout saat membaca body membatalkan request dan tidak mencoba ulang", as
     };
   });
   const pending = harness.request("https://example.invalid/dokumen-ai", { method: "POST" }, harness.status);
-  await Promise.resolve();
+  await new Promise(resolve => setImmediate(resolve));
   harness.fireTimeout();
   await assert.rejects(pending, /Waktu tunggu AI Dokumen habis setelah 90 detik/);
   assert.equal(calls, 1, "AbortError tidak boleh memicu request kedua");
