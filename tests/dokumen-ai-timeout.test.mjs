@@ -101,7 +101,7 @@ test("respons sukses dibaca sebagai JSON dan timer dibersihkan", async () => {
   const harness = createHarness(async (_url, options) => {
     calls += 1;
     assert.ok(options.signal instanceof AbortSignal);
-    return jsonResponse(200, { document: { pihak: "Penerima Uji" } });
+    return jsonResponse(200, { document: { pihak: "Penerima Uji", items: [] } });
   });
   const result = await harness.request("https://example.invalid/dokumen-ai", { method: "POST" }, harness.status);
   assert.deepEqual(JSON.parse(JSON.stringify(result)), { document: { pihak: "Penerima Uji" } });
@@ -149,7 +149,7 @@ test("HTTP 503 masih mengikuti retry terbatas lalu menerima JSON kedua", async (
     calls += 1;
     return calls === 1
       ? jsonResponse(503, { error: "Gemini sedang sibuk" })
-      : jsonResponse(200, { document: { nomorDokumen: "SJ-UJI-002" } });
+      : jsonResponse(200, { document: { nomorDokumen: "SJ-UJI-002", items: [] } });
   });
   const result = await harness.request("https://example.invalid/dokumen-ai", { method: "POST" }, harness.status);
   assert.equal(calls, 2);
@@ -168,10 +168,28 @@ test("HTTP sukses dengan JSON rusak ditolak, bukan dianggap draf berhasil", asyn
   }));
   await assert.rejects(
     harness.request("https://example.invalid/dokumen-ai", { method: "POST" }, harness.status),
-    /Respons AI Dokumen tidak valid/
+    /struktur dokumen dan rincian yang valid/
   );
   assert.equal(harness.pendingTimeouts(), 0);
   assert.equal(harness.cleared.length, 1);
+});
+
+test("respons sukses tanpa dokumen atau rincian berbentuk objek ditolak", async () => {
+  for (const payload of [
+    { message: "Draf selesai" },
+    { document: {} },
+    { document: { items: "bukan-array" } },
+    { document: { items: [null] } },
+    { document: { items: ["baris-bukan-objek"] } }
+  ]) {
+    const harness = createHarness(async () => jsonResponse(200, payload));
+    await assert.rejects(
+      harness.request("https://example.invalid/dokumen-ai", { method: "POST" }, harness.status),
+      /struktur dokumen dan rincian yang valid/
+    );
+    assert.equal(harness.pendingTimeouts(), 0);
+    assert.equal(harness.cleared.length, 1);
+  }
 });
 
 test("browser tanpa AbortController ditolak sebelum request dikirim", async () => {
