@@ -453,7 +453,8 @@ async function requestAIWithRetry(url,options,status){
    timeoutId=setTimeout(()=>controller.abort(),DOCUMENT_AI_REQUEST_TIMEOUT_MS);
    const response=await fetch(url,{...options,signal:controller.signal});
    let payload=null;
-   try{payload=await response.clone().json();}catch(_){}
+   try{payload=await response.clone().json();}
+   catch(error){if(error?.name==="AbortError")throw error;}
    if(response.ok){
     if(!payload||typeof payload!=="object"||Array.isArray(payload))throw new Error("Respons AI Dokumen tidak valid atau tidak dapat dibaca. Silakan coba lagi.");
     return payload;
