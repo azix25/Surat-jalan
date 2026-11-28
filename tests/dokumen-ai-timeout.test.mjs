@@ -5,7 +5,7 @@ import { runInNewContext } from "node:vm";
 
 const source = readFileSync(new URL("../dokumen.js", import.meta.url), "utf8");
 const timeoutLine = source.split(/\r?\n/).find(line => line.startsWith("const DOCUMENT_AI_REQUEST_TIMEOUT_MS="));
-assert.equal(timeoutLine, "const DOCUMENT_AI_REQUEST_TIMEOUT_MS=90000", "timeout Dokumen harus 90 detik");
+assert.equal(timeoutLine, "const DOCUMENT_AI_REQUEST_TIMEOUT_MS=90000;", "timeout Dokumen harus 90 detik");
 
 function extractFunction(sourceText, signature) {
   const start = sourceText.indexOf(signature);
