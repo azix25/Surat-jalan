@@ -104,7 +104,7 @@ test("respons sukses dibaca sebagai JSON dan timer dibersihkan", async () => {
     return jsonResponse(200, { document: { pihak: "Penerima Uji", items: [] } });
   });
   const result = await harness.request("https://example.invalid/dokumen-ai", { method: "POST" }, harness.status);
-  assert.deepEqual(JSON.parse(JSON.stringify(result)), { document: { pihak: "Penerima Uji" } });
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), { document: { pihak: "Penerima Uji", items: [] } });
   assert.equal(calls, 1);
   assert.ok(harness.delays.includes(90000));
   assert.equal(harness.pendingTimeouts(), 0);
