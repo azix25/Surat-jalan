@@ -438,37 +438,58 @@ async function getDocumentAuthHeaders(){
  if(error||!data?.session?.access_token)throw new Error("Sesi login berakhir. Silakan login kembali.");
  return {Authorization:"Bearer "+data.session.access_token};
 }
+function isGeminiQuotaExhausted(message){return /RESOURCE_EXHAUSTED|(?:quota|kuota).{0,50}(?:exceed(?:ed)?|limit|habis|mencapai.{0,5}(?:batas|limit)|tercapai|terlampaui|penuh|reached|exhausted)|(?:batas|limit).{0,30}penggunaan.{0,30}(?:harian|daily).{0,20}(?:tercapai|habis|exceed(?:ed)?|reached)|daily.{0,30}(?:usage|limit).{0,30}(?:reached|exceeded|exhausted)/i.test(String(message||""));}
+function shouldRetryAIResponse(status,message){return [502,503,504].includes(Number(status))||(Number(status)===429&&!isGeminiQuotaExhausted(message));}
+function getAIRetryDelayMs(response,payload,attempt,nowMs=Date.now()){const headerValue=response?.headers?.get?.("Retry-After");const headerText=String(headerValue??"").trim();const headerSeconds=/^\d+(?:\.\d+)?$/.test(headerText)?Number(headerText):NaN;const headerDateMs=/^[A-Za-z]{3},\s+\d{2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}:\d{2}\s+GMT$/i.test(headerText)?Date.parse(headerText):NaN;const hasValidHeader=(Number.isFinite(headerSeconds)&&headerSeconds>=0)||Number.isFinite(headerDateMs);const headerDelayMs=Number.isFinite(headerSeconds)&&headerSeconds>=0?headerSeconds*1000:Number.isFinite(headerDateMs)?Math.max(0,headerDateMs-nowMs):NaN;const rawBodySeconds=payload?.retry_after;const bodySeconds=rawBodySeconds===undefined||rawBodySeconds===null||rawBodySeconds===""?NaN:Number(rawBodySeconds);const hasValidBody=Number.isFinite(bodySeconds)&&bodySeconds>=0;const retryAfterMs=hasValidHeader?headerDelayMs:hasValidBody?bodySeconds*1000:NaN;if(Number.isFinite(retryAfterMs))return Math.min(Math.max(retryAfterMs,0),60000);return 1500*Math.pow(2,Math.max(0,Number(attempt)||1)-1);}
+const DOCUMENT_AI_REQUEST_TIMEOUT_MS=90000;
 async function requestAIWithRetry(url,options,status){
  const maxAttempts=3;
  let lastError;
  for(let attempt=1;attempt<=maxAttempts;attempt++){
+  let timeoutId=null;
   try{
-   const response=await fetch(url,options);
-   if(response.ok)return response;
-   const retryResponse=response.clone();
-   let payload={};
-   try{payload=await retryResponse.json();}catch(_){}
-   const message=payload.error||payload.message||("Permintaan AI gagal (HTTP "+response.status+").");
+   if(typeof AbortController!=="function")throw new Error("Browser belum mendukung batas waktu AI. Perbarui browser lalu coba lagi.");
+   const controller=new AbortController();
+   timeoutId=setTimeout(()=>controller.abort(),DOCUMENT_AI_REQUEST_TIMEOUT_MS);
+   const response=await fetch(url,{...options,signal:controller.signal});
+   let payload=null;
+   try{payload=await response.clone().json();}
+   catch(error){if(error?.name==="AbortError")throw error;}
+   if(response.ok){
+    if(!payload||typeof payload!=="object"||Array.isArray(payload)||
+       !payload.document||typeof payload.document!=="object"||Array.isArray(payload.document)||
+       !Array.isArray(payload.document.items)||
+       payload.document.items.some(item=>!item||typeof item!=="object"||Array.isArray(item))){
+     throw new Error("Respons AI Dokumen tidak memuat struktur dokumen dan rincian yang valid. Dokumen tidak diubah. Silakan coba lagi.");
+    }
+    return payload;
+   }
+   const message=payload?.error||payload?.message||("Permintaan AI gagal (HTTP "+response.status+").");
    const detail=String(message);
-   const quotaExhausted=/RESOURCE_EXHAUSTED|quota.{0,30}(exceed|limit|habis)|exceed.{0,30}quota/i.test(detail);
-   const temporary=[502,503].includes(response.status)||(response.status===429&&!quotaExhausted);
+   const temporary=shouldRetryAIResponse(response.status,detail);
    if(!temporary||attempt===maxAttempts)throw new Error(detail);
-   const retryAfter=Number(response.headers.get("Retry-After"));
-   const delay=Number.isFinite(retryAfter)&&retryAfter>0
-    ?Math.min(retryAfter*1000,15000)
-    :1500*Math.pow(2,attempt-1);
-   status.textContent="Layanan AI sedang sibuk. Mencoba kembali ("+attempt+"/"+(maxAttempts-1)+")...";
+   const delay=getAIRetryDelayMs(response,payload,attempt);
+   status.textContent=response.status===429
+    ?"Permintaan AI terlalu cepat. Menunggu sebelum mencoba kembali..."
+    :"Layanan Gemini sedang sibuk. Mencoba kembali ("+attempt+"/"+(maxAttempts-1)+")...";
+   clearTimeout(timeoutId);timeoutId=null;
    await new Promise(resolve=>setTimeout(resolve,delay));
   }catch(error){
+   if(error?.name==="AbortError"){
+    throw new Error("Waktu tunggu AI Dokumen habis setelah 90 detik. Permintaan tidak diulang otomatis agar tidak menggandakan proses Gemini. Periksa koneksi lalu coba lagi.");
+   }
    if(error instanceof TypeError){
     lastError=error;
     if(attempt<maxAttempts){
+     if(timeoutId!==null){clearTimeout(timeoutId);timeoutId=null;}
      status.textContent="Koneksi AI terganggu. Mencoba kembali ("+attempt+"/"+(maxAttempts-1)+")...";
      await new Promise(resolve=>setTimeout(resolve,1500*Math.pow(2,attempt-1)));
      continue;
     }
    }
    throw error;
+  }finally{
+   if(timeoutId!==null)clearTimeout(timeoutId);
   }
  }
  throw lastError||new Error("AI belum dapat dihubungi. Silakan coba lagi.");
@@ -483,11 +504,10 @@ async function generateWithAI(){
   const aiInstruction=format2
    ?prompt+"\\n\\nMODE FORMAT 2: Buat isi dokumen dalam bentuk teks/HTML Word yang rapi untuk area isi bebas. Jangan membuat tabel barang, rincian harga, total, tanda tangan, atau blok penutup. Pertahankan kategori dokumen yang dipilih. Kembalikan isi utama pada rincianFormat2 atau rincianBebas."
    :prompt;
-  const response=await requestAIWithRetry("https://nqwqlhcwiwprsbcdadhy.supabase.co/functions/v1/dokumen-ai",{
+  const result=await requestAIWithRetry("https://nqwqlhcwiwprsbcdadhy.supabase.co/functions/v1/dokumen-ai",{
    method:"POST",headers:{"Content-Type":"application/json","x-ai-access-code":accessCode,...await getDocumentAuthHeaders()},
    body:JSON.stringify({instruction:aiInstruction,currentDocument:{...current,formatMode:format2?"format2":"format1",templateSource:format2?"Template Format 2 (isi bebas tanpa tabel dan tanda tangan)":customTemplate?"Canva (desain latar dipertahankan; isi dokumen dapat diedit)":"Template bawaan"}})
   },status);
-  const result=await response.json();
   const d=result.document||{};
   const merged={...current,...d,layoutMode:current.layoutMode,items:Array.isArray(d.items)?d.items:current.items};
   if(format2){
@@ -503,8 +523,12 @@ async function generateWithAI(){
   if(/401|403|unauthorized|kode akses|access code/i.test(message)){
    clearSavedAIAccessCode();
    status.textContent="Kode akses ditolak. Masukkan kode AZX yang benar satu kali; kode lama sudah dihapus dari perangkat.";
-  }else if(/RESOURCE_EXHAUSTED|quota|limit/i.test(message)){
+  }else if(/batas.{0,20}penggunaan.{0,20}harian/i.test(message)){
+   status.textContent="Batas penggunaan AI harian AZX tercapai. Silakan coba lagi besok.";
+  }else if(/RESOURCE_EXHAUSTED|quota|kuota|limit/i.test(message)){
    status.textContent="Batas penggunaan Gemini tercapai. Periksa kuota API Gemini atau coba lagi nanti.";
+  }else if(/permintaan AI terlalu cepat/i.test(message)){
+   status.textContent="Permintaan AI terlalu cepat. Tunggu sebentar sebelum mencoba lagi.";
   }else if(/503|UNAVAILABLE|overloaded|busy/i.test(message)){
    status.textContent="Layanan Gemini sedang sibuk atau melewati batas waktu. Coba lagi beberapa saat.";
   }else{

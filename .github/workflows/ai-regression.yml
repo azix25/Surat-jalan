@@ -1,0 +1,44 @@
+name: AI regression checks
+
+on:
+  pull_request:
+    paths:
+      - "dokumen.js"
+      - "AI_REGRESSION_TESTS.md"
+      - "tests/ai-gemini-retry.test.mjs"
+      - "tests/gemini-json-repair.test.mjs"
+      - "tests/document-items-integrity.test.mjs"
+      - "tests/inventory-fuzzy-search.test.mjs"
+      - "tests/gemini-http-retry.test.mjs"
+      - "tests/dokumen-ai-timeout.test.mjs"
+      - "supabase/functions/**"
+      - ".github/workflows/ai-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ai-gemini-retry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Check document JavaScript syntax
+        run: node --check dokumen.js
+      - name: Run Gemini retry regression tests
+        run: node --test tests/ai-gemini-retry.test.mjs
+      - name: Run Gemini JSON repair regression tests
+        run: node --test tests/gemini-json-repair.test.mjs
+      - name: Run document item integrity regression tests
+        run: node --test tests/document-items-integrity.test.mjs
+
+      - name: Run Inventory typo-tolerant search regression tests
+        run: node --test tests/inventory-fuzzy-search.test.mjs
+      - name: Run bounded Gemini HTTP retry regression tests
+        run: node --test tests/gemini-http-retry.test.mjs
+      - name: Run Dokumen AI timeout regression tests
+        run: node --test tests/dokumen-ai-timeout.test.mjs

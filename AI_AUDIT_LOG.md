@@ -113,3 +113,175 @@
 6. Tetapkan perilaku aman untuk follow-up tanpa riwayat, pisahkan data tak tepercaya dari instruksi, dan validasi hasil sebelum ditampilkan/diterapkan.
 7. Hentikan retry berulang pada kuota 429, termasuk pesan Indonesia dan `RESOURCE_EXHAUSTED`.
 8. Jalankan seluruh 45 kasus di staging. Deploy hanya fungsi AI yang berubah setelah seluruh tes terkait lulus; verifikasi status, versi, dan source SHA sesudah deployment.
+
+
+## Siklus 4 — 20 November 2026 (snapshot main terbaru)
+
+### Snapshot sumber dan runtime
+
+- GitHub `main` saat audit: `a32e994e01858ab3ee7bf2c327a6f1c3be8c3c42`.
+- PR #6 masih Draft dan divergen: 3 commit di depan serta 29 commit di belakang `main`; perubahan dokumentasinya tidak digabungkan atau dianggap sebagai kondisi main.
+- Supabase project diperiksa secara baca-saja. `dokumen-ai` ACTIVE v50, source SHA `c0cf4193db4aed34601791c289e4e65c7e6ad06baee0eb09567cd65f2d3ce81b`; `inventory-ai` ACTIVE v29, source SHA `9187824dc877f62d1c6d3f0f979f964b17b75ad3b3298625f64412cda4ec6b2d`.
+- Kedua fungsi mencoba `gemini-3.5-flash-lite` lalu `gemini-3.6-flash` sebagai fallback. API key dibaca dari environment server; pemindaian snapshot tidak menemukan pola API key hard-coded.
+
+### Temuan terukur
+
+1. **Perbaikan JSON Gemini tidak pernah berjalan:** kedua Edge Function memiliki loop `attempt < 1`, sementara prompt perbaikan baru ditambahkan ketika `attempt === 1`. Jadi hanya ada satu request per model dan cabang repair tidak terjangkau. Instruksi prompt menyebut perbaikan otomatis, tetapi implementasinya belum melakukannya.
+2. **Deteksi kuota frontend tidak mengenali bahasa Indonesia:** `dokumen.js` di `main` hanya mencocokkan `quota`, sedangkan backend mengembalikan pesan `Kuota Gemini sedang mencapai batas` dan `Batas penggunaan AI harian tercapai`. HTTP 429 ini dapat keliru dianggap sementara dan diulang sampai tiga kali.
+3. **Jeda retry kurang lengkap:** frontend hanya membaca `Retry-After` numerik dan membatasi jeda 15 detik; nilai `retry_after` pada body JSON serta format tanggal HTTP belum dipakai. HTTP 504 juga belum masuk daftar status sementara pada frontend.
+
+### Perubahan di branch kerja
+
+- Menambahkan snapshot source Edge Function aktif ke `supabase/functions/dokumen-ai/index.ts` dan `supabase/functions/inventory-ai/index.ts` agar kode backend yang diaudit dapat ditinjau melalui GitHub. Snapshot diberi versi dan source SHA; tidak ada nilai secret yang disalin.
+- Menambahkan helper bersama `supabase/functions/_shared/gemini-json-repair.mjs`. Kedua fungsi sekarang mengizinkan tepat satu percobaan perbaikan JSON/schema tambahan (maksimal dua request per model), dan jawaban sebelumnya dibatasi 12.000 karakter saat dimasukkan ke prompt perbaikan.
+- Memperbaiki `dokumen.js` agar mengenali kuota Indonesia/Inggris, tidak mengulang 429 saat kuota habis, mencoba ulang 504, dan membaca `Retry-After` sebagai detik atau HTTP-date serta `retry_after` dari body; jeda dibatasi 60 detik.
+- Menambahkan 6 tes untuk helper dan integrasi loop JSON, serta membawa 22 tes regresi retry Gemini ke branch yang berbasis `main` terbaru. Workflow CI menjalankan `node --check dokumen.js` dan kedua suite Node.
+- Matriks manual diperbarui menjadi 47 kasus; GEM-01 dan GEM-02 mencatat pengujian respons JSON rusak dan skema tidak lengkap.
+
+### Batas verifikasi dan risiko
+
+- Tes Node menguji helper retry frontend dan pembentukan prompt repair serta memeriksa integrasi statis kedua source. Tes ini **tidak** memanggil Gemini dan bukan pengujian staging end-to-end.
+- Source Edge Function yang disalin adalah snapshot ACTIVE pada saat audit; sebelum deployment, bandingkan ulang source SHA/versi Supabase dan uji di staging. Tidak ada deployment dari branch ini.
+- Belum ada bukti perilaku model pada respons JSON rusak sampai GEM-01/GEM-02 dijalankan dengan akun/kuota staging.
+- Tidak ada perubahan database/RPC, data pengguna, inventory, transaksi, dokumen, akun, login, izin, secrets, atau konfigurasi produksi. Tidak ada merge, deployment, atau retraining.
+
+
+### Review prompt, konteks, validasi, dan keamanan pada snapshot ACTIVE
+
+- **Pemahaman Inventory:** prompt sudah mencakup sinonim stok/masuk/keluar/diambil/rusak, SKU, warna/ukuran/varian, salah ketik ringan, perbedaan stok dengan pergerakan, konversi dus/ball ke pcs, serta penggunaan tanggal dan tujuan transaksi.
+- **Batas konteks Inventory:** katalog dibaca dengan pagination 1.000 baris, kandidat diranking, lalu maksimal 80 item untuk pertanyaan biasa atau 240 untuk pertanyaan luas dikirim ke Gemini. Transaksi dibatasi 60 atau 240 sesuai jenis pertanyaan. Prompt menerima flag kelengkapan dan rentang tanggal; INV-20 sampai INV-23 kini mencatat pengujian batas ini.
+- **Konteks percakapan:** frontend Inventory mengirim satu `question` tanpa riwayat pesan. Follow-up seperti `berapa stoknya?` tidak boleh dianggap memiliki konteks percakapan sebelumnya; INV-19 mengharuskan klarifikasi bila rujukan tidak ada pada request.
+- **Mode baca-saja Dokumen:** `isReadOnlyDocumentRequest` benar-benar dipanggil di backend. Untuk permintaan yang terklasifikasi baca-saja, fungsi mengembalikan `currentDocument` sumber dan hanya pesan AI, sehingga hasil model tidak diterapkan. Namun klasifikasi berbasis pola bahasa tetap perlu diuji untuk negasi, salah ketik, dan kalimat campuran.
+- **Validasi Dokumen yang tersisa:** backend menggabungkan field sumber dan hasil model, memvalidasi jenis/template, serta mempertahankan field ekstensi. Akan tetapi daftar item masih memakai `modelItems.slice(0, 300)`; 301 item dapat terpotong. DOC-15 menandai risiko ini dan belum ada perbaikan pada PR ini.
+- **Penanganan error backend:** `safeProviderMessage` terdefinisi pada `dokumen-ai` tetapi tidak memiliki pemanggilan pada source ACTIVE; pemetaan error masih dilakukan langsung di handler. Ini kandidat perapihan berikutnya, bukan bagian perubahan saat ini.
+- **Keamanan:** kedua fungsi memeriksa Bearer session melalui `auth.getUser` dan rate limit server-side. `verify_jwt=false` pada konfigurasi fungsi berarti pemeriksaan manual ini wajib dipertahankan. System prompt menandai nama/catatan/referensi sebagai data tidak tepercaya. Frontend Dokumen memiliki sanitizer HTML allowlist; SEC-12 tetap belum diuji di browser staging.
+
+
+## Siklus 5 — 21 November 2026
+
+### Koreksi semantik Retry-After
+
+- Audit ulang helper retry menemukan bahwa nilai header `Retry-After: 0` dan HTTP-date yang sudah lewat diperlakukan seperti header yang tidak tersedia. Akibatnya, nilai `retry_after` dari body atau jeda eksponensial dapat mengalahkan instruksi server yang valid untuk mencoba ulang segera.
+- Helper kini mempertahankan prioritas header jika valid, termasuk nilai nol dan tanggal yang sudah lewat (jeda 0 ms). Nilai `retry_after` dari body hanya menjadi fallback saat header hilang/tidak valid; nilai body nol juga dihormati. Batas maksimum 60 detik tetap berlaku.
+- Menambah dua tes regresi dan memperjelas dua ekspektasi lama: header nol serta HTTP-date kedaluwarsa tidak boleh diganti oleh jeda body.
+- GitHub Actions run #7 pada 21 November 2026 berhasil: parsing `dokumen.js`, suite retry Gemini, dan suite JSON repair semuanya lulus.
+- Total pengujian otomatis: 30 kasus (24 retry + 6 JSON repair). Pengujian ini bersifat lokal/sintetis; tidak memanggil Gemini atau menguji staging.
+- Tidak ada perubahan pada `main`, Supabase ACTIVE, database/RPC, data pengguna, inventory, transaksi, dokumen, akun, login, izin, secrets, atau konfigurasi produksi. Tidak ada merge, deployment, atau retraining.
+
+
+### Pertahanan prompt pada jalur perbaikan JSON
+
+- Output Gemini pertama kini diperlakukan sebagai string keluaran model yang tidak tepercaya, bukan instruksi baru. Helper menginstruksikan model perbaikan agar tidak mengikuti perintah/perubahan aturan yang mungkin tertanam di output sebelumnya, lalu memasukkan output sebagai string JSON-escaped.
+- Ditambahkan uji sintetis dengan teks instruksi palsu dan newline untuk memastikan output sebelumnya di-escape. SEC-13 ditambahkan ke matriks manual; kasus end-to-end tetap belum diuji di staging.
+- Suite otomatis pada head PR terbaru: 31 tes (24 retry + 7 JSON repair); GitHub Actions run #10 berhasil. Tes ini menguji pembentukan prompt, bukan ketahanan model Gemini secara langsung.
+
+### Verifikasi ulang Supabase ACTIVE — 21 November 2026
+
+- Pemeriksaan read-only Supabase mengonfirmasi `dokumen-ai` ACTIVE v50 dengan source SHA `c0cf4193db4aed34601791c289e4e65c7e6ad06baee0eb09567cd65f2d3ce81b` dan `inventory-ai` ACTIVE v29 dengan source SHA `9187824dc877f62d1c6d3f0f979f964b17b75ad3b3298625f64412cda4ec6b2d`; keduanya masih sama dengan snapshot yang menjadi basis PR.
+- Kedua fungsi ACTIVE masih memakai loop `attempt < 1` dan belum mengimpor helper JSON repair. Jadi perbaikan JSON repair serta penandaan output sebelumnya sebagai data tidak tepercaya **belum aktif di Supabase**; keduanya hanya ada pada branch PR #7.
+- Kedua fungsi ACTIVE tetap memiliki pemeriksaan `auth.getUser` dan rate limit server-side. `safeProviderMessage` pada Dokumen hanya terdefinisi (satu kemunculan) dan belum dipanggil. Tidak ditemukan pola secret/API key literal pada source yang diperiksa.
+- GitHub Actions run #11 pada head `70e7eb2d26f43f8c1fad07408e840cf01b310683` berhasil: pemeriksaan sintaks dan kedua suite otomatis lulus. Total 31 tes (24 retry + 7 JSON repair).
+- Pemeriksaan ini hanya membaca source Supabase dan metadata fungsi. Tidak ada deployment atau perubahan produksi.
+
+
+## Siklus 8 — 24 November 2026
+
+### Verifikasi sumber ACTIVE dan GitHub
+
+- GitHub \`main\` masih pada commit \`a32e994e01858ab3ee7bf2c327a6f1c3be8c3c42\`; tidak ada perubahan pada \`main\`.
+- Supabase project \`nqwqlhcwiwprsbcdadhy\` berstatus \`ACTIVE_HEALTHY\`.
+- Edge Function \`dokumen-ai\`: \`ACTIVE\` v50, source SHA \`c0cf4193db4aed34601791c289e4e65c7e6ad06baee0eb09567cd65f2d3ce81b\`.
+- Edge Function \`inventory-ai\`: \`ACTIVE\` v29, source SHA \`9187824dc877f62d1c6d3f0f979f964b17b75ad3b3298625f64412cda4ec6b2d\`.
+- Kedua fungsi memanggil Gemini dengan urutan \`gemini-3.5-flash-lite\` lalu \`gemini-3.6-flash\`. Nomor versi Edge Function bukan nomor versi model.
+- Snapshot source kedua fungsi pada branch PR #7 dibandingkan dengan source ACTIVE. Perbedaannya yang disengaja adalah header snapshot, import helper JSON repair, dan loop perbaikan; source Inventory selain perubahan repair sama dengan ACTIVE.
+- Panduan pada \`main\` masih memuat snapshot lama (v32/v16 dan model Gemini 3.8); panduan pada branch PR #7 diperbarui ke snapshot ACTIVE v50/v29 per 24 November.
+- Tidak ditemukan integrasi DeepSeek atau Ollama pada source yang diperiksa.
+
+### Temuan integritas rincian Dokumen
+
+- Source ACTIVE v50 menggunakan \`modelItems.slice(0, 300)\`. Ini dapat memotong rincian di atas 300 item tanpa penolakan yang jelas.
+- Seluruh \`currentDocument.items\` dikirim ke Gemini, bahkan ketika pengguna hanya meminta perubahan alamat/tanggal. Output model kemudian dipakai sebagai daftar item jika berupa array.
+- Jika model mengembalikan daftar lebih pendek, backend sebelumnya menerima array tersebut; risiko kehilangan item tidak dibatasi oleh pemeriksaan jumlah.
+- Penggabungan \`...original, ...item\` mempertahankan field tambahan tingkat atas, tetapi objek nested \`custom\` dapat tertimpa seluruhnya ketika model mengembalikan hanya satu key custom.
+
+### Perubahan terisolasi pada branch PR #7
+
+- Menambahkan \`supabase/functions/_shared/document-items.mjs\`:
+  - Mendeteksi permintaan yang menyentuh rincian dengan kata kunci Indonesia seperti barang, item, rincian, SKU, qty, satuan, harga, pcs, dus, warna, dan varian.
+  - Untuk perubahan field non-item, mengeluarkan \`items\` dari payload Gemini agar model tidak menulis ulang daftar; backend mempertahankan array sumber secara utuh, termasuk 301 item.
+  - Untuk perubahan item dengan lebih dari 300 rincian, menolak sebelum memanggil Gemini dengan HTTP 422.
+  - Menolak output model yang kehilangan item, menambahkan item tanpa instruksi penambahan eksplisit, berisi elemen non-objek, atau melebihi 300 item.
+  - Menggabungkan objek \`custom\` per key agar kolom tambahan lain tetap utuh.
+  - Penghapusan item melalui AI untuk sementara ditolak dengan pesan jelas; pengguna dapat menghapus baris langsung pada editor. Ini pembatasan sementara demi mencegah penghapusan baris lain akibat output model yang terpotong.
+- Menghubungkan helper ke \`dokumen-ai/index.ts\`; tidak mengubah frontend atau kontrak database.
+- Mengoreksi komentar urutan model di source Dokumen agar sesuai dengan array model aktual (Flash Lite dahulu, Flash sebagai fallback).
+- Menambah 5 kasus manual DOC-16 sampai DOC-20; matriks kini berisi 58 kasus dan seluruh status manual tetap belum diuji.
+- Menambahkan 13 tes perilaku helper dan 1 tes integrasi statis ke suite Node; workflow CI menjalankan suite baru.
+- GitHub Actions run **#17** pada 24 November 2026 berhasil: `node --check dokumen.js`, 24 tes retry, 7 tes JSON repair, dan 14 tes integritas rincian Dokumen; total **45 tes otomatis, 0 gagal**. Run menguji commit kode/tes `44824bd4e9169c4d30fd20fe87ef9ab012b2db7e`; commit audit log setelahnya hanya memperbarui dokumentasi.
+- Deno runtime, browser staging, dan Gemini end-to-end belum diuji. Pemeriksaan lokal Node tidak dianggap sebagai bukti perilaku Gemini.
+
+### Risiko dan batas
+
+- Deteksi maksud item memakai pola bahasa; instruksi ambigu dapat diklasifikasikan sebagai perubahan item atau non-item. Kasus kalimat campuran dan salah ketik tetap perlu diuji di staging.
+- Permintaan hapus item melalui AI belum didukung oleh helper baru; penghapusan manual pada editor tetap tersedia.
+- Perubahan hanya berada di branch kerja PR #7. Tidak ada perubahan pada Supabase ACTIVE, database/RPC, inventory, transaksi, dokumen pengguna, akun, login, izin, secrets, atau konfigurasi produksi.
+- Tidak ada merge, deployment, atau retraining.
+
+
+## Siklus 5 — 25 November 2026
+
+### Snapshot dan status
+- GitHub `main` terverifikasi pada commit `9372f31d5cd22d2e1a6abebeed3ca0423b2dc31b`; perubahan terbaru pada main hanya menambahkan tautan dokumentasi di README.
+- PR #7 disinkronkan dengan commit main tersebut melalui merge commit `946c8d26d9efb1b0f114d5026cc3576fa57e6385`; branch kerja tetap terpisah dari main.
+- Supabase project diperiksa secara baca-saja. `inventory-ai` ACTIVE v29, source SHA `9187824dc877f62d1c6d3f0f979f964b17b75ad3b3298625f64412cda4ec6b2d`; `dokumen-ai` ACTIVE v50, source SHA `c0cf4193db4aed34601791c289e4e65c7e6ad06baee0eb09567cd65f2d3ce81b`.
+- Kedua jalur teks memakai Gemini: `gemini-3.5-flash-lite` lalu `gemini-3.6-flash` sebagai fallback. API key hanya dibaca dari environment server.
+
+### Temuan baru dan perubahan
+- Prompt Inventory meminta toleransi salah ketik ringan, tetapi pemeringkatan kandidat di backend hanya memakai pencocokan substring persis. Karena model hanya menerima 80 item untuk pertanyaan biasa, barang dengan typo pada nama/varian dapat tidak masuk konteks jika katalog besar.
+- Menambahkan helper `supabase/functions/_shared/inventory-search.mjs` untuk ranking typo-tolerant yang konservatif:
+  - Normalisasi huruf Unicode/aksen.
+  - Koreksi maksimal satu edit (termasuk transposisi huruf) untuk kata alfabet minimal 5 karakter.
+  - Hanya diterapkan jika seluruh katalog memiliki tepat satu token kandidat; jika ambigu tidak ada fuzzy boost.
+  - SKU/kode barang tetap harus cocok persis.
+  - Istilah perintah umum bahasa Indonesia dikecualikan dari koreksi fuzzy.
+  - Maksimal 8 istilah fuzzy per pertanyaan untuk membatasi pekerjaan.
+- Menghubungkan helper sebelum batas konteks 80/240 barang, sehingga kandidat typo yang unik dapat naik ke konteks Gemini.
+- Menambahkan 6 tes sintetis untuk typo nama/warna, transposisi, kandidat ambigu, token pendek, SKU persis, dan normalisasi aksen.
+- Menambahkan kasus manual INV-29; matriks menjadi 59 kasus.
+- Memperbarui workflow CI agar menjalankan suite typo-tolerant.
+
+### Validasi dan batas
+- Uji lokal Node: **6/6 lulus**, 0 gagal. Fixture 102 item membuktikan target Kabel Merah yang semula berada di luar 80 item teratas naik ke peringkat pertama untuk pertanyaan `tampilkan kable merha`.
+- Tes tidak memanggil Gemini, tidak membaca data inventaris nyata, dan tidak mengubah database.
+- Deno runtime, GitHub Actions setelah commit terbaru, browser staging, serta uji Gemini end-to-end belum diverifikasi pada saat pencatatan ini.
+- Risiko: koreksi satu-edit dapat memberi skor pada istilah yang secara linguistik dekat; pembatas kandidat tunggal dan batas panjang mengurangi risiko tetapi tidak menggantikan klarifikasi ketika beberapa varian masuk akal.
+- Tidak ada perubahan pada Supabase ACTIVE, database/RPC, inventory, transaksi, dokumen pengguna, akun, login, izin, secrets, atau konfigurasi produksi. Tidak ada merge ke main, deployment, atau retraining.
+
+
+## Siklus 10 — 26 November 2026
+
+### Temuan baru
+
+- Audit ulang snapshot Edge Function Gemini yang disalin ke PR #7 menemukan retry HTTP backend tidak pernah berjalan: kedua fungsi memakai `for (let retry = 0; retry < 1; retry++)`, sehingga hanya satu request. Kondisi penghentian pada Inventory juga selalu benar pada iterasi pertama; kondisi Dokumen mengizinkan nilai retry yang tidak mungkin dicapai.
+- Dampak: respons sementara HTTP 500/502/503/504 langsung gagal tanpa satu percobaan ulang terbatas. Ini berbeda dari JSON repair, yang merupakan percobaan terpisah untuk keluaran JSON/skema tidak valid.
+
+### Perubahan terisolasi pada PR #7
+
+- Menambahkan helper `gemini-http-retry.mjs` dengan kebijakan satu retry maksimum hanya untuk HTTP 500, 502, 503, dan 504.
+- Menghubungkan helper ke `inventory-ai` dan `dokumen-ai`; retry menunggu 300 ms, lalu berhenti setelah respons kedua.
+- HTTP 429 tidak diulang oleh backend agar kuota/rate limit tidak memicu permintaan tambahan; HTTP 4xx lain juga tidak diulang.
+- Menambahkan GEM-03 dan GEM-04 ke matriks regresi.
+
+### Validasi
+
+- GitHub Actions run #24 pada 26 November 2026: SUCCESS.
+- Suite retry backend baru: 14/14 lulus.
+- Suite gabungan pada run tersebut: 24 retry frontend + 7 JSON repair + 14 integritas dokumen + 6 fuzzy search + 14 retry backend = 65 tes, 0 gagal.
+- Source TypeScript diperiksa melalui tes integrasi statis; Deno type-check dan pemanggilan Gemini langsung belum dilakukan.
+
+### Batas dan risiko
+
+- Retry hanya berlaku pada respons HTTP 5xx yang eksplisit. Network error dan timeout tidak diulang untuk menghindari duplikasi biaya ketika status penerimaan request tidak diketahui.
+- HTTP 429 tidak dicoba ulang pada backend; klasifikasi kuota vs pembatasan per menit tetap memerlukan verifikasi pesan provider di staging.
+- File Edge Function di PR #7 adalah snapshot sumber yang disalin untuk review, bukan perubahan pada deployment aktif.
+- Tidak mengubah database/RPC, data pengguna, stok, transaksi, dokumen, akun, login, izin, secrets, atau konfigurasi produksi. Tidak ada merge, deployment, atau retraining.
